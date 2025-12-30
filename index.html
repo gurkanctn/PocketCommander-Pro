@@ -7,7 +7,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Pocket Commander v20</title>
+    <title>Pocket Commander v21</title>
     
     <link rel="manifest" href='data:application/manifest+json;base64,ewogICJuYW1lIjogIlBvY2tldCBDb21tYW5kZXIiLAogICJzaG9ydF9uYW1lIjogIlBvY2tldFJUUyIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiZGlzcGxheSI6ICJmdWxsc2NyZWVuIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjMGIwYjBmIiwKICAidGhlbWVfY29sb3IiOiAiIzBiMGIwZiIsCiAgImljb25zIjogW10KfQ=='>
 
@@ -21,14 +21,14 @@
         .hidden { display: none !important; }
 
         /* HUD */
-        .top-bar { background: var(--panel); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; height: 40px; }
+        .top-bar { background: var(--panel); padding: 8px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; height: 40px; }
         .stats { font-size: 16px; font-weight: bold; color: #ffd700; text-shadow: 1px 1px 0 #000; display: flex; gap:15px; }
         .bot-bar { background: var(--panel); padding: 10px; display: flex; gap: 8px; overflow-x: auto; border-top: 2px solid #333; justify-content: center; min-height: 80px; align-items: center; }
         
         /* BUTTONS */
         .btn { 
             background: #2a2a35; border: 2px solid #4a4a55; color: #eee; 
-            min-width: 65px; height: 65px; border-radius: 8px; 
+            min-width: 65px; height: 65px; border-radius: 6px; 
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             font-size: 10px; font-weight: bold; cursor: pointer; position: relative; transition: background 0.1s;
         }
@@ -99,15 +99,16 @@
         <h1>HELP & INFO</h1>
         <div class="help-text">
             <p>You are the commander. Under continuous attack waves of enemy forces, you must build defenses, train an army, and protect your Town Center at all costs.</p>
-            <p>Use <strong>Builders</strong> to mine gold from the yellow nodes. Build <strong>Barracks</strong> to train Soldiers, and <strong>Towers</strong> to provide static defense. Don't forget to pay your army's <strong>Upkeep</strong>!</p>
-            
-            <h3>HOW TO INSTALL (APP)</h3>
-            <p><strong>iOS:</strong> Tap the Share button (Safari) -> Add to Home Screen.</p>
-            <p><strong>Android:</strong> Tap Chrome Menu -> Install App / Add to Home Screen.</p>
-            <p>This allows full-screen offline play.</p>
-
+            <p><strong>Tips:</strong></p>
+            <ul>
+                <li>Builders automatically heal at base (Costs Gold).</li>
+                <li>Soldiers regenerate health if out of combat.</li>
+                <li>Use Walls to reroute enemies (Enemies break walls if stuck).</li>
+                <li>Every 10 waves, a Boss appears and a new Gold Mine spawns.</li>
+            </ul>
+            <h3>INSTALLATION</h3>
+            <p>Add to Home Screen on iOS (Share Btn) or Android (Chrome Menu) for a full app experience.</p>
             <h3>SUPPORT</h3>
-            <p>Found a bug? Have a suggestion?</p>
             <p><a href="https://github.com/gurkanctn/PocketCommander-Pro/issues" target="_blank">View GitHub Issues</a></p>
         </div>
         <button class="big-btn" onclick="Game.toMenu()">BACK</button>
@@ -135,12 +136,16 @@
 
 <script>
 /** 
- * POCKET COMMANDER RTS - V20
+ * POCKET COMMANDER RTS - V21
+ * - Smart Enemy Wall Routing
+ * - Dynamic Enemy Range
+ * - Builder Auto-Heal (Costly)
+ * - Soldier Passive Regen
  */
 
 const TILE = 40;
 const W = 40, H = 40;
-const SAVE_ID = 'pc_rts_v20_final';
+const SAVE_ID = 'pc_rts_v21_smart';
 
 const GRID = { GRASS:0, ROCK:1, WATER:2, BUILD:3 };
 const COLORS = {
@@ -159,6 +164,7 @@ const State = {
     lastUpkeep: 0
 };
 
+// --- AUDIO ---
 const AudioEngine = {
     ctx: null,
     init() {
@@ -171,7 +177,6 @@ const AudioEngine = {
         const g = this.ctx.createGain();
         o.connect(g); g.connect(this.ctx.destination);
         const t = this.ctx.currentTime;
-        
         switch(type) {
             case 'sel': o.type='sine'; o.frequency.setValueAtTime(600, t); g.gain.exponentialRampToValueAtTime(0.01, t+0.1); o.start(t); o.stop(t+0.1); break;
             case 'build': o.type='square'; o.frequency.setValueAtTime(150, t); g.gain.exponentialRampToValueAtTime(0.01, t+0.1); o.start(t); o.stop(t+0.1); break;
@@ -192,21 +197,15 @@ function drawLevelDots(ctx, cx, cy, level) {
     const greens = Math.floor(rem / 25); rem %= 25;
     const yellows = Math.floor(rem / 5); rem %= 5;
     const whites = rem;
-    
     let dots = [];
     for(let i=0; i<blues; i++) dots.push('#00f');
     for(let i=0; i<greens; i++) dots.push('#0f0');
     for(let i=0; i<yellows; i++) dots.push('#ff0');
     for(let i=0; i<whites; i++) dots.push('#fff');
-    
     const spacing = 5;
     const totalW = (dots.length-1) * spacing;
     let startX = cx - totalW/2;
-    
-    dots.forEach((color, i) => {
-        ctx.fillStyle = color;
-        ctx.beginPath(); ctx.arc(startX + i*spacing, cy, 2.5, 0, Math.PI*2); ctx.fill();
-    });
+    dots.forEach((color, i) => { ctx.fillStyle = color; ctx.beginPath(); ctx.arc(startX + i*spacing, cy, 2.5, 0, Math.PI*2); ctx.fill(); });
 }
 
 const Pathfinder = {
@@ -214,23 +213,15 @@ const Pathfinder = {
         if(grid[ey*W+ex] !== 0 && Math.hypot(sx-ex, sy-ey) > 1.5) return null;
         let open = [{x:sx, y:sy, g:0, f:0, p:null}], closed = new Set(), safe = 0;
         const h = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
-
         while(open.length > 0) {
             if(safe++ > 1500) return null;
             let best=0; for(let i=1;i<open.length;i++) if(open[i].f<open[best].f) best=i;
             let curr = open.splice(best,1)[0];
-
-            if(curr.x===ex && curr.y===ey) {
-                let p=[]; while(curr.p){p.push({x:curr.x,y:curr.y});curr=curr.p;} return p.reverse();
-            }
+            if(curr.x===ex && curr.y===ey) { let p=[]; while(curr.p){p.push({x:curr.x,y:curr.y});curr=curr.p;} return p.reverse(); }
             closed.add(curr.x+','+curr.y);
-
             [{x:0,y:-1},{x:0,y:1},{x:-1,y:0},{x:1,y:0}].forEach(n => {
                 const nx=curr.x+n.x, ny=curr.y+n.y;
                 if(nx>=0 && nx<W && ny>=0 && ny<H && !closed.has(nx+','+ny)) {
-                    // CRITICAL FIX: Allow the target node to be part of the path even if it is blocked
-                    // This allows Builders to pathfind *to* a Mine (which is blocked).
-                    // The Unit movement logic will stop them before they overlap.
                     if(grid[ny*W+nx] === 0 || (nx===ex && ny===ey)) {
                         const g=curr.g+1;
                         let old=open.find(o=>o.x===nx && o.y===ny);
@@ -326,6 +317,7 @@ const Game = {
     },
 
     updateEntities() {
+        // UPKEEP
         if(Date.now() > State.lastUpkeep + 10000) {
             State.lastUpkeep = Date.now();
             let totalLevel = 0;
@@ -338,6 +330,7 @@ const Game = {
             Game.ui();
         }
 
+        // WAVE LOGIC
         if(State.waveActive) {
             if(Date.now() > State.nextSpawn && State.toSpawn > 0) {
                 const s = State.level.waypoints[0];
@@ -367,8 +360,11 @@ const Game = {
                 setTimeout(()=>Game.startWave(), 3000);
             }
         }
+        
+        // Entity Update Loop
+        const dt = 16; // Approx 60fps frame time
         State.entities = State.entities.filter(e => !e.dead);
-        State.entities.forEach(e => e.update());
+        State.entities.forEach(e => e.update(dt));
     },
 
     drawMap() {
@@ -562,13 +558,14 @@ const Game = {
 };
 
 // --- ENTITIES ---
-class Entity { constructor(x, y, type, team) { this.x=x; this.y=y; this.type=type; this.team=team; this.dead=false; this.hp=100; this.maxHp=100; this.level=1; } }
+class Entity { constructor(x, y, type, team) { this.x=x; this.y=y; this.type=type; this.team=team; this.dead=false; this.hp=100; this.maxHp=100; this.level=1; this.id=Math.random(); } }
 
 class Unit extends Entity {
     constructor(x, y, type, team, level=1) {
         super(x, y, type, team);
         this.baseStats = { speed:2.5, radius:0.25, dmg:10, hp:60 };
-        this.holdGold=false; this.path=[]; this.target=null; this.lastAtk=0;
+        this.holdGold=false; this.path=[]; this.target=null; this.lastAtk=0; this.lastDmg=0;
+        this.wallHits=0; this.ignoreIds=[];
         this.applyLevel(level);
         if(type==='Builder') { this.color=COLORS.builder; this.range=1.2; }
         else if(team==='enemy') { this.configureEnemy(); }
@@ -585,23 +582,45 @@ class Unit extends Entity {
         const idx = Math.min(8, Math.floor((this.dmg-5)/5));
         this.color = ATK_COLORS[idx];
         if(this.maxHp > 100) this.radius = 0.35; else this.radius = 0.25;
+        this.range = Math.max(2.0, this.level * 0.2); // Dynamic Range
     }
-    update() {
+    update(dt) {
+        // Soldier Regen
+        if(this.team === 'player' && this.type === 'Soldier' && Date.now() - this.lastDmg > 3000 && this.hp < this.maxHp) {
+            this.hp += this.maxHp * 0.01 * (dt/1000);
+            if(this.hp > this.maxHp) this.hp = this.maxHp;
+        }
+
         const targetTeam = this.team==='player'?'enemy':'player';
-        const atkRange = this.team === 'enemy' ? 1.5 : this.range;
-        const foe = State.entities.find(e => e.team === targetTeam && !e.dead && !e.isRuin && Math.hypot(e.x - this.x, e.y - this.y) < atkRange);
+        const foe = State.entities.find(e => 
+            e.team === targetTeam && !e.dead && !e.isRuin && 
+            !this.ignoreIds.includes(e.id) &&
+            Math.hypot(e.x - this.x, e.y - this.y) < this.range
+        );
+
         if(foe) {
             if(Date.now() > this.lastAtk+1000) {
+                // Wall Logic
+                if(this.team === 'enemy' && foe.type === 'Wall') {
+                    this.wallHits++;
+                    if(this.wallHits > 2) {
+                        this.ignoreIds.push(foe.id); // Ignore this wall
+                        this.wallHits = 0;
+                        return; // Move instead of attack
+                    }
+                }
+                
                 foe.takeDamage(this.dmg);
                 if(foe.dead && foe.team==='enemy') { 
-                    State.gold += Math.ceil(foe.level * 2.5); // ECONOMY FIX
+                    State.gold += Math.ceil(foe.level * 2.5); 
                     Game.ui(); 
-                    Game.toast(`+${Math.ceil(foe.level * 2.5)}g`, this.x, this.y, '#ffd700'); 
+                    Game.toast(`+${Math.ceil(foe.level*2.5)}g`, this.x, this.y, '#ffd700'); 
                 }
                 State.particles.push({x:this.x,y:this.y,tx:foe.x,ty:foe.y,life:5,c:'#fff'}); AudioEngine.play('hit');
                 this.lastAtk=Date.now();
             } return;
         }
+
         let dest = null;
         if(this.team==='enemy') {
             if(this.wpIdx===undefined) this.wpIdx=0;
@@ -609,9 +628,27 @@ class Unit extends Entity {
             if(wp) { dest={x:wp.x+0.5, y:wp.y+0.5}; if(Math.hypot(dest.x-this.x, dest.y-this.y) < 0.2) this.wpIdx++; }
         } else if(this.type==='Builder') {
             const capacity = 10 + (this.level * 2);
+            // HEAL LOGIC
+            if(this.state === 'HEALING') {
+                if(this.hp >= this.maxHp || State.gold < 1) { this.state = 'IDLE'; } 
+                else {
+                    this.hp += this.maxHp * 0.1 * (dt/1000); // 10%/sec
+                    // Cost calc approximated for frame: 1g per 10%
+                    // Probability based cost application to avoid floats
+                    if(Math.random() < (dt/1000)) { State.gold--; Game.ui(); }
+                    return; // Busy healing
+                }
+            }
+
             if(this.holdGold) {
                 const tc=State.entities.find(e=>e.type==='TownCenter');
-                if(tc) { dest={x:tc.x,y:tc.y}; if(Math.hypot(dest.x-this.x,dest.y-this.y)<1.5){ State.gold+=capacity; this.holdGold=false; Game.ui(); AudioEngine.play('gold'); } }
+                if(tc) { 
+                    dest={x:tc.x,y:tc.y}; 
+                    if(Math.hypot(dest.x-this.x,dest.y-this.y)<1.5){ 
+                        State.gold+=capacity; this.holdGold=false; Game.ui(); AudioEngine.play('gold'); 
+                        if(this.hp < this.maxHp && State.gold > 5) this.state = 'HEALING'; // Enter heal mode
+                    } 
+                }
             } else {
                 const m=State.entities.find(e=>e.type==='Mine' && !e.dead);
                 if(m) { dest={x:m.x,y:m.y}; if(Math.hypot(dest.x-this.x,dest.y-this.y)<1.5) { this.holdGold=true; if(m.capacity>0) { m.capacity -= capacity; if(m.capacity<=0) m.takeDamage(9999); } } }
@@ -619,7 +656,12 @@ class Unit extends Entity {
         } else if(this.target) {
             dest = this.target; if(Math.hypot(dest.x-this.x, dest.y-this.y) < 0.1) this.target=null;
         }
-        if(dest) { if(this.type === 'Builder' && this.holdGold) this.moveSmart(dest.x, dest.y); else this.move(dest.x, dest.y); }
+        
+        if(dest) { 
+            // Enemies or Loaded Builders use smart pathing to avoid walls/obstacles
+            if(this.team === 'enemy' || (this.type === 'Builder' && this.holdGold)) this.moveSmart(dest.x, dest.y); 
+            else this.move(dest.x, dest.y); 
+        }
     }
     moveSmart(tx, ty) {
         if(Math.hypot(tx-this.x, ty-this.y) < 0.1) return;
@@ -642,7 +684,7 @@ class Unit extends Entity {
         if(d > step) { this.x += (nx-this.x)/d * step; this.y += (ny-this.y)/d * step; } else { this.x = nx; this.y = ny; }
     }
     takeDamage(n) { 
-        this.hp-=n; AudioEngine.play('hit'); 
+        this.hp-=n; this.lastDmg=Date.now(); AudioEngine.play('hit'); 
         if(this.hp<=0 && !this.dead) {
             this.dead=true;
             if(this.team==='enemy') { 
