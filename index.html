@@ -3,43 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pocket Commander v17</title>
+    <meta name="theme-color" content="#0b0b0f">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Pocket Commander v19</title>
+    
+    <link rel="manifest" href='data:application/manifest+json;base64,ewogICJuYW1lIjogIlBvY2tldCBDb21tYW5kZXIiLAogICJzaG9ydF9uYW1lIjogIlBvY2tldFJUUyIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiZGlzcGxheSI6ICJmdWxsc2NyZWVuIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjMGIwYjBmIiwKICAidGhlbWVfY29sb3IiOiAiIzBiMGIwZiIsCiAgImljb25zIjogW10KfQ=='>
+
     <style>
         :root { --bg: #0b0b0f; --panel: rgba(25, 30, 40, 0.98); --accent: #00ffcc; --danger: #ff4444; }
-        body { margin: 0; overflow: hidden; background: var(--bg); font-family: 'Segoe UI', sans-serif; user-select: none; color: white; -webkit-user-select: none; touch-action: none; }
+        body { margin: 0; overflow: hidden; background: var(--bg); font-family: 'Segoe UI', sans-serif; user-select: none; color: white; -webkit-user-select: none; touch-action: none; overscroll-behavior: none; }
         canvas { display: block; width: 100%; height: 100%; }
         
         #ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; z-index: 10; }
         .pointer-auto { pointer-events: auto; }
         .hidden { display: none !important; }
 
-        /* DAMAGE OVERLAY */
-        #damage-overlay { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events: none; z-index: 5; box-shadow: inset 0 0 0px var(--danger); transition: box-shadow 0.1s; mix-blend-mode: overlay; }
-        .taking-damage { box-shadow: inset 0 0 80px 40px orangered !important; }
-
-        /* HUD */
-        .top-bar { background: var(--panel); padding: 8px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; }
+        .top-bar { background: var(--panel); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; height: 40px; }
         .stats { font-size: 16px; font-weight: bold; color: #ffd700; text-shadow: 1px 1px 0 #000; display: flex; gap:15px; }
-        .bot-bar { background: var(--panel); padding: 10px; display: flex; gap: 10px; overflow-x: auto; border-top: 2px solid #333; justify-content: center; }
+        .bot-bar { background: var(--panel); padding: 10px; display: flex; gap: 8px; overflow-x: auto; border-top: 2px solid #333; justify-content: center; min-height: 80px; align-items: center; }
         
         .btn { 
             background: #2a2a35; border: 2px solid #4a4a55; color: #eee; 
-            min-width: 65px; height: 65px; border-radius: 6px; 
+            min-width: 65px; height: 65px; border-radius: 8px; 
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            font-size: 10px; font-weight: bold; cursor: pointer; position: relative;
+            font-size: 10px; font-weight: bold; cursor: pointer; position: relative; transition: background 0.1s;
         }
         .btn:active { transform: scale(0.95); background: #3a3a45; }
-        .btn.selected { border-color: var(--accent); background: #1a3a3a; box-shadow: 0 0 10px var(--accent) inset; }
+        .btn.selected { border-color: var(--accent); background: #1a3a3a; box-shadow: 0 0 10px var(--accent) inset; color: var(--accent); }
         .cost { color: #ffd700; margin-top: 3px; font-size: 12px; }
         .nav-btn { padding: 8px 16px; border: 1px solid #555; background: #333; color: white; border-radius: 4px; font-weight: bold; cursor: pointer; }
 
-        .menu-screen { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.92); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20; }
-        .big-btn { padding: 15px 40px; font-size: 22px; margin: 10px; border: 2px solid #555; background: #1a1a1a; color: white; border-radius: 4px; cursor: pointer; min-width: 250px; text-align: center; }
+        .menu-screen { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.92); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20; padding: 20px; box-sizing: border-box; }
+        .big-btn { padding: 15px 40px; font-size: 20px; margin: 8px; border: 2px solid #555; background: #1a1a1a; color: white; border-radius: 6px; cursor: pointer; min-width: 250px; text-align: center; }
         .big-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-        #context-menu { position: absolute; bottom: 100px; right: 10px; background: var(--panel); border: 2px solid #555; padding: 15px; border-radius: 8px; text-align: right; min-width: 180px; box-shadow: 0 4px 15px black; }
+        #context-menu { position: absolute; bottom: 110px; right: 10px; background: var(--panel); border: 2px solid #555; padding: 10px; border-radius: 8px; text-align: right; min-width: 180px; box-shadow: 0 4px 15px black; }
         .action-btn { background: #0055aa; border: 1px solid #4499ff; color: white; padding: 10px; width: 100%; margin-top: 5px; cursor: pointer; font-weight: bold; font-size: 12px; border-radius: 4px; }
         .action-btn.alt { background: #5533aa; border-color: #8866ff; }
+        .action-btn.danger { background: #aa3333; border-color: #ff6666; }
 
         .toast { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--accent); font-weight: bold; font-size: 20px; pointer-events: none; text-shadow: 0 2px 4px black; animation: floatUp 1.5s forwards; white-space: nowrap; z-index: 100; }
         @keyframes floatUp { 0% { opacity: 1; transform: translate(-50%, -50%); } 100% { opacity: 0; transform: translate(-50%, -100px); } }
@@ -51,7 +54,6 @@
 <body>
 
     <canvas id="gameCanvas"></canvas>
-    <div id="damage-overlay"></div>
 
     <div id="ui">
         <div id="hud-top" class="top-bar pointer-auto hidden">
@@ -72,26 +74,27 @@
     </div>
 
     <div id="main-menu" class="menu-screen">
-        <h1 style="color:var(--accent); font-size: 40px; margin-bottom: 10px; text-shadow: 0 0 20px var(--accent);">POCKET COMMANDER</h1>
-        <div id="level-list" style="margin: 20px; width: 90%; max-width: 400px; max-height: 250px; overflow-y: auto; border: 1px solid #333; background: #000;"></div>
-        <div style="display:flex; gap:10px;">
-            <button class="big-btn" onclick="Game.editor()">EDITOR</button>
-            <button class="big-btn" style="border-color:var(--danger); color:var(--danger)" onclick="Storage.wipe()">RESET</button>
+        <h1 style="color:var(--accent); font-size: 40px; margin-bottom: 5px; text-shadow: 0 0 20px var(--accent); text-align: center;">POCKET COMMANDER</h1>
+        <p style="color:#888; font-size: 14px; margin-bottom: 20px;">RTS TOWER DEFENSE</p>
+        <div id="level-list" style="margin: 10px; width: 100%; max-width: 400px; max-height: 250px; overflow-y: auto; border: 1px solid #333; background: #000;"></div>
+        <div style="display:flex; flex-direction: column; gap:10px; align-items: center;">
+            <button class="big-btn" onclick="Game.editor()">LEVEL EDITOR</button>
+            <button class="big-btn" style="border-color:var(--danger); color:var(--danger)" onclick="Storage.wipe()">RESET DATA</button>
         </div>
     </div>
 
     <div id="game-over-screen" class="menu-screen hidden" style="background: rgba(40,0,0,0.95);">
-        <h1 style="font-size: 60px; color: var(--danger);">DEFEAT</h1>
+        <h1 style="font-size: 50px; color: var(--danger);">DEFEAT</h1>
         <p style="color:#ccc">THE BASE HAS FALLEN</p>
         <button class="big-btn" onclick="Game.toMenu()">MENU</button>
     </div>
 
-    <div id="editor-ui" class="menu-screen hidden" style="background:none; pointer-events:none;">
+    <div id="editor-ui" class="menu-screen hidden" style="background:none; pointer-events:none; padding:0;">
         <div class="pointer-auto" style="position:absolute; top:0; left:0; width:100%; background:rgba(0,0,0,0.85); padding:10px; display:flex; justify-content:space-between; box-sizing:border-box;">
-            <input id="lvl-name" value="New Map" style="background:#333; color:white; border:1px solid #555; padding:5px;">
+            <input id="lvl-name" value="New Map" style="background:#333; color:white; border:1px solid #555; padding:5px; width:120px;">
             <div><button class="nav-btn" onclick="Editor.save()">SAVE</button> <button class="nav-btn" style="color:var(--danger)" onclick="Game.toMenu()">EXIT</button></div>
         </div>
-        <div class="pointer-auto" style="position:absolute; bottom:20px; width:100%; display:flex; justify-content:center; gap:8px;">
+        <div class="pointer-auto" style="position:absolute; bottom:20px; width:100%; display:flex; justify-content:center; gap:5px; flex-wrap: wrap;">
             <button class="btn" onclick="Editor.setTool('wall')">ROCK</button>
             <button class="btn" onclick="Editor.setTool('water')">LAKE</button>
             <button class="btn" onclick="Editor.setTool('grass')">GRASS</button>
@@ -102,21 +105,17 @@
 
 <script>
 /** 
- * POCKET COMMANDER RTS - V17
- * - Audio Engine
- * - Ruins System
- * - Visual Damage Feedback
- * - Advanced Economy
+ * POCKET COMMANDER RTS - V19 (Gold Reward Fix)
  */
 
 const TILE = 40;
 const W = 40, H = 40;
-const SAVE_ID = 'pc_rts_v17_audio';
+const SAVE_ID = 'pc_rts_v19_gold_fix';
 
 const GRID = { GRASS:0, ROCK:1, WATER:2, BUILD:3 };
 const COLORS = {
     grass: '#151b15', rock: '#444', water: '#335588', mine: '#ccaa00',
-    player: '#3498DB', builder: '#F39C12', enemy: '#E74C3C', 
+    player: '#3498DB', builder: '#F39C12', enemy: '#E74C3C', boss: '#8E44AD',
     barracks: '#5544aa', towncenter: '#0055aa', tower: '#aa4400', ruin: '#2a2a2a'
 };
 
@@ -130,79 +129,27 @@ const State = {
     lastUpkeep: 0
 };
 
-// --- AUDIO ENGINE ---
+// --- AUDIO ---
 const AudioEngine = {
     ctx: null,
     init() {
-        if(!this.ctx) {
-            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-        }
+        if(!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
         if(this.ctx.state === 'suspended') this.ctx.resume();
     },
     play(type) {
         if(!this.ctx) return;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-
-        const now = this.ctx.currentTime;
+        const o = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        o.connect(g); g.connect(this.ctx.destination);
+        const t = this.ctx.currentTime;
         
         switch(type) {
-            case 'select':
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(800, now);
-                osc.frequency.exponentialRampToValueAtTime(400, now + 0.1);
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-                osc.start(now); osc.stop(now + 0.1);
-                break;
-            case 'build':
-                osc.type = 'square';
-                osc.frequency.setValueAtTime(100, now);
-                osc.frequency.exponentialRampToValueAtTime(50, now + 0.15);
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.linearRampToValueAtTime(0, now + 0.15);
-                osc.start(now); osc.stop(now + 0.15);
-                break;
-            case 'shoot':
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(600, now);
-                osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
-                gain.gain.setValueAtTime(0.05, now);
-                gain.gain.linearRampToValueAtTime(0, now + 0.1);
-                osc.start(now); osc.stop(now + 0.1);
-                break;
-            case 'hit':
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(100, now);
-                gain.gain.setValueAtTime(0.05, now);
-                gain.gain.linearRampToValueAtTime(0, now + 0.05);
-                osc.start(now); osc.stop(now + 0.05);
-                break;
-            case 'gold':
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(1200, now);
-                gain.gain.setValueAtTime(0.05, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-                osc.start(now); osc.stop(now + 0.3);
-                break;
-            case 'error':
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(100, now);
-                osc.frequency.linearRampToValueAtTime(50, now + 0.2);
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.linearRampToValueAtTime(0, now + 0.2);
-                osc.start(now); osc.stop(now + 0.2);
-                break;
-            case 'alarm':
-                osc.type = 'square';
-                osc.frequency.setValueAtTime(400, now);
-                osc.frequency.linearRampToValueAtTime(600, now + 0.2);
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.linearRampToValueAtTime(0, now + 0.4);
-                osc.start(now); osc.stop(now + 0.4);
-                break;
+            case 'sel': o.type='sine'; o.frequency.setValueAtTime(600, t); g.gain.exponentialRampToValueAtTime(0.01, t+0.1); o.start(t); o.stop(t+0.1); break;
+            case 'build': o.type='square'; o.frequency.setValueAtTime(150, t); g.gain.exponentialRampToValueAtTime(0.01, t+0.1); o.start(t); o.stop(t+0.1); break;
+            case 'err': o.type='sawtooth'; o.frequency.setValueAtTime(100, t); o.frequency.linearRampToValueAtTime(50, t+0.2); g.gain.setValueAtTime(0.1, t); g.gain.linearRampToValueAtTime(0, t+0.2); o.start(t); o.stop(t+0.2); break;
+            case 'hit': o.type='triangle'; o.frequency.setValueAtTime(100, t); g.gain.exponentialRampToValueAtTime(0.01, t+0.1); o.start(t); o.stop(t+0.1); break;
+            case 'gold': o.type='sine'; o.frequency.setValueAtTime(1000, t); g.gain.exponentialRampToValueAtTime(0.01, t+0.3); o.start(t); o.stop(t+0.3); break;
+            case 'alarm': o.type='square'; o.frequency.setValueAtTime(440, t); o.frequency.setValueAtTime(330, t+0.2); g.gain.linearRampToValueAtTime(0, t+0.4); o.start(t); o.stop(t+0.4); break;
         }
     }
 };
@@ -233,11 +180,11 @@ function drawLevelDots(ctx, cx, cy, level) {
     });
 }
 
+// --- PATHFINDING ---
 const Pathfinder = {
     findPath(sx, sy, ex, ey, grid) {
         if(grid[ey*W+ex] !== 0 && Math.hypot(sx-ex, sy-ey) > 1.5) return null;
-        let open = [{x:sx, y:sy, g:0, f:0, p:null}], closed = new Set();
-        let safe = 0;
+        let open = [{x:sx, y:sy, g:0, f:0, p:null}], closed = new Set(), safe = 0;
         const h = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 
         while(open.length > 0) {
@@ -264,11 +211,15 @@ const Pathfinder = {
     }
 };
 
+// --- INPUT ---
 const Input = {
     touches: [], 
     init() {
         window.addEventListener('resize', this.resize); this.resize();
-        ['touchstart','touchmove','touchend','mousedown','mousemove','mouseup'].forEach(e => canvas.addEventListener(e, ev=>this.handle(ev), {passive:false}));
+        ['touchstart','touchmove','touchend','mousedown','mousemove','mouseup'].forEach(e => {
+            canvas.addEventListener(e, ev=>this.handle(ev), {passive:false});
+            window.addEventListener(e, ev=>{ if(ev.target!==canvas) this.end(0); });
+        });
         canvas.addEventListener('wheel', e => this.wheel(e));
     },
     resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; },
@@ -330,6 +281,7 @@ const Input = {
     }
 };
 
+// --- GAME LOGIC ---
 const Game = {
     loop() {
         requestAnimationFrame(Game.loop);
@@ -359,6 +311,9 @@ const Game = {
             if(Date.now() > State.nextSpawn && State.toSpawn > 0) {
                 const s = State.level.waypoints[0];
                 const u = new Unit(s.x, s.y, 'Enemy', 'enemy', State.wave);
+                if(State.wave % 10 === 0) {
+                    u.maxHp *= 2; u.hp = u.maxHp; u.dmg *= 2; u.radius = 0.4; u.color = COLORS.boss;
+                }
                 const scale = 1 + (State.wave * 0.1);
                 u.maxHp *= scale; u.hp = u.maxHp; u.dmg *= scale;
                 State.entities.push(u);
@@ -374,9 +329,7 @@ const Game = {
                             const m = new Building(rx+0.5, ry+0.5, 'Mine', 'neutral');
                             m.capacity = 500 * (1 + (State.wave*0.1));
                             State.entities.push(m);
-                            Game.toast("New Mine Found!", rx, ry, '#FFD700');
-                            AudioEngine.play('gold');
-                            break;
+                            Game.toast("New Mine Found!", rx, ry, '#FFD700'); AudioEngine.play('gold'); break;
                         }
                     }
                 }
@@ -402,10 +355,7 @@ const Game = {
         }}
     },
     
-    drawEntities() {
-        State.entities.sort((a,b) => a.y - b.y);
-        State.entities.forEach(e => e.draw(ctx));
-    },
+    drawEntities() { State.entities.sort((a,b) => a.y - b.y); State.entities.forEach(e => e.draw(ctx)); },
 
     drawFX() {
         State.particles = State.particles.filter(p=>p.life>0);
@@ -429,22 +379,15 @@ const Game = {
                 const entIdx = State.entities.findIndex(e => Math.floor(e.x)===w.tx && Math.floor(e.y)===w.ty);
                 if(entIdx !== -1) {
                     const e = State.entities[entIdx];
-                    // Refund if not Ruin
                     if(e instanceof Building && COSTS[e.type] && !e.isRuin) {
                         const refund = Math.floor(COSTS[e.type] * 0.75);
                         State.gold += refund;
-                        Game.toast(`+${refund}g`, w.tx, w.ty, '#0f0');
-                        AudioEngine.play('gold');
+                        Game.toast(`+${refund}g`, w.tx, w.ty, '#0f0'); AudioEngine.play('gold');
                     }
                     e.dead = true;
                 }
-                Game.toast("Bulldozed", w.tx, w.ty);
-                AudioEngine.play('build');
-                Game.ui();
-            } else {
-                Game.toast("Need 100g", w.tx, w.ty);
-                AudioEngine.play('error');
-            }
+                Game.toast("Bulldozed", w.tx, w.ty); AudioEngine.play('build'); Game.ui();
+            } else { Game.toast("Need 100g", w.tx, w.ty); AudioEngine.play('err'); }
             Game.setPlacing(null);
             return;
         }
@@ -452,13 +395,12 @@ const Game = {
         // BUILD
         if(State.placing) {
             const idx = w.ty*W + w.tx;
-            if(State.grid[idx] !== GRID.GRASS) { Game.toast("Blocked", w.tx, w.ty); AudioEngine.play('error'); return; }
-            if(State.gold < State.placing.cost) { Game.toast("Need Gold", w.tx, w.ty); AudioEngine.play('error'); return; }
+            if(State.grid[idx] !== GRID.GRASS) { Game.toast("Blocked", w.tx, w.ty); AudioEngine.play('err'); return; }
+            if(State.gold < State.placing.cost) { Game.toast("Need Gold", w.tx, w.ty); AudioEngine.play('err'); return; }
             State.gold -= State.placing.cost;
             State.grid[idx] = GRID.BUILD;
             State.entities.push(new Building(w.tx+0.5, w.ty+0.5, State.placing.type));
-            Game.toast("Building...", w.tx, w.ty);
-            AudioEngine.play('build');
+            Game.toast("Building...", w.tx, w.ty); AudioEngine.play('build');
             Game.setPlacing(null);
             Game.ui();
             return;
@@ -467,11 +409,11 @@ const Game = {
         // SELECT
         const hit = State.entities.find(e => Math.hypot(e.x-0.5-w.tx, e.y-0.5-w.ty) < 0.5);
         if(hit && hit.team === 'player' && !hit.isRuin) {
-            State.selection = hit; Game.showCtx(hit); AudioEngine.play('select');
+            State.selection = hit; Game.showCtx(hit); AudioEngine.play('sel');
         } else if(State.selection && State.selection instanceof Unit) {
             State.selection.target = {x: w.tx+0.5, y: w.ty+0.5};
             State.particles.push({x:w.tx+0.5, y:w.ty+0.5, tx:w.tx+0.5, ty:w.ty+0.5, life:10, c:'#0f0'});
-            State.selection = null; Game.hideCtx(); AudioEngine.play('select');
+            State.selection = null; Game.hideCtx(); AudioEngine.play('sel');
         } else {
             State.selection = null; Game.hideCtx();
         }
@@ -481,21 +423,20 @@ const Game = {
         State.waveActive=true; State.toSpawn=5+Math.floor(State.wave*1.5); 
         State.nextSpawn=Date.now();
         document.getElementById('ui-wave').innerText=State.wave;
-        Game.toast(`Wave ${State.wave}`, 20, 20);
-        AudioEngine.play('alarm');
+        Game.toast(`Wave ${State.wave}`, 20, 20); AudioEngine.play('alarm');
     },
 
     toast(msg, x, y, color) {
-        const d = document.createElement('div'); 
-        d.className='toast'; d.innerText=msg;
+        const d = document.createElement('div'); d.className='toast'; d.innerText=msg;
         if(color) d.style.color = color;
         document.body.appendChild(d); setTimeout(()=>d.remove(), 1500);
     },
     
     setPlacing(p) {
-        State.placing=p;
+        if(State.placing && p && State.placing.type === p.type) State.placing = null;
+        else State.placing = p;
         document.querySelectorAll('#hud-bot .btn').forEach(b=>b.classList.remove('selected'));
-        if(p) document.getElementById(`btn-${p.type}`).classList.add('selected');
+        if(State.placing) document.getElementById(`btn-${State.placing.type}`).classList.add('selected');
     },
     
     ui() { document.getElementById('ui-gold').innerText = Math.floor(State.gold); },
@@ -506,38 +447,27 @@ const Game = {
         document.getElementById('ctx-info').innerText=`HP: ${Math.floor(e.hp)}/${Math.floor(e.maxHp)}`;
         const act=document.getElementById('ctx-actions'); act.innerHTML='';
         
+        if(e instanceof Building && e.hp < e.maxHp && !e.isRuin) {
+            const cost = Math.floor((1 - e.hp/e.maxHp) * (COSTS[e.type] || 200));
+            const r=document.createElement('div'); r.className='action-btn alt'; 
+            r.innerText=`Repair (${cost}g)`;
+            r.onclick=()=>{ if(State.gold>=cost) { State.gold-=cost; e.hp=e.maxHp; Game.ui(); Game.toast("Repaired", e.x, e.y); Game.showCtx(e); AudioEngine.play('build'); } else AudioEngine.play('err'); }; act.appendChild(r);
+        }
+        if(e instanceof Building && e.type !== 'TownCenter' && !e.isRuin) {
+            const d=document.createElement('div'); d.className='action-btn danger'; d.innerText=`Destruct (Refund)`;
+            d.onclick=()=>{ const refund = Math.floor((COSTS[e.type]||0)*0.75); State.gold+=refund; e.dead=true; State.grid[Math.floor(e.y)*W+Math.floor(e.x)] = GRID.GRASS; Game.ui(); Game.toast(`+${refund}g`, e.x, e.y); Game.hideCtx(); AudioEngine.play('gold'); }; act.appendChild(d);
+        }
         if(e.type==='Barracks') {
-            const t=document.createElement('div'); t.className='action-btn'; 
-            t.innerText=`Train Soldier (50g)`;
-            t.onclick=()=>{
-                if(State.gold>=50){ 
-                    State.gold-=50; 
-                    const u = new Unit(e.x+1, e.y, 'Soldier', 'player', e.level); 
-                    State.entities.push(u);
-                    Game.ui(); Game.toast("Soldier Ready", e.x, e.y); AudioEngine.play('build');
-                } else AudioEngine.play('error');
-            }; act.appendChild(t);
-
+            const t=document.createElement('div'); t.className='action-btn'; t.innerText=`Train Soldier (50g)`;
+            t.onclick=()=>{ if(State.gold>=50){ State.gold-=50; const u=new Unit(e.x+1, e.y, 'Soldier', 'player', e.level); State.entities.push(u); Game.ui(); Game.toast("Soldier Ready", e.x, e.y); AudioEngine.play('build'); } else AudioEngine.play('err'); }; act.appendChild(t);
             const b=document.createElement('div'); b.className='action-btn alt'; b.innerText=`Upgrade Tech (150g)`;
-            b.onclick=()=>{ 
-                if(State.gold>=150){ State.gold-=150; e.level++; Game.ui(); Game.toast("Tech Upgraded", e.x, e.y); Game.showCtx(e); AudioEngine.play('gold'); }
-                else AudioEngine.play('error');
-            }; act.appendChild(b);
+            b.onclick=()=>{ if(State.gold>=150){ State.gold-=150; e.level++; Game.ui(); Game.toast("Tech Upgraded", e.x, e.y); Game.showCtx(e); AudioEngine.play('gold'); } else AudioEngine.play('err'); }; act.appendChild(b);
         }
         if(e.type==='TownCenter') {
             const b=document.createElement('div'); b.className='action-btn'; b.innerText=`Train Builder (50g)`;
-            b.onclick=()=>{ 
-                if(State.gold>=50){ State.gold-=50; State.entities.push(new Unit(e.x+1, e.y, 'Builder', 'player', e.level)); Game.ui(); Game.toast("Builder Ready", e.x, e.y); AudioEngine.play('build'); }
-                else AudioEngine.play('error');
-            }; act.appendChild(b);
+            b.onclick=()=>{ if(State.gold>=50){ State.gold-=50; State.entities.push(new Unit(e.x+1, e.y, 'Builder', 'player', e.level)); Game.ui(); Game.toast("Builder Ready", e.x, e.y); AudioEngine.play('build'); } else AudioEngine.play('err'); }; act.appendChild(b);
             const u=document.createElement('div'); u.className='action-btn alt'; u.innerText=`Upgrade Base (300g)`;
-            u.onclick=()=>{ 
-                if(State.gold>=300){ 
-                    State.gold-=300; e.level++; e.maxHp*=1.05; e.hp=e.maxHp; 
-                    State.entities.filter(u=>u.type==='Soldier'&&Math.hypot(u.x-e.x,u.y-e.y)<5).forEach(u=>u.applyLevel(e.level));
-                    Game.ui(); Game.toast("Base Upgraded", e.x, e.y); Game.showCtx(e); AudioEngine.play('gold');
-                } else AudioEngine.play('error');
-            }; act.appendChild(u);
+            u.onclick=()=>{ if(State.gold>=300){ State.gold-=300; e.level++; e.maxHp*=1.05; e.hp=e.maxHp; State.entities.filter(u=>u.type==='Soldier'&&Math.hypot(u.x-e.x,u.y-e.y)<5).forEach(u=>u.applyLevel(e.level)); Game.ui(); Game.toast("Base Upgraded", e.x, e.y); Game.showCtx(e); AudioEngine.play('gold'); } else AudioEngine.play('err'); }; act.appendChild(u);
         }
         if(e instanceof Unit) {
             const b=document.createElement('div'); b.className='action-btn alt';
@@ -545,21 +475,16 @@ const Game = {
             b.innerText=`Convert to ${newType}`;
             b.onclick=()=>{ 
                 e.type = newType; 
-                // Set level: either 1 or (MaxBuilder - 2)
                 let newLevel = 1;
                 if(newType === 'Builder') {
                     const builders = State.entities.filter(u => u.type === 'Builder' && !u.dead);
                     const maxLvl = builders.length > 0 ? Math.max(...builders.map(u=>u.level)) : 1;
                     newLevel = Math.max(1, maxLvl - 2);
-                } else {
-                    // Soldiers start at level 1 when converted
-                    newLevel = 1; 
                 }
-                
                 e.applyLevel(newLevel); 
                 if(newType==='Builder') { e.color=COLORS.builder; e.range=1.2; e.holdGold=false; }
                 else { e.color=COLORS.player; e.range=4.0; }
-                Game.hideCtx(); Game.toast("Converted", e.x, e.y); AudioEngine.play('select');
+                Game.hideCtx(); Game.toast("Converted", e.x, e.y); AudioEngine.play('sel');
             }; act.appendChild(b);
         }
     },
@@ -582,7 +507,7 @@ const Game = {
         [{n:'WALL',c:10,t:'Wall'},{n:'TOWER',c:80,t:'Tower'},{n:'BARRACKS',c:150,t:'Barracks'},{n:'BULLDOZER',c:100,t:'BUL'}].forEach(i=>{
             const b=document.createElement('div'); b.className='btn'; b.id=`btn-${i.t}`;
             b.innerHTML=`${i.n}<div class="cost">${i.c}</div>`;
-            b.onclick=(e)=>{e.stopPropagation(); Game.setPlacing({type:i.t,cost:i.c}); AudioEngine.play('select'); };
+            b.onclick=(e)=>{e.stopPropagation(); Game.setPlacing({type:i.t,cost:i.c}); AudioEngine.play('sel'); };
             m.appendChild(b);
         });
         Game.ui(); Game.startWave(); State.lastUpkeep = Date.now();
@@ -604,9 +529,7 @@ const Game = {
 };
 
 // --- ENTITIES ---
-class Entity {
-    constructor(x, y, type, team) { this.x=x; this.y=y; this.type=type; this.team=team; this.dead=false; this.hp=100; this.maxHp=100; this.level=1; }
-}
+class Entity { constructor(x, y, type, team) { this.x=x; this.y=y; this.type=type; this.team=team; this.dead=false; this.hp=100; this.maxHp=100; this.level=1; } }
 
 class Unit extends Entity {
     constructor(x, y, type, team, level=1) {
@@ -618,52 +541,34 @@ class Unit extends Entity {
         else if(team==='enemy') { this.configureEnemy(); }
         else { this.color=COLORS.player; this.range=4.0; }
     }
-    
     applyLevel(lvl) {
         this.level = lvl; const m = lvl - 1;
         this.radius = this.baseStats.radius * (1 + m*0.03);
-        this.maxHp = this.baseStats.hp * (1 + m*0.04);
-        this.hp = this.maxHp;
+        this.maxHp = this.baseStats.hp * (1 + m*0.04); this.hp = this.maxHp;
         this.speed = this.baseStats.speed * (1 + m*0.02);
         this.dmg = this.baseStats.dmg * (1 + m*0.03);
     }
-
     configureEnemy() {
         const idx = Math.min(8, Math.floor((this.dmg-5)/5));
         this.color = ATK_COLORS[idx];
         if(this.maxHp > 100) this.radius = 0.35; else this.radius = 0.25;
     }
-
     update() {
         const targetTeam = this.team==='player'?'enemy':'player';
         const atkRange = this.team === 'enemy' ? 1.5 : this.range;
-        const foe = State.entities.find(e => 
-            e.team === targetTeam && !e.dead && !e.isRuin &&
-            Math.hypot(e.x - this.x, e.y - this.y) < atkRange
-        );
-
+        const foe = State.entities.find(e => e.team === targetTeam && !e.dead && !e.isRuin && Math.hypot(e.x - this.x, e.y - this.y) < atkRange);
         if(foe) {
             if(Date.now() > this.lastAtk+1000) {
-                foe.takeDamage(this.dmg);
-                if(foe.dead && foe.team==='enemy') { 
-                    State.gold += 5 + foe.level * 5; 
-                    Game.ui(); 
-                    Game.toast(`+${foe.level*5}`, this.x, this.y, '#ffd700');
-                }
-                State.particles.push({x:this.x,y:this.y,tx:foe.x,ty:foe.y,life:5,c:'#fff'});
-                AudioEngine.play('shoot');
+                foe.takeDamage(this.dmg); // Kills rewarded inside takeDamage
+                State.particles.push({x:this.x,y:this.y,tx:foe.x,ty:foe.y,life:5,c:'#fff'}); 
                 this.lastAtk=Date.now();
             } return;
         }
-
         let dest = null;
         if(this.team==='enemy') {
             if(this.wpIdx===undefined) this.wpIdx=0;
             const wp=State.level.waypoints[this.wpIdx];
-            if(wp) {
-                dest={x:wp.x+0.5, y:wp.y+0.5};
-                if(Math.hypot(dest.x-this.x, dest.y-this.y) < 0.2) this.wpIdx++;
-            }
+            if(wp) { dest={x:wp.x+0.5, y:wp.y+0.5}; if(Math.hypot(dest.x-this.x, dest.y-this.y) < 0.2) this.wpIdx++; }
         } else if(this.type==='Builder') {
             const capacity = 10 + (this.level * 2);
             if(this.holdGold) {
@@ -671,168 +576,89 @@ class Unit extends Entity {
                 if(tc) { dest={x:tc.x,y:tc.y}; if(Math.hypot(dest.x-this.x,dest.y-this.y)<1.5){ State.gold+=capacity; this.holdGold=false; Game.ui(); AudioEngine.play('gold'); } }
             } else {
                 const m=State.entities.find(e=>e.type==='Mine' && !e.dead);
-                if(m) { 
-                    dest={x:m.x,y:m.y}; 
-                    if(Math.hypot(dest.x-this.x,dest.y-this.y)<1.5) {
-                        this.holdGold=true; 
-                        if(m.capacity>0) { m.capacity -= capacity; if(m.capacity<=0) m.takeDamage(9999); }
-                    }
-                }
+                if(m) { dest={x:m.x,y:m.y}; if(Math.hypot(dest.x-this.x,dest.y-this.y)<1.5) { this.holdGold=true; if(m.capacity>0) { m.capacity -= capacity; if(m.capacity<=0) m.takeDamage(9999); } } }
             }
         } else if(this.target) {
-            dest = this.target;
-            if(Math.hypot(dest.x-this.x, dest.y-this.y) < 0.1) this.target=null;
+            dest = this.target; if(Math.hypot(dest.x-this.x, dest.y-this.y) < 0.1) this.target=null;
         }
-        if(dest) {
-            // Builder carrying gold uses smart path
-            if(this.type === 'Builder' && this.holdGold) this.moveSmart(dest.x, dest.y);
-            else this.move(dest.x, dest.y);
-        }
+        if(dest) { if(this.type === 'Builder' && this.holdGold) this.moveSmart(dest.x, dest.y); else this.move(dest.x, dest.y); }
     }
-
     moveSmart(tx, ty) {
         if(Math.hypot(tx-this.x, ty-this.y) < 0.1) return;
-        if(!this.path || this.path.length===0 || Math.random()<0.05) {
-            const p = Pathfinder.findPath(Math.floor(this.x), Math.floor(this.y), Math.floor(tx), Math.floor(ty), State.grid);
-            if(p) this.path = p;
-        }
+        if(!this.path || this.path.length===0 || Math.random()<0.05) { const p = Pathfinder.findPath(Math.floor(this.x), Math.floor(this.y), Math.floor(tx), Math.floor(ty), State.grid); if(p) this.path = p; }
         if(this.path && this.path.length > 0) {
             const next = this.path[0];
             const d = Math.hypot(next.x+0.5 - this.x, next.y+0.5 - this.y);
             if(d < 0.1) this.path.shift();
-            else {
-                const step = this.speed * 0.016;
-                this.x += (next.x+0.5 - this.x)/d * step;
-                this.y += (next.y+0.5 - this.y)/d * step;
-            }
-        } else this.move(tx, ty); // Fallback
+            else { const step = this.speed * 0.016; this.x += (next.x+0.5 - this.x)/d * step; this.y += (next.y+0.5 - this.y)/d * step; }
+        } else this.move(tx, ty);
     }
-
     move(tx, ty) {
-        let nx=tx, ny=ty;
-        const dist = Math.hypot(tx-this.x, ty-this.y);
-        if(dist > 0.5 && (!this.path || this.path.length===0 || Math.random()<0.05)) {
-             const p = Pathfinder.findPath(Math.floor(this.x), Math.floor(this.y), Math.floor(tx), Math.floor(ty), State.grid);
-             if(p) this.path = p;
-        }
+        let nx=tx, ny=ty; const dist = Math.hypot(tx-this.x, ty-this.y);
+        if(dist > 0.5 && (!this.path || this.path.length===0 || Math.random()<0.05)) { const p = Pathfinder.findPath(Math.floor(this.x), Math.floor(this.y), Math.floor(tx), Math.floor(ty), State.grid); if(p) this.path = p; }
         if(this.path && this.path.length > 0) {
-            const next = this.path[0];
-            const d2 = Math.hypot(next.x+0.5-this.x, next.y+0.5-this.y);
-            if(d2 < 0.1) this.path.shift();
-            nx = next.x+0.5; ny = next.y+0.5;
+            const next = this.path[0]; const d2 = Math.hypot(next.x+0.5-this.x, next.y+0.5-this.y);
+            if(d2 < 0.1) this.path.shift(); nx = next.x+0.5; ny = next.y+0.5;
         }
-        const d = Math.hypot(nx-this.x, ny-this.y);
-        const step = this.speed * 0.016; 
+        const d = Math.hypot(nx-this.x, ny-this.y); const step = this.speed * 0.016; 
         if(d > step) { this.x += (nx-this.x)/d * step; this.y += (ny-this.y)/d * step; } else { this.x = nx; this.y = ny; }
     }
-
-    takeDamage(n) { this.hp-=n; AudioEngine.play('hit'); if(this.hp<=0) this.dead=true; }
-
+    takeDamage(n) { 
+        this.hp-=n; AudioEngine.play('hit'); 
+        if(this.hp<=0 && !this.dead) {
+            this.dead=true;
+            if(this.team==='enemy') { 
+                State.gold += this.level * 5; 
+                Game.ui(); 
+                Game.toast(`+${this.level*5}g`, this.x, this.y, '#ffd700'); 
+            }
+        }
+    }
     draw(ctx) {
-        const cx=this.x*TILE, cy=this.y*TILE;
-        ctx.fillStyle = this.color;
-        ctx.beginPath(); ctx.arc(cx, cy, this.radius*TILE, 0, Math.PI*2); ctx.fill();
+        const cx=this.x*TILE, cy=this.y*TILE; ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(cx, cy, this.radius*TILE, 0, Math.PI*2); ctx.fill();
         if(this.team === 'player') drawLevelDots(ctx, cx, cy - 15, this.level);
-        ctx.fillStyle='red'; ctx.fillRect(cx-10,cy-20,20,3);
-        ctx.fillStyle='#0f0'; ctx.fillRect(cx-10,cy-20,20*(this.hp/this.maxHp),3);
+        ctx.fillStyle='red'; ctx.fillRect(cx-10,cy-20,20,3); ctx.fillStyle='#0f0'; ctx.fillRect(cx-10,cy-20,20*(this.hp/this.maxHp),3);
         if(State.selection===this) { ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.stroke(); }
     }
 }
 
 class Building extends Entity {
-    constructor(x, y, type, team='player') {
-        super(x, y, type, team);
-        this.maxHp = type==='TownCenter'?2000:500; this.hp=100;
-        this.progress=0; this.lastS=0;
-        this.capacity = 500; 
-        this.isRuin = false;
-    }
-
+    constructor(x, y, type, team='player') { super(x, y, type, team); this.maxHp = type==='TownCenter'?2000:500; this.hp=100; this.progress=0; this.lastS=0; this.capacity = 500; this.isRuin = false; }
     update() {
         if(this.isRuin) return;
         if(this.progress < 100) { this.progress+=0.5; this.hp=(this.progress/100)*this.maxHp; }
-        else {
-            if(this.type==='TownCenter' || this.type==='Tower') {
-                const rng = this.type==='Tower'?6:4;
-                if(Date.now()>this.lastS+1000) {
-                    const f=State.entities.find(e=>e.team==='enemy' && Math.hypot(e.x-this.x, e.y-this.y)<rng);
-                    if(f) { 
-                        f.takeDamage(20 + (this.level*2)); 
-                        State.particles.push({x:this.x,y:this.y,tx:f.x,ty:f.y,life:5,c:COLORS.player}); 
-                        AudioEngine.play('shoot');
-                        this.lastS=Date.now(); 
-                    }
-                }
+        else if(this.type==='TownCenter' || this.type==='Tower') {
+            const rng = this.type==='Tower'?6:4;
+            if(Date.now()>this.lastS+1000) {
+                const f=State.entities.find(e=>e.team==='enemy' && Math.hypot(e.x-this.x, e.y-this.y)<rng);
+                if(f) { f.takeDamage(20 + (this.level*2)); State.particles.push({x:this.x,y:this.y,tx:f.x,ty:f.y,life:5,c:COLORS.player}); AudioEngine.play('shoot'); this.lastS=Date.now(); }
             }
         }
     }
-
     takeDamage(n) { 
-        if(this.isRuin) return;
-        this.hp-=n; 
-        AudioEngine.play('hit');
-        
-        if(this.type === 'TownCenter') {
-            const ov = document.getElementById('damage-overlay');
-            ov.classList.add('taking-damage');
-            setTimeout(() => ov.classList.remove('taking-damage'), 200);
-        }
-
+        if(this.isRuin) return; this.hp-=n; AudioEngine.play('hit');
+        if(this.type === 'TownCenter') { const ov = document.getElementById('ui'); ov.style.boxShadow="inset 0 0 50px red"; setTimeout(()=>ov.style.boxShadow="none", 100); }
         if(this.hp<=0) { 
             if(this.type==='TownCenter') { document.getElementById('game-over-screen').classList.remove('hidden'); State.gameOver=true; AudioEngine.play('alarm'); }
             else if(this.type==='Mine') {
-                this.dead = true; // Mines disappear
-                let found=false, tries=0;
+                this.dead = true; let found=false, tries=0;
                 while(!found && tries<100) {
                     const rx=Math.floor(Math.random()*W), ry=Math.floor(Math.random()*H);
-                    if(State.grid[ry*W+rx]===GRID.GRASS) {
-                        State.entities.push(new Building(rx+0.5, ry+0.5, 'Mine', 'neutral'));
-                        found=true;
-                    } tries++;
+                    if(State.grid[ry*W+rx]===GRID.GRASS) { State.entities.push(new Building(rx+0.5, ry+0.5, 'Mine', 'neutral')); found=true; } tries++;
                 }
-            } else {
-                // Become Ruin
-                this.isRuin = true;
-                this.hp = 0;
-            }
+            } else { this.isRuin = true; this.hp = 0; }
         }
     }
-
     draw(ctx) {
         const cx=this.x*TILE, cy=this.y*TILE, sz=TILE*0.8;
-        
-        if(this.isRuin) {
-            ctx.fillStyle = COLORS.ruin;
-            ctx.fillRect(cx-sz/2, cy-sz/2, sz, sz);
-            ctx.strokeStyle = '#000'; ctx.beginPath(); ctx.moveTo(cx-sz/2, cy-sz/2); ctx.lineTo(cx+sz/2, cy+sz/2); ctx.stroke();
-            return;
-        }
-
+        if(this.isRuin) { ctx.fillStyle = COLORS.ruin; ctx.fillRect(cx-sz/2, cy-sz/2, sz, sz); ctx.strokeStyle = '#000'; ctx.beginPath(); ctx.moveTo(cx-sz/2, cy-sz/2); ctx.lineTo(cx+sz/2, cy+sz/2); ctx.stroke(); return; }
         if(this.progress<100) ctx.globalAlpha=0.5;
-        
-        if(this.type==='Barracks') {
-            ctx.fillStyle = COLORS.barracks; ctx.fillRect(cx-sz/2, cy-sz/4, sz, sz*0.75); 
-            ctx.beginPath(); ctx.moveTo(cx-sz/2, cy-sz/4); ctx.lineTo(cx, cy-sz/1.2); ctx.lineTo(cx+sz/2, cy-sz/4); ctx.fill(); 
-        } else if (this.type==='Tower') {
-            ctx.fillStyle = COLORS.tower; ctx.fillRect(cx-sz/3, cy-sz/2, sz*0.66, sz);
-            ctx.fillStyle = '#632'; ctx.fillRect(cx-sz/2, cy-sz/2, sz, sz/3);
-        } else if (this.type==='TownCenter') {
-            ctx.fillStyle = '#444'; ctx.fillRect(cx-sz/1.5, cy-sz/1.5, sz*1.33, sz*1.33);
-            ctx.fillStyle = COLORS.towncenter; ctx.fillRect(cx-sz/2, cy-sz/2, sz, sz);
-            ctx.fillStyle = '#333';
-            ctx.beginPath(); ctx.arc(cx-sz/1.5, cy-sz/1.5, 5, 0, Math.PI*2); ctx.fill();
-            ctx.beginPath(); ctx.arc(cx+sz/1.5, cy-sz/1.5, 5, 0, Math.PI*2); ctx.fill();
-            ctx.beginPath(); ctx.arc(cx-sz/1.5, cy+sz/1.5, 5, 0, Math.PI*2); ctx.fill();
-            ctx.beginPath(); ctx.arc(cx+sz/1.5, cy+sz/1.5, 5, 0, Math.PI*2); ctx.fill();
-        } else {
-            ctx.fillStyle = this.type==='Mine'?COLORS.mine:COLORS.wall; ctx.fillRect(cx-sz/2, cy-sz/2, sz, sz);
-        }
+        if(this.type==='Barracks') { ctx.fillStyle = COLORS.barracks; ctx.fillRect(cx-sz/2, cy-sz/4, sz, sz*0.75); ctx.beginPath(); ctx.moveTo(cx-sz/2, cy-sz/4); ctx.lineTo(cx, cy-sz/1.2); ctx.lineTo(cx+sz/2, cy-sz/4); ctx.fill(); } 
+        else if (this.type==='Tower') { ctx.fillStyle = COLORS.tower; ctx.fillRect(cx-sz/3, cy-sz/2, sz*0.66, sz); ctx.fillStyle = '#632'; ctx.fillRect(cx-sz/2, cy-sz/2, sz, sz/3); } 
+        else if (this.type==='TownCenter') { ctx.fillStyle = '#444'; ctx.fillRect(cx-sz/1.5, cy-sz/1.5, sz*1.33, sz*1.33); ctx.fillStyle = COLORS.towncenter; ctx.fillRect(cx-sz/2, cy-sz/2, sz, sz); ctx.fillStyle = '#333'; ctx.beginPath(); ctx.arc(cx-sz/1.5, cy-sz/1.5, 5, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(cx+sz/1.5, cy-sz/1.5, 5, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(cx-sz/1.5, cy+sz/1.5, 5, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(cx+sz/1.5, cy+sz/1.5, 5, 0, Math.PI*2); ctx.fill(); } 
+        else { ctx.fillStyle = this.type==='Mine'?COLORS.mine:COLORS.wall; ctx.fillRect(cx-sz/2, cy-sz/2, sz, sz); }
         ctx.globalAlpha=1.0;
-
-        if(this.progress >= 100 && (this.type === 'Barracks' || this.type === 'TownCenter')) {
-            drawLevelDots(ctx, cx, cy - sz/1.3, this.level);
-        }
-
+        if(this.progress >= 100 && (this.type === 'Barracks' || this.type === 'TownCenter')) drawLevelDots(ctx, cx, cy - sz/1.3, this.level);
         if(this.progress<100) { ctx.fillStyle='cyan'; ctx.fillRect(cx-15, cy-25, 30*(this.progress/100), 5); } 
         else { ctx.fillStyle='red'; ctx.fillRect(cx-15, cy-25, 30, 4); ctx.fillStyle='#0f0'; ctx.fillRect(cx-15, cy-25, 30*(this.hp/this.maxHp), 4); }
         if(State.selection===this) { ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.strokeRect(cx-sz/2-2,cy-sz/2-2,sz+4,sz+4); }
@@ -852,8 +678,7 @@ const Storage = {
     },
     wipe() { localStorage.removeItem(SAVE_ID); location.reload(); },
     def() {
-        const g = new Array(W*H).fill(0);
-        for(let x=8;x<32;x++) g[15*W+x]=GRID.ROCK; g[15*W+20]=0; 
+        const g = new Array(W*H).fill(0); for(let x=8;x<32;x++) g[15*W+x]=GRID.ROCK; g[15*W+20]=0; 
         const d = [{name:"Training Camp", grid:g, mines:[{x:10,y:10},{x:30,y:20}], waypoints:[{x:20,y:35},{x:20,y:20},{x:5,y:20},{x:5,y:5}], startGold:600}];
         localStorage.setItem(SAVE_ID, JSON.stringify(d)); return d;
     }
