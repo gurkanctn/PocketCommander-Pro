@@ -7,7 +7,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Pocket Commander v19</title>
+    <title>Pocket Commander v20</title>
     
     <link rel="manifest" href='data:application/manifest+json;base64,ewogICJuYW1lIjogIlBvY2tldCBDb21tYW5kZXIiLAogICJzaG9ydF9uYW1lIjogIlBvY2tldFJUUyIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiZGlzcGxheSI6ICJmdWxsc2NyZWVuIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjMGIwYjBmIiwKICAidGhlbWVfY29sb3IiOiAiIzBiMGIwZiIsCiAgImljb25zIjogW10KfQ=='>
 
@@ -20,10 +20,12 @@
         .pointer-auto { pointer-events: auto; }
         .hidden { display: none !important; }
 
+        /* HUD */
         .top-bar { background: var(--panel); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; height: 40px; }
         .stats { font-size: 16px; font-weight: bold; color: #ffd700; text-shadow: 1px 1px 0 #000; display: flex; gap:15px; }
         .bot-bar { background: var(--panel); padding: 10px; display: flex; gap: 8px; overflow-x: auto; border-top: 2px solid #333; justify-content: center; min-height: 80px; align-items: center; }
         
+        /* BUTTONS */
         .btn { 
             background: #2a2a35; border: 2px solid #4a4a55; color: #eee; 
             min-width: 65px; height: 65px; border-radius: 8px; 
@@ -35,15 +37,23 @@
         .cost { color: #ffd700; margin-top: 3px; font-size: 12px; }
         .nav-btn { padding: 8px 16px; border: 1px solid #555; background: #333; color: white; border-radius: 4px; font-weight: bold; cursor: pointer; }
 
+        /* MENUS */
         .menu-screen { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.92); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20; padding: 20px; box-sizing: border-box; }
         .big-btn { padding: 15px 40px; font-size: 20px; margin: 8px; border: 2px solid #555; background: #1a1a1a; color: white; border-radius: 6px; cursor: pointer; min-width: 250px; text-align: center; }
         .big-btn:hover { border-color: var(--accent); color: var(--accent); }
 
+        /* CONTEXT MENU */
         #context-menu { position: absolute; bottom: 110px; right: 10px; background: var(--panel); border: 2px solid #555; padding: 10px; border-radius: 8px; text-align: right; min-width: 180px; box-shadow: 0 4px 15px black; }
         .action-btn { background: #0055aa; border: 1px solid #4499ff; color: white; padding: 10px; width: 100%; margin-top: 5px; cursor: pointer; font-weight: bold; font-size: 12px; border-radius: 4px; }
         .action-btn.alt { background: #5533aa; border-color: #8866ff; }
         .action-btn.danger { background: #aa3333; border-color: #ff6666; }
 
+        /* TEXT CONTENT */
+        .help-text { max-width: 600px; text-align: left; color: #ccc; font-size: 14px; line-height: 1.6; overflow-y: auto; max-height: 70vh; padding: 10px; }
+        .help-text h3 { color: var(--accent); border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 20px; }
+        .help-text a { color: #4da6ff; text-decoration: none; }
+
+        /* TOAST */
         .toast { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--accent); font-weight: bold; font-size: 20px; pointer-events: none; text-shadow: 0 2px 4px black; animation: floatUp 1.5s forwards; white-space: nowrap; z-index: 100; }
         @keyframes floatUp { 0% { opacity: 1; transform: translate(-50%, -50%); } 100% { opacity: 0; transform: translate(-50%, -100px); } }
         
@@ -76,11 +86,31 @@
     <div id="main-menu" class="menu-screen">
         <h1 style="color:var(--accent); font-size: 40px; margin-bottom: 5px; text-shadow: 0 0 20px var(--accent); text-align: center;">POCKET COMMANDER</h1>
         <p style="color:#888; font-size: 14px; margin-bottom: 20px;">RTS TOWER DEFENSE</p>
-        <div id="level-list" style="margin: 10px; width: 100%; max-width: 400px; max-height: 250px; overflow-y: auto; border: 1px solid #333; background: #000;"></div>
+        <div id="level-list" style="margin: 10px; width: 100%; max-width: 400px; max-height: 200px; overflow-y: auto; border: 1px solid #333; background: #000;"></div>
         <div style="display:flex; flex-direction: column; gap:10px; align-items: center;">
             <button class="big-btn" onclick="Game.editor()">LEVEL EDITOR</button>
+            <button class="big-btn" style="border-color:#444; color:#ccc" onclick="Game.help()">HELP & INFO</button>
             <button class="big-btn" style="border-color:var(--danger); color:var(--danger)" onclick="Storage.wipe()">RESET DATA</button>
         </div>
+    </div>
+
+    <!-- HELP SCREEN -->
+    <div id="help-screen" class="menu-screen hidden">
+        <h1>HELP & INFO</h1>
+        <div class="help-text">
+            <p>You are the commander. Under continuous attack waves of enemy forces, you must build defenses, train an army, and protect your Town Center at all costs.</p>
+            <p>Use <strong>Builders</strong> to mine gold from the yellow nodes. Build <strong>Barracks</strong> to train Soldiers, and <strong>Towers</strong> to provide static defense. Don't forget to pay your army's <strong>Upkeep</strong>!</p>
+            
+            <h3>HOW TO INSTALL (APP)</h3>
+            <p><strong>iOS:</strong> Tap the Share button (Safari) -> Add to Home Screen.</p>
+            <p><strong>Android:</strong> Tap Chrome Menu -> Install App / Add to Home Screen.</p>
+            <p>This allows full-screen offline play.</p>
+
+            <h3>SUPPORT</h3>
+            <p>Found a bug? Have a suggestion?</p>
+            <p><a href="https://github.com/gurkanctn/PocketCommander-Pro/issues" target="_blank">View GitHub Issues</a></p>
+        </div>
+        <button class="big-btn" onclick="Game.toMenu()">BACK</button>
     </div>
 
     <div id="game-over-screen" class="menu-screen hidden" style="background: rgba(40,0,0,0.95);">
@@ -105,12 +135,12 @@
 
 <script>
 /** 
- * POCKET COMMANDER RTS - V19 (Gold Reward Fix)
+ * POCKET COMMANDER RTS - V20
  */
 
 const TILE = 40;
 const W = 40, H = 40;
-const SAVE_ID = 'pc_rts_v19_gold_fix';
+const SAVE_ID = 'pc_rts_v20_final';
 
 const GRID = { GRASS:0, ROCK:1, WATER:2, BUILD:3 };
 const COLORS = {
@@ -129,7 +159,6 @@ const State = {
     lastUpkeep: 0
 };
 
-// --- AUDIO ---
 const AudioEngine = {
     ctx: null,
     init() {
@@ -180,7 +209,6 @@ function drawLevelDots(ctx, cx, cy, level) {
     });
 }
 
-// --- PATHFINDING ---
 const Pathfinder = {
     findPath(sx, sy, ex, ey, grid) {
         if(grid[ey*W+ex] !== 0 && Math.hypot(sx-ex, sy-ey) > 1.5) return null;
@@ -199,11 +227,16 @@ const Pathfinder = {
 
             [{x:0,y:-1},{x:0,y:1},{x:-1,y:0},{x:1,y:0}].forEach(n => {
                 const nx=curr.x+n.x, ny=curr.y+n.y;
-                if(nx>=0 && nx<W && ny>=0 && ny<H && grid[ny*W+nx]===0 && !closed.has(nx+','+ny)) {
-                    const g=curr.g+1;
-                    let old=open.find(o=>o.x===nx && o.y===ny);
-                    if(!old) open.push({x:nx, y:ny, g:g, f:g+h({x:nx,y:ny},{x:ex,y:ey}), p:curr});
-                    else if(g<old.g) { old.g=g; old.f=g+h({x:nx,y:ny},{x:ex,y:ey}); old.p=curr; }
+                if(nx>=0 && nx<W && ny>=0 && ny<H && !closed.has(nx+','+ny)) {
+                    // CRITICAL FIX: Allow the target node to be part of the path even if it is blocked
+                    // This allows Builders to pathfind *to* a Mine (which is blocked).
+                    // The Unit movement logic will stop them before they overlap.
+                    if(grid[ny*W+nx] === 0 || (nx===ex && ny===ey)) {
+                        const g=curr.g+1;
+                        let old=open.find(o=>o.x===nx && o.y===ny);
+                        if(!old) open.push({x:nx, y:ny, g:g, f:g+h({x:nx,y:ny},{x:ex,y:ey}), p:curr});
+                        else if(g<old.g) { old.g=g; old.f=g+h({x:nx,y:ny},{x:ex,y:ey}); old.p=curr; }
+                    }
                 }
             });
         }
@@ -211,7 +244,6 @@ const Pathfinder = {
     }
 };
 
-// --- INPUT ---
 const Input = {
     touches: [], 
     init() {
@@ -281,7 +313,6 @@ const Input = {
     }
 };
 
-// --- GAME LOGIC ---
 const Game = {
     loop() {
         requestAnimationFrame(Game.loop);
@@ -370,7 +401,6 @@ const Game = {
         if(State.mode !== 'PLAY') return;
         if(w.tx<0 || w.tx>=W || w.ty<0 || w.ty>=H) return;
 
-        // BULLDOZER
         if(State.placing && State.placing.type === 'BUL') {
             const idx = w.ty*W + w.tx;
             if(State.gold >= 100) {
@@ -392,7 +422,6 @@ const Game = {
             return;
         }
 
-        // BUILD
         if(State.placing) {
             const idx = w.ty*W + w.tx;
             if(State.grid[idx] !== GRID.GRASS) { Game.toast("Blocked", w.tx, w.ty); AudioEngine.play('err'); return; }
@@ -406,7 +435,6 @@ const Game = {
             return;
         }
 
-        // SELECT
         const hit = State.entities.find(e => Math.hypot(e.x-0.5-w.tx, e.y-0.5-w.ty) < 0.5);
         if(hit && hit.team === 'player' && !hit.isRuin) {
             State.selection = hit; Game.showCtx(hit); AudioEngine.play('sel');
@@ -490,6 +518,11 @@ const Game = {
     },
     hideCtx() { document.getElementById('context-menu').classList.add('hidden'); },
 
+    help() {
+        document.getElementById('main-menu').classList.add('hidden');
+        document.getElementById('help-screen').classList.remove('hidden');
+    },
+
     play(lvl) {
         State.mode='PLAY'; State.gameOver=false;
         document.querySelectorAll('.menu-screen').forEach(e=>e.classList.add('hidden'));
@@ -513,8 +546,8 @@ const Game = {
         Game.ui(); Game.startWave(); State.lastUpkeep = Date.now();
     },
     toMenu() {
-        State.mode='MENU'; document.getElementById('main-menu').classList.remove('hidden');
-        document.getElementById('game-over-screen').classList.add('hidden');
+        State.mode='MENU'; document.querySelectorAll('.menu-screen').forEach(e=>e.classList.add('hidden'));
+        document.getElementById('main-menu').classList.remove('hidden');
         document.getElementById('hud-top').classList.add('hidden');
         document.getElementById('hud-bot').classList.add('hidden');
         document.getElementById('editor-ui').classList.add('hidden');
@@ -559,8 +592,13 @@ class Unit extends Entity {
         const foe = State.entities.find(e => e.team === targetTeam && !e.dead && !e.isRuin && Math.hypot(e.x - this.x, e.y - this.y) < atkRange);
         if(foe) {
             if(Date.now() > this.lastAtk+1000) {
-                foe.takeDamage(this.dmg); // Kills rewarded inside takeDamage
-                State.particles.push({x:this.x,y:this.y,tx:foe.x,ty:foe.y,life:5,c:'#fff'}); 
+                foe.takeDamage(this.dmg);
+                if(foe.dead && foe.team==='enemy') { 
+                    State.gold += Math.ceil(foe.level * 2.5); // ECONOMY FIX
+                    Game.ui(); 
+                    Game.toast(`+${Math.ceil(foe.level * 2.5)}g`, this.x, this.y, '#ffd700'); 
+                }
+                State.particles.push({x:this.x,y:this.y,tx:foe.x,ty:foe.y,life:5,c:'#fff'}); AudioEngine.play('hit');
                 this.lastAtk=Date.now();
             } return;
         }
@@ -608,9 +646,9 @@ class Unit extends Entity {
         if(this.hp<=0 && !this.dead) {
             this.dead=true;
             if(this.team==='enemy') { 
-                State.gold += this.level * 5; 
+                State.gold += Math.ceil(this.level * 2.5); // Economy Fix
                 Game.ui(); 
-                Game.toast(`+${this.level*5}g`, this.x, this.y, '#ffd700'); 
+                Game.toast(`+${Math.ceil(this.level*2.5)}g`, this.x, this.y, '#ffd700'); 
             }
         }
     }
