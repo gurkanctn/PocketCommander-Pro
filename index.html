@@ -7,35 +7,37 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Pocket Commander v21</title>
-    
+    <title>Pocket Commander v22</title>
+
     <link rel="manifest" href='data:application/manifest+json;base64,ewogICJuYW1lIjogIlBvY2tldCBDb21tYW5kZXIiLAogICJzaG9ydF9uYW1lIjogIlBvY2tldFJUUyIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiZGlzcGxheSI6ICJmdWxsc2NyZWVuIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjMGIwYjBmIiwKICAidGhlbWVfY29sb3IiOiAiIzBiMGIwZiIsCiAgImljb25zIjogW10KfQ=='>
 
     <style>
         :root { --bg: #0b0b0f; --panel: rgba(25, 30, 40, 0.98); --accent: #00ffcc; --danger: #ff4444; }
         body { margin: 0; overflow: hidden; background: var(--bg); font-family: 'Segoe UI', sans-serif; user-select: none; color: white; -webkit-user-select: none; touch-action: none; overscroll-behavior: none; }
         canvas { display: block; width: 100%; height: 100%; }
-        
+
         #ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; z-index: 10; }
         .pointer-auto { pointer-events: auto; }
         .hidden { display: none !important; }
 
         /* HUD */
-        .top-bar { background: var(--panel); padding: 8px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; height: 40px; }
-        .stats { font-size: 16px; font-weight: bold; color: #ffd700; text-shadow: 1px 1px 0 #000; display: flex; gap:15px; }
+        .top-bar { background: var(--panel); padding: 8px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; min-height: 40px; }
+        .stats { font-size: 16px; font-weight: bold; color: #ffd700; text-shadow: 1px 1px 0 #000; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
         .bot-bar { background: var(--panel); padding: 10px; display: flex; gap: 8px; overflow-x: auto; border-top: 2px solid #333; justify-content: center; min-height: 80px; align-items: center; }
-        
+
         /* BUTTONS */
-        .btn { 
-            background: #2a2a35; border: 2px solid #4a4a55; color: #eee; 
-            min-width: 65px; height: 65px; border-radius: 6px; 
+        .btn {
+            background: #2a2a35; border: 2px solid #4a4a55; color: #eee;
+            min-width: 65px; height: 65px; border-radius: 6px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             font-size: 10px; font-weight: bold; cursor: pointer; position: relative; transition: background 0.1s;
         }
         .btn:active { transform: scale(0.95); background: #3a3a45; }
         .btn.selected { border-color: var(--accent); background: #1a3a3a; box-shadow: 0 0 10px var(--accent) inset; color: var(--accent); }
         .cost { color: #ffd700; margin-top: 3px; font-size: 12px; }
-        .nav-btn { padding: 8px 16px; border: 1px solid #555; background: #333; color: white; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        .nav-btn { padding: 6px 12px; border: 1px solid #555; background: #333; color: white; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 14px; line-height: 1.2; }
+        /* FIX: muted state styling */
+        .nav-btn.muted { border-color: var(--danger); color: var(--danger); }
 
         /* MENUS */
         .menu-screen { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.92); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20; padding: 20px; box-sizing: border-box; }
@@ -53,180 +55,246 @@
         .help-text h3 { color: var(--accent); border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 20px; }
         .help-text a { color: #4da6ff; text-decoration: none; }
 
-        /* TOAST */
-        .toast { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--accent); font-weight: bold; font-size: 20px; pointer-events: none; text-shadow: 0 2px 4px black; animation: floatUp 1.5s forwards; white-space: nowrap; z-index: 100; }
-        @keyframes floatUp { 0% { opacity: 1; transform: translate(-50%, -50%); } 100% { opacity: 0; transform: translate(-50%, -100px); } }
-        
+        /* TOAST — FIX: no hardcoded center; left/top set from JS */
+        .toast { position: absolute; color: var(--accent); font-weight: bold; font-size: 15px; pointer-events: none; text-shadow: 0 2px 4px black; animation: floatUp 1.5s forwards; white-space: nowrap; z-index: 100; }
+        @keyframes floatUp { 0% { opacity:1; transform:translate(-50%,-50%); } 100% { opacity:0; transform:translate(-50%,calc(-50% - 60px)); } }
+
         .upkeep-anim { color: #ff4444 !important; animation: shake 0.5s; }
-        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 100% { transform: translateX(0); } }
+        @keyframes shake { 0%,100% { transform:translateX(0); } 25% { transform:translateX(-5px); } 75% { transform:translateX(5px); } }
+
+        /* WAVE COUNTDOWN */
+        #wave-countdown { color: var(--accent); font-size: 14px; animation: pulse 1s ease-in-out infinite; }
+        @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.45; } }
     </style>
 </head>
 <body>
 
-    <canvas id="gameCanvas"></canvas>
+<canvas id="gameCanvas"></canvas>
 
-    <div id="ui">
-        <div id="hud-top" class="top-bar pointer-auto hidden">
-            <div class="stats">
-                <span id="ui-gold-wrap">GOLD: <span id="ui-gold" style="color:white">0</span></span>
-                <span>WAVE: <span id="ui-wave" style="color:white">1</span></span>
-            </div>
+<div id="ui">
+    <div id="hud-top" class="top-bar pointer-auto hidden">
+        <div class="stats">
+            <span id="ui-gold-wrap">GOLD: <span id="ui-gold" style="color:white">0</span></span>
+            <span>WAVE: <span id="ui-wave" style="color:white">1</span></span>
+            <!-- FIX: wave countdown badge -->
+            <span id="wave-countdown" class="hidden"></span>
+        </div>
+        <div style="display:flex; gap:6px; align-items:center;">
+            <!-- FIX: mute button -->
+            <button class="nav-btn" id="btn-mute" onclick="AudioEngine.toggleMute()" title="Mute">&#128266;</button>
+            <!-- FIX: pause button -->
+            <button class="nav-btn" id="btn-pause" onclick="Game.togglePause()" title="Pause">&#9646;&#9646;</button>
             <button class="nav-btn" onclick="Game.toMenu()">MENU</button>
         </div>
-
-        <div id="context-menu" class="pointer-auto hidden">
-            <h3 id="ctx-name" style="margin:0 0 5px 0; color:var(--accent); text-transform:uppercase;">Selected</h3>
-            <div id="ctx-info" style="font-size:12px; color:#ccc;">HP: 100</div>
-            <div id="ctx-actions"></div>
-        </div>
-
-        <div id="hud-bot" class="bot-bar pointer-auto hidden"></div>
     </div>
 
-    <div id="main-menu" class="menu-screen">
-        <h1 style="color:var(--accent); font-size: 40px; margin-bottom: 5px; text-shadow: 0 0 20px var(--accent); text-align: center;">POCKET COMMANDER</h1>
-        <p style="color:#888; font-size: 14px; margin-bottom: 20px;">RTS TOWER DEFENSE</p>
-        <div id="level-list" style="margin: 10px; width: 100%; max-width: 400px; max-height: 200px; overflow-y: auto; border: 1px solid #333; background: #000;"></div>
-        <div style="display:flex; flex-direction: column; gap:10px; align-items: center;">
-            <button class="big-btn" onclick="Game.editor()">LEVEL EDITOR</button>
-            <button class="big-btn" style="border-color:#444; color:#ccc" onclick="Game.help()">HELP & INFO</button>
-            <button class="big-btn" style="border-color:var(--danger); color:var(--danger)" onclick="Storage.wipe()">RESET DATA</button>
-        </div>
+    <div id="context-menu" class="pointer-auto hidden">
+        <h3 id="ctx-name" style="margin:0 0 5px 0; color:var(--accent); text-transform:uppercase;">Selected</h3>
+        <div id="ctx-info" style="font-size:12px; color:#ccc;">HP: 100</div>
+        <div id="ctx-actions"></div>
     </div>
 
-    <!-- HELP SCREEN -->
-    <div id="help-screen" class="menu-screen hidden">
-        <h1>HELP & INFO</h1>
-        <div class="help-text">
-            <p>You are the commander. Under continuous attack waves of enemy forces, you must build defenses, train an army, and protect your Town Center at all costs.</p>
-            <p><strong>Tips:</strong></p>
-            <ul>
-                <li>Builders automatically heal at base (Costs Gold).</li>
-                <li>Soldiers regenerate health if out of combat.</li>
-                <li>Use Walls to reroute enemies (Enemies break walls if stuck).</li>
-                <li>Every 10 waves, a Boss appears and a new Gold Mine spawns.</li>
-            </ul>
-            <h3>INSTALLATION</h3>
-            <p>Add to Home Screen on iOS (Share Btn) or Android (Chrome Menu) for a full app experience.</p>
-            <h3>SUPPORT</h3>
-            <p><a href="https://github.com/gurkanctn/PocketCommander-Pro/issues" target="_blank">View GitHub Issues</a></p>
-        </div>
-        <button class="big-btn" onclick="Game.toMenu()">BACK</button>
-    </div>
+    <div id="hud-bot" class="bot-bar pointer-auto hidden"></div>
+</div>
 
-    <div id="game-over-screen" class="menu-screen hidden" style="background: rgba(40,0,0,0.95);">
-        <h1 style="font-size: 50px; color: var(--danger);">DEFEAT</h1>
-        <p style="color:#ccc">THE BASE HAS FALLEN</p>
-        <button class="big-btn" onclick="Game.toMenu()">MENU</button>
+<div id="main-menu" class="menu-screen">
+    <h1 style="color:var(--accent); font-size:40px; margin-bottom:5px; text-shadow:0 0 20px var(--accent); text-align:center;">POCKET COMMANDER</h1>
+    <p style="color:#888; font-size:14px; margin-bottom:20px;">RTS TOWER DEFENSE</p>
+    <div id="level-list" style="margin:10px; width:100%; max-width:400px; max-height:200px; overflow-y:auto; border:1px solid #333; background:#000;"></div>
+    <div style="display:flex; flex-direction:column; gap:10px; align-items:center;">
+        <button class="big-btn" onclick="Game.editor()">LEVEL EDITOR</button>
+        <button class="big-btn" style="border-color:#444; color:#ccc" onclick="Game.help()">HELP &amp; INFO</button>
+        <button class="big-btn" style="border-color:var(--danger); color:var(--danger)" onclick="Storage.wipe()">RESET DATA</button>
     </div>
+</div>
 
-    <div id="editor-ui" class="menu-screen hidden" style="background:none; pointer-events:none; padding:0;">
-        <div class="pointer-auto" style="position:absolute; top:0; left:0; width:100%; background:rgba(0,0,0,0.85); padding:10px; display:flex; justify-content:space-between; box-sizing:border-box;">
-            <input id="lvl-name" value="New Map" style="background:#333; color:white; border:1px solid #555; padding:5px; width:120px;">
-            <div><button class="nav-btn" onclick="Editor.save()">SAVE</button> <button class="nav-btn" style="color:var(--danger)" onclick="Game.toMenu()">EXIT</button></div>
-        </div>
-        <div class="pointer-auto" style="position:absolute; bottom:20px; width:100%; display:flex; justify-content:center; gap:5px; flex-wrap: wrap;">
-            <button class="btn" onclick="Editor.setTool('wall')">ROCK</button>
-            <button class="btn" onclick="Editor.setTool('water')">LAKE</button>
-            <button class="btn" onclick="Editor.setTool('grass')">GRASS</button>
-            <button class="btn" onclick="Editor.setTool('mine')">GOLD</button>
-            <button class="btn" onclick="Editor.setTool('path')">PATH</button>
-        </div>
+<!-- HELP SCREEN -->
+<div id="help-screen" class="menu-screen hidden">
+    <h1>HELP &amp; INFO</h1>
+    <div class="help-text">
+        <p>You are the commander. Under continuous attack waves of enemy forces, you must build defenses, train an army, and protect your Town Center at all costs.</p>
+        <p><strong>Tips:</strong></p>
+        <ul>
+            <li>Builders automatically heal at base (Costs Gold).</li>
+            <li>Soldiers regenerate health if out of combat.</li>
+            <li>Use Walls to reroute enemies (Enemies break walls if stuck).</li>
+            <li>Every 10 waves, a Boss appears and a new Gold Mine spawns.</li>
+            <li>Tap &#9646;&#9646; to pause. Tap &#128266; to mute audio.</li>
+            <li>Gold counter turns orange when upkeep is due soon.</li>
+        </ul>
+        <h3>LEVEL EDITOR</h3>
+        <p>Paint terrain, place GOLD mines, and set a PATH (first point = enemy spawn, last point = your base). Use ERASE to remove tiles, mines, or waypoints. CLR PATH resets all waypoints.</p>
+        <h3>INSTALLATION</h3>
+        <p>Add to Home Screen on iOS (Share Btn) or Android (Chrome Menu) for a full app experience.</p>
+        <h3>SUPPORT</h3>
+        <p><a href="https://github.com/gurkanctn/PocketCommander-Pro/issues" target="_blank">View GitHub Issues</a></p>
     </div>
+    <button class="big-btn" onclick="Game.toMenu()">BACK</button>
+</div>
+
+<!-- GAME OVER SCREEN — FIX: added wave count + best wave display -->
+<div id="game-over-screen" class="menu-screen hidden" style="background:rgba(40,0,0,0.95);">
+    <h1 style="font-size:50px; color:var(--danger);">DEFEAT</h1>
+    <p style="color:#ccc">THE BASE HAS FALLEN</p>
+    <p id="go-wave" style="color:#ffd700; font-size:20px; margin:8px 0 4px;"></p>
+    <p id="go-best" style="color:#aaa; font-size:14px; margin:0 0 20px;"></p>
+    <button class="big-btn" onclick="Game.toMenu()">MENU</button>
+</div>
+
+<!-- PAUSE SCREEN — FIX: new -->
+<div id="pause-screen" class="menu-screen hidden" style="background:rgba(0,0,30,0.82);">
+    <h1 style="color:var(--accent); font-size:40px;">PAUSED</h1>
+    <button class="big-btn" onclick="Game.togglePause()">RESUME</button>
+    <button class="big-btn" onclick="Game.toMenu()">MENU</button>
+</div>
+
+<!-- EDITOR UI — FIX: added ERASE tool + CLR PATH, buttons now pass `this` for highlight -->
+<div id="editor-ui" class="menu-screen hidden" style="background:none; pointer-events:none; padding:0;">
+    <div class="pointer-auto" style="position:absolute; top:0; left:0; width:100%; background:rgba(0,0,0,0.85); padding:10px; display:flex; justify-content:space-between; box-sizing:border-box;">
+        <input id="lvl-name" value="New Map" style="background:#333; color:white; border:1px solid #555; padding:5px; width:120px;">
+        <div><button class="nav-btn" onclick="Editor.save()">SAVE</button> <button class="nav-btn" style="color:var(--danger)" onclick="Game.toMenu()">EXIT</button></div>
+    </div>
+    <div class="pointer-auto" style="position:absolute; bottom:20px; width:100%; display:flex; justify-content:center; gap:5px; flex-wrap:wrap;">
+        <button class="btn" id="etool-wall"  onclick="Editor.setTool('wall',this)">ROCK</button>
+        <button class="btn" id="etool-water" onclick="Editor.setTool('water',this)">LAKE</button>
+        <button class="btn" id="etool-grass" onclick="Editor.setTool('grass',this)">GRASS</button>
+        <button class="btn" id="etool-mine"  onclick="Editor.setTool('mine',this)">GOLD</button>
+        <button class="btn" id="etool-path"  onclick="Editor.setTool('path',this)">PATH</button>
+        <button class="btn" id="etool-erase" onclick="Editor.setTool('erase',this)">ERASE</button>
+        <button class="btn" onclick="Editor.clearPath()" style="border-color:#884400; color:#ffaa44; font-size:9px;">CLR<br>PATH</button>
+    </div>
+</div>
 
 <script>
-/** 
- * POCKET COMMANDER RTS - V21
- * - Smart Enemy Wall Routing
- * - Dynamic Enemy Range
- * - Builder Auto-Heal (Costly)
- * - Soldier Passive Regen
+/**
+ * POCKET COMMANDER RTS - V22
+ *
+ * FIXES applied vs V21:
+ *  1. Double-gold on kill  — removed award from Unit.takeDamage(); only in Unit.update()
+ *  2. Real delta-time      — Game.loop(ts) uses rAF timestamp; dt clamped to 50ms
+ *  3. Toast positioning    — world tile coords converted to screen coords
+ *  4. Ruin grid tile       — isRuin now resets grid cell to GRASS so player can rebuild
+ *  5. Editor tool highlight — setTool(t, btn) adds .selected to the active button
+ *  6. Building HP init     — TownCenter starts fully built; other buildings start at hp=1
+ *  7. Pause                — State.paused, Game.togglePause(), pause screen
+ *  8. Mute button          — AudioEngine.muted, toggleMute()
+ *  9. Wave countdown       — State.waveCountdownEnd shown in HUD between waves
+ * 10. Best-wave score      — tracked in localStorage, shown on game-over screen
+ * 11. Pan clamping         — Input.clampOffset() called after every offset mutation
+ * 12. Editor validation    — save() checks waypoints >= 2, mines >= 1
+ * 13. Editor erase tool    — 'erase' removes terrain + mines + waypoints; clearPath()
+ * 14. COLORS.wall missing  — added '#4a4a4a'
+ * 15. AudioEngine 'shoot'  — added missing case
+ * 16. Upkeep warning       — gold counter turns orange when low relative to upkeep
+ * 17. Movement uses dt     — moveSmart/move accept dt for frame-rate-independent speed
  */
 
 const TILE = 40;
 const W = 40, H = 40;
-const SAVE_ID = 'pc_rts_v21_smart';
+const SAVE_ID = 'pc_rts_v22';
 
-const GRID = { GRASS:0, ROCK:1, WATER:2, BUILD:3 };
+const GRID  = { GRASS:0, ROCK:1, WATER:2, BUILD:3 };
 const COLORS = {
-    grass: '#151b15', rock: '#444', water: '#335588', mine: '#ccaa00',
-    player: '#3498DB', builder: '#F39C12', enemy: '#E74C3C', boss: '#8E44AD',
-    barracks: '#5544aa', towncenter: '#0055aa', tower: '#aa4400', ruin: '#2a2a2a'
+    grass:'#151b15', rock:'#444', water:'#335588', mine:'#ccaa00',
+    player:'#3498DB', builder:'#F39C12', enemy:'#E74C3C', boss:'#8E44AD',
+    barracks:'#5544aa', towncenter:'#0055aa', tower:'#aa4400', ruin:'#2a2a2a',
+    wall:'#4a4a4a'   /* FIX #14: was undefined */
 };
 
-const COSTS = { Wall: 10, Tower: 80, Barracks: 150 };
-const ATK_COLORS = ['#888', '#8B4513', '#800080', '#ff0000', '#ffa500', '#ffff00', '#00ff00', '#0000ff', '#ffffff'];
+const COSTS     = { Wall:10, Tower:80, Barracks:150 };
+const ATK_COLORS = ['#888','#8B4513','#800080','#ff0000','#ffa500','#ffff00','#00ff00','#0000ff','#ffffff'];
 
 const State = {
-    mode: 'MENU', gold: 0, wave: 1, selection: null, placing: null,
-    grid: [], entities: [], particles: [],
-    offset: {x:0, y:0}, scale: 1, gameOver: false,
-    lastUpkeep: 0
+    mode:'MENU', gold:0, wave:1, selection:null, placing:null,
+    grid:[], entities:[], particles:[],
+    offset:{x:0,y:0}, scale:1, gameOver:false,
+    lastUpkeep:0, paused:false, waveCountdownEnd:0,
+    waveActive:false, toSpawn:0, nextSpawn:0, level:null,
+    towerTechLevel: 1,   // global tech tier; new towers spawn at this level
+    bestWave: parseInt(localStorage.getItem('pc_best_wave')||'0', 10)
 };
 
-// --- AUDIO ---
+// ─── AUDIO ───────────────────────────────────────────────────────────────────
 const AudioEngine = {
-    ctx: null,
+    ctx:null,
+    muted:false,   /* FIX #8 */
     init() {
         if(!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
         if(this.ctx.state === 'suspended') this.ctx.resume();
     },
+    /* FIX #8: toggle mute */
+    toggleMute() {
+        this.muted = !this.muted;
+        const btn = document.getElementById('btn-mute');
+        btn.innerHTML = this.muted ? '&#128263;' : '&#128266;';
+        btn.classList.toggle('muted', this.muted);
+    },
     play(type) {
-        if(!this.ctx) return;
+        if(!this.ctx || this.muted) return;  /* FIX #8 */
         const o = this.ctx.createOscillator();
         const g = this.ctx.createGain();
         o.connect(g); g.connect(this.ctx.destination);
         const t = this.ctx.currentTime;
         switch(type) {
-            case 'sel': o.type='sine'; o.frequency.setValueAtTime(600, t); g.gain.exponentialRampToValueAtTime(0.01, t+0.1); o.start(t); o.stop(t+0.1); break;
-            case 'build': o.type='square'; o.frequency.setValueAtTime(150, t); g.gain.exponentialRampToValueAtTime(0.01, t+0.1); o.start(t); o.stop(t+0.1); break;
-            case 'err': o.type='sawtooth'; o.frequency.setValueAtTime(100, t); o.frequency.linearRampToValueAtTime(50, t+0.2); g.gain.setValueAtTime(0.1, t); g.gain.linearRampToValueAtTime(0, t+0.2); o.start(t); o.stop(t+0.2); break;
-            case 'hit': o.type='triangle'; o.frequency.setValueAtTime(100, t); g.gain.exponentialRampToValueAtTime(0.01, t+0.1); o.start(t); o.stop(t+0.1); break;
-            case 'gold': o.type='sine'; o.frequency.setValueAtTime(1000, t); g.gain.exponentialRampToValueAtTime(0.01, t+0.3); o.start(t); o.stop(t+0.3); break;
-            case 'alarm': o.type='square'; o.frequency.setValueAtTime(440, t); o.frequency.setValueAtTime(330, t+0.2); g.gain.linearRampToValueAtTime(0, t+0.4); o.start(t); o.stop(t+0.4); break;
+            case 'sel':   o.type='sine';     o.frequency.setValueAtTime(600,t); g.gain.exponentialRampToValueAtTime(0.01,t+0.10); o.start(t); o.stop(t+0.10); break;
+            case 'build': o.type='square';   o.frequency.setValueAtTime(150,t); g.gain.exponentialRampToValueAtTime(0.01,t+0.10); o.start(t); o.stop(t+0.10); break;
+            case 'err':   o.type='sawtooth'; o.frequency.setValueAtTime(100,t); o.frequency.linearRampToValueAtTime(50,t+0.2); g.gain.setValueAtTime(0.1,t); g.gain.linearRampToValueAtTime(0,t+0.2); o.start(t); o.stop(t+0.2); break;
+            case 'hit':   o.type='triangle'; o.frequency.setValueAtTime(100,t); g.gain.exponentialRampToValueAtTime(0.01,t+0.10); o.start(t); o.stop(t+0.10); break;
+            /* FIX #15: 'shoot' case was missing */
+            case 'shoot': o.type='sine';     o.frequency.setValueAtTime(800,t); o.frequency.exponentialRampToValueAtTime(400,t+0.08); g.gain.setValueAtTime(0.05,t); g.gain.exponentialRampToValueAtTime(0.01,t+0.08); o.start(t); o.stop(t+0.08); break;
+            case 'gold':  o.type='sine';     o.frequency.setValueAtTime(1000,t); g.gain.exponentialRampToValueAtTime(0.01,t+0.30); o.start(t); o.stop(t+0.30); break;
+            case 'alarm': o.type='square';   o.frequency.setValueAtTime(440,t); o.frequency.setValueAtTime(330,t+0.2); g.gain.linearRampToValueAtTime(0,t+0.4); o.start(t); o.stop(t+0.4); break;
         }
     }
 };
 
 const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+const ctx    = canvas.getContext('2d');
+
+// Stable per-tile hash — returns 0..1 float, deterministic from (tx,ty,slot)
+// Used so grass flecks don't flicker between frames
+function tileHash(tx, ty, slot) {
+    let h = Math.imul(tx * 374761393 + ty * 1234567891, slot * 67890127 + 1);
+    h = Math.imul(h ^ (h >>> 13), 0x1b873593);
+    return ((h ^ (h >>> 11)) >>> 0) / 0xffffffff;
+}
 
 function drawLevelDots(ctx, cx, cy, level) {
     let rem = level;
-    const blues = Math.floor(rem / 125); rem %= 125;
-    const greens = Math.floor(rem / 25); rem %= 25;
-    const yellows = Math.floor(rem / 5); rem %= 5;
-    const whites = rem;
+    const blues   = Math.floor(rem/125); rem %= 125;
+    const greens  = Math.floor(rem/25);  rem %= 25;
+    const yellows = Math.floor(rem/5);   rem %= 5;
+    const whites  = rem;
     let dots = [];
-    for(let i=0; i<blues; i++) dots.push('#00f');
-    for(let i=0; i<greens; i++) dots.push('#0f0');
-    for(let i=0; i<yellows; i++) dots.push('#ff0');
-    for(let i=0; i<whites; i++) dots.push('#fff');
-    const spacing = 5;
-    const totalW = (dots.length-1) * spacing;
-    let startX = cx - totalW/2;
-    dots.forEach((color, i) => { ctx.fillStyle = color; ctx.beginPath(); ctx.arc(startX + i*spacing, cy, 2.5, 0, Math.PI*2); ctx.fill(); });
+    for(let i=0;i<blues;i++)   dots.push('#00f');
+    for(let i=0;i<greens;i++)  dots.push('#0f0');
+    for(let i=0;i<yellows;i++) dots.push('#ff0');
+    for(let i=0;i<whites;i++)  dots.push('#fff');
+    const spacing = 5, totalW = (dots.length-1)*spacing;
+    let sx = cx - totalW/2;
+    dots.forEach((color,i)=>{ ctx.fillStyle=color; ctx.beginPath(); ctx.arc(sx+i*spacing, cy, 2.5, 0, Math.PI*2); ctx.fill(); });
 }
 
+// ─── PATHFINDER ──────────────────────────────────────────────────────────────
 const Pathfinder = {
     findPath(sx, sy, ex, ey, grid) {
-        if(grid[ey*W+ex] !== 0 && Math.hypot(sx-ex, sy-ey) > 1.5) return null;
-        let open = [{x:sx, y:sy, g:0, f:0, p:null}], closed = new Set(), safe = 0;
-        const h = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
-        while(open.length > 0) {
-            if(safe++ > 1500) return null;
+        if(grid[ey*W+ex]!==0 && Math.hypot(sx-ex,sy-ey)>1.5) return null;
+        let open=[{x:sx,y:sy,g:0,f:0,p:null}], closed=new Set(), safe=0;
+        const h=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
+        while(open.length>0) {
+            if(safe++>1500) return null;
             let best=0; for(let i=1;i<open.length;i++) if(open[i].f<open[best].f) best=i;
-            let curr = open.splice(best,1)[0];
-            if(curr.x===ex && curr.y===ey) { let p=[]; while(curr.p){p.push({x:curr.x,y:curr.y});curr=curr.p;} return p.reverse(); }
+            let curr=open.splice(best,1)[0];
+            if(curr.x===ex&&curr.y===ey){let p=[];while(curr.p){p.push({x:curr.x,y:curr.y});curr=curr.p;}return p.reverse();}
             closed.add(curr.x+','+curr.y);
-            [{x:0,y:-1},{x:0,y:1},{x:-1,y:0},{x:1,y:0}].forEach(n => {
+            [{x:0,y:-1},{x:0,y:1},{x:-1,y:0},{x:1,y:0}].forEach(n=>{
                 const nx=curr.x+n.x, ny=curr.y+n.y;
-                if(nx>=0 && nx<W && ny>=0 && ny<H && !closed.has(nx+','+ny)) {
-                    if(grid[ny*W+nx] === 0 || (nx===ex && ny===ey)) {
+                if(nx>=0&&nx<W&&ny>=0&&ny<H&&!closed.has(nx+','+ny)){
+                    if(grid[ny*W+nx]===0||(nx===ex&&ny===ey)){
                         const g=curr.g+1;
-                        let old=open.find(o=>o.x===nx && o.y===ny);
-                        if(!old) open.push({x:nx, y:ny, g:g, f:g+h({x:nx,y:ny},{x:ex,y:ey}), p:curr});
-                        else if(g<old.g) { old.g=g; old.f=g+h({x:nx,y:ny},{x:ex,y:ey}); old.p=curr; }
+                        let old=open.find(o=>o.x===nx&&o.y===ny);
+                        if(!old) open.push({x:nx,y:ny,g:g,f:g+h({x:nx,y:ny},{x:ex,y:ey}),p:curr});
+                        else if(g<old.g){old.g=g;old.f=g+h({x:nx,y:ny},{x:ex,y:ey});old.p=curr;}
                     }
                 }
             });
@@ -235,281 +303,396 @@ const Pathfinder = {
     }
 };
 
+// ─── INPUT ───────────────────────────────────────────────────────────────────
 const Input = {
-    touches: [], 
+    touches:[],
     init() {
         window.addEventListener('resize', this.resize); this.resize();
-        ['touchstart','touchmove','touchend','mousedown','mousemove','mouseup'].forEach(e => {
+        ['touchstart','touchmove','touchend','mousedown','mousemove','mouseup'].forEach(e=>{
             canvas.addEventListener(e, ev=>this.handle(ev), {passive:false});
             window.addEventListener(e, ev=>{ if(ev.target!==canvas) this.end(0); });
         });
-        canvas.addEventListener('wheel', e => this.wheel(e));
+        canvas.addEventListener('wheel', e=>this.wheel(e));
     },
-    resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; },
+    resize() { canvas.width=window.innerWidth; canvas.height=window.innerHeight; },
     handle(e) {
         AudioEngine.init();
         if(e.type.startsWith('mouse')) {
-            if(e.type==='mousedown') this.start(0, e.clientX, e.clientY);
-            if(e.type==='mousemove') this.move(0, e.clientX, e.clientY);
-            if(e.type==='mouseup') this.end(0);
+            if(e.type==='mousedown') this.start(0,e.clientX,e.clientY);
+            if(e.type==='mousemove') this.move(0,e.clientX,e.clientY);
+            if(e.type==='mouseup')   this.end(0);
         } else {
             e.preventDefault();
-            if(e.type==='touchstart') for(let i=0; i<e.changedTouches.length; i++) this.start(e.changedTouches[i].identifier, e.changedTouches[i].clientX, e.changedTouches[i].clientY);
-            if(e.type==='touchmove') for(let i=0; i<e.changedTouches.length; i++) this.move(e.changedTouches[i].identifier, e.changedTouches[i].clientX, e.changedTouches[i].clientY);
-            if(e.type==='touchend') for(let i=0; i<e.changedTouches.length; i++) this.end(e.changedTouches[i].identifier);
+            if(e.type==='touchstart') for(let i=0;i<e.changedTouches.length;i++) this.start(e.changedTouches[i].identifier,e.changedTouches[i].clientX,e.changedTouches[i].clientY);
+            if(e.type==='touchmove')  for(let i=0;i<e.changedTouches.length;i++) this.move(e.changedTouches[i].identifier,e.changedTouches[i].clientX,e.changedTouches[i].clientY);
+            if(e.type==='touchend')   for(let i=0;i<e.changedTouches.length;i++) this.end(e.changedTouches[i].identifier);
         }
     },
     toWorld(sx, sy) {
-        return { 
-            x: (sx - State.offset.x) / State.scale, 
-            y: (sy - State.offset.y) / State.scale,
-            tx: Math.floor(((sx - State.offset.x) / State.scale)/TILE),
-            ty: Math.floor(((sy - State.offset.y) / State.scale)/TILE)
+        return {
+            x:  (sx - State.offset.x) / State.scale,
+            y:  (sy - State.offset.y) / State.scale,
+            tx: Math.floor(((sx - State.offset.x) / State.scale) / TILE),
+            ty: Math.floor(((sy - State.offset.y) / State.scale) / TILE)
         };
     },
+    /* FIX #11: clamp pan so the map can never scroll fully off-screen */
+    clampOffset() {
+        const mapW = W * TILE * State.scale;
+        const mapH = H * TILE * State.scale;
+        const pad  = 60; // px of map that must remain visible at each edge
+        State.offset.x = Math.max(-(mapW - pad), Math.min(canvas.width  - pad, State.offset.x));
+        State.offset.y = Math.max(-(mapH - pad), Math.min(canvas.height - pad, State.offset.y));
+    },
     start(id, x, y) {
-        this.touches.push({id, x, y, startX:x, startY:y, drag:false});
-        if(this.touches.length === 1 && State.mode === 'EDITOR') Editor.paint(this.toWorld(x,y));
+        this.touches.push({id,x,y,startX:x,startY:y,drag:false});
+        if(this.touches.length===1 && State.mode==='EDITOR') Editor.paint(this.toWorld(x,y));
     },
     move(id, x, y) {
-        const t = this.touches.find(t => t.id === id); if(!t) return;
-        if(this.touches.length === 1) {
-            const dx = x - t.x, dy = y - t.y;
-            if(Math.hypot(x-t.startX, y-t.startY)>10) t.drag = true;
-            if(!t.drag && State.mode === 'EDITOR') Editor.paint(this.toWorld(x,y));
-            else { State.offset.x += dx; State.offset.y += dy; }
-        } else if (this.touches.length === 2) {
-            const t2 = this.touches.find(o => o.id !== id);
-            const d1 = Math.hypot(t.x - t2.x, t.y - t2.y), d2 = Math.hypot(x - t2.x, y - t2.y);
-            const cx = (x + t2.x)/2, cy = (y + t2.y)/2;
-            const s = Math.max(0.3, Math.min(3, State.scale + (d2 - d1) * 0.005));
-            State.offset.x -= (cx - State.offset.x) * (s/State.scale - 1);
-            State.offset.y -= (cy - State.offset.y) * (s/State.scale - 1);
-            State.scale = s;
+        const t=this.touches.find(t=>t.id===id); if(!t) return;
+        if(this.touches.length===1) {
+            const dx=x-t.x, dy=y-t.y;
+            if(Math.hypot(x-t.startX,y-t.startY)>10) t.drag=true;
+            if(!t.drag && State.mode==='EDITOR') Editor.paint(this.toWorld(x,y));
+            else { State.offset.x+=dx; State.offset.y+=dy; this.clampOffset(); }  /* FIX #11 */
+        } else if(this.touches.length===2) {
+            const t2=this.touches.find(o=>o.id!==id);
+            const d1=Math.hypot(t.x-t2.x,t.y-t2.y), d2=Math.hypot(x-t2.x,y-t2.y);
+            const cx=(x+t2.x)/2, cy=(y+t2.y)/2;
+            const s=Math.max(0.3,Math.min(3,State.scale+(d2-d1)*0.005));
+            State.offset.x -= (cx-State.offset.x)*(s/State.scale-1);
+            State.offset.y -= (cy-State.offset.y)*(s/State.scale-1);
+            State.scale=s;
+            this.clampOffset();  /* FIX #11 */
         }
-        t.x = x; t.y = y;
+        t.x=x; t.y=y;
     },
     end(id) {
-        const idx = this.touches.findIndex(t => t.id === id); if(idx === -1) return;
-        const t = this.touches[idx];
-        if(this.touches.length === 1 && !t.drag) Game.click(this.toWorld(t.x, t.y));
-        this.touches.splice(idx, 1);
+        const idx=this.touches.findIndex(t=>t.id===id); if(idx===-1) return;
+        const t=this.touches[idx];
+        if(this.touches.length===1 && !t.drag) Game.click(this.toWorld(t.x,t.y));
+        this.touches.splice(idx,1);
     },
     wheel(e) {
-        const d = e.deltaY > 0 ? -0.1 : 0.1;
-        const s = Math.max(0.3, Math.min(3, State.scale + d));
-        State.offset.x -= (canvas.width/2 - State.offset.x) * (d/State.scale);
-        State.offset.y -= (canvas.height/2 - State.offset.y) * (d/State.scale);
-        State.scale = s;
+        const d=e.deltaY>0?-0.1:0.1;
+        const s=Math.max(0.3,Math.min(3,State.scale+d));
+        State.offset.x -= (canvas.width/2  - State.offset.x)*(d/State.scale);
+        State.offset.y -= (canvas.height/2 - State.offset.y)*(d/State.scale);
+        State.scale=s;
+        this.clampOffset();  /* FIX #11 */
     }
 };
 
+// ─── GAME ────────────────────────────────────────────────────────────────────
 const Game = {
-    loop() {
+    _lastTs: 0,
+
+    /* FIX #2: rAF timestamp → real delta time, clamped to 50 ms */
+    loop(ts=0) {
         requestAnimationFrame(Game.loop);
-        ctx.fillStyle = '#050508'; ctx.fillRect(0,0,canvas.width,canvas.height);
-        ctx.save(); ctx.translate(State.offset.x, State.offset.y); ctx.scale(State.scale, State.scale);
+        const dt = Math.min(50, ts - (Game._lastTs || ts - 16));
+        Game._lastTs = ts;
+
+        ctx.fillStyle='#050508'; ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.save(); ctx.translate(State.offset.x,State.offset.y); ctx.scale(State.scale,State.scale);
         Game.drawMap();
-        if(State.mode === 'PLAY' && !State.gameOver) {
-            Game.updateEntities(); Game.drawEntities(); Game.drawFX();
-        } else if (State.mode === 'EDITOR') { Editor.drawOverlay(); }
+        if(State.mode==='PLAY' && !State.gameOver) {
+            if(!State.paused) Game.updateEntities(dt);  /* FIX #7: skip when paused */
+            Game.drawEntities(); Game.drawFX();
+        } else if(State.mode==='EDITOR') {
+            Editor.drawOverlay();
+        }
         ctx.restore();
+
+        /* FIX #9: wave countdown ticker (runs outside pause) */
+        if(State.mode==='PLAY' && State.waveCountdownEnd>0 && !State.waveActive) {
+            const rem = Math.ceil((State.waveCountdownEnd - Date.now()) / 1000);
+            const el  = document.getElementById('wave-countdown');
+            if(rem>0) { el.classList.remove('hidden'); el.textContent=`NEXT WAVE: ${rem}s`; }
+            else      { el.classList.add('hidden'); State.waveCountdownEnd=0; }
+        }
     },
 
-    updateEntities() {
+    /* FIX #2: accepts real dt now; removed hardcoded const dt=16 */
+    updateEntities(dt) {
         // UPKEEP
         if(Date.now() > State.lastUpkeep + 10000) {
             State.lastUpkeep = Date.now();
-            let totalLevel = 0;
-            State.entities.forEach(e => { if(e instanceof Unit && e.team==='player') totalLevel += e.level; });
+            let totalLevel=0;
+            State.entities.forEach(e=>{ if(e instanceof Unit && e.team==='player') totalLevel+=e.level; });
             State.gold -= totalLevel;
             Game.toast(`Upkeep: -${totalLevel}g`, State.entities[0]?.x||20, State.entities[0]?.y||20);
-            const el = document.getElementById('ui-gold-wrap');
+            const el=document.getElementById('ui-gold-wrap');
             el.classList.remove('upkeep-anim'); void el.offsetWidth; el.classList.add('upkeep-anim');
-            if(State.gold < 0) State.gold = 0; 
+            if(State.gold<0) State.gold=0;
             Game.ui();
         }
 
         // WAVE LOGIC
         if(State.waveActive) {
-            if(Date.now() > State.nextSpawn && State.toSpawn > 0) {
-                const s = State.level.waypoints[0];
-                const u = new Unit(s.x, s.y, 'Enemy', 'enemy', State.wave);
-                if(State.wave % 10 === 0) {
-                    u.maxHp *= 2; u.hp = u.maxHp; u.dmg *= 2; u.radius = 0.4; u.color = COLORS.boss;
-                }
-                const scale = 1 + (State.wave * 0.1);
-                u.maxHp *= scale; u.hp = u.maxHp; u.dmg *= scale;
+            if(Date.now()>State.nextSpawn && State.toSpawn>0) {
+                const s=State.level.waypoints[0];
+                const u=new Unit(s.x, s.y, 'Enemy', 'enemy', State.wave);
+                if(State.wave%10===0) { u.maxHp*=2; u.hp=u.maxHp; u.dmg*=2; u.radius=0.4; u.color=COLORS.boss; }
+                const scale=1+(State.wave*0.1);
+                u.maxHp*=scale; u.hp=u.maxHp; u.dmg*=scale;
+                u.configureEnemy();
                 State.entities.push(u);
                 State.toSpawn--;
-                State.nextSpawn = Date.now() + Math.max(500, 2000 - State.wave*100);
-            } else if(State.toSpawn <= 0 && !State.entities.some(e=>e.team==='enemy')) {
-                State.waveActive=false; State.wave++; 
-                if(State.wave % 10 === 0) {
+                State.nextSpawn=Date.now()+Math.max(500,2000-State.wave*100);
+            } else if(State.toSpawn<=0 && !State.entities.some(e=>e.team==='enemy')) {
+                State.waveActive=false; State.wave++;
+                if(State.wave%10===0) {
                     let tries=0;
-                    while(tries++ < 50) {
-                        const rx = Math.floor(Math.random()*W), ry = Math.floor(Math.random()*H);
-                        if(State.grid[ry*W+rx] === GRID.GRASS) {
-                            const m = new Building(rx+0.5, ry+0.5, 'Mine', 'neutral');
-                            m.capacity = 500 * (1 + (State.wave*0.1));
+                    while(tries++<50) {
+                        const rx=Math.floor(Math.random()*W), ry=Math.floor(Math.random()*H);
+                        if(State.grid[ry*W+rx]===GRID.GRASS) {
+                            const m=new Building(rx+0.5,ry+0.5,'Mine','neutral');
+                            m.capacity=500*(1+(State.wave*0.1));
                             State.entities.push(m);
-                            Game.toast("New Mine Found!", rx, ry, '#FFD700'); AudioEngine.play('gold'); break;
+                            Game.toast("New Mine Found!",rx,ry,'#FFD700'); AudioEngine.play('gold'); break;
                         }
                     }
                 }
+                /* FIX #9: record countdown end time */
+                State.waveCountdownEnd = Date.now() + 3000;
                 setTimeout(()=>Game.startWave(), 3000);
             }
         }
-        
-        // Entity Update Loop
-        const dt = 16; // Approx 60fps frame time
-        State.entities = State.entities.filter(e => !e.dead);
-        State.entities.forEach(e => e.update(dt));
+
+        State.entities = State.entities.filter(e=>!e.dead);
+        State.entities.forEach(e=>e.update(dt));  /* FIX #2: pass real dt */
     },
 
     drawMap() {
-        const r=H, c=W;
-        for(let y=0; y<r; y++) { for(let x=0; x<c; x++) {
-            const t = State.grid[y*W+x]; const px=x*TILE, py=y*TILE;
-            if(t === GRID.WATER) { ctx.fillStyle = COLORS.water; ctx.fillRect(px,py,TILE+1,TILE+1); }
-            else { ctx.strokeStyle = '#222'; ctx.lineWidth = 1; ctx.strokeRect(px,py,TILE,TILE); }
-        }}
-        for(let y=0; y<r; y++) { for(let x=0; x<c; x++) {
-            if(State.grid[y*W+x] === GRID.ROCK) {
-                const px=x*TILE, py=y*TILE; ctx.fillStyle = COLORS.rock;
-                ctx.beginPath(); ctx.moveTo(px, py+TILE); ctx.lineTo(px+TILE/2, py); ctx.lineTo(px+TILE, py+TILE); ctx.fill();
+        // Pass 1 — base fill for every tile
+        for(let y=0;y<H;y++) for(let x=0;x<W;x++) {
+            const t=State.grid[y*W+x], px=x*TILE, py=y*TILE;
+            if(t===GRID.WATER) { ctx.fillStyle='#1e3d6e'; ctx.fillRect(px,py,TILE+1,TILE+1); }
+            else               { ctx.fillStyle='#1a2218'; ctx.fillRect(px,py,TILE,TILE); }
+        }
+        // Pass 2 — grass texture: 5 stable flecks per grass tile
+        for(let y=0;y<H;y++) for(let x=0;x<W;x++) {
+            if(State.grid[y*W+x]!==GRID.GRASS) continue;
+            const px=x*TILE, py=y*TILE;
+            for(let i=0;i<5;i++) {
+                const fx = px + 1 + Math.floor(tileHash(x,y,i*3)   * (TILE-3));
+                const fy = py + 1 + Math.floor(tileHash(x,y,i*3+1) * (TILE-3));
+                const r  = 0.7 + tileHash(x,y,i*3+2) * 1.3;
+                const gr = 56 + Math.floor(tileHash(x,y,i+15) * 26);
+                ctx.fillStyle = `rgb(${24+Math.floor(tileHash(x,y,i+20)*14)},${gr},${20+Math.floor(tileHash(x,y,i+25)*13)})`;
+                ctx.beginPath(); ctx.arc(fx,fy,r,0,Math.PI*2); ctx.fill();
             }
-        }}
+            ctx.strokeStyle='rgba(0,0,0,0.18)'; ctx.lineWidth=0.5; ctx.strokeRect(px,py,TILE,TILE);
+        }
+        // Pass 3 — water shimmer lines
+        for(let y=0;y<H;y++) for(let x=0;x<W;x++) {
+            if(State.grid[y*W+x]!==GRID.WATER) continue;
+            const px=x*TILE, py=y*TILE;
+            for(let i=0;i<3;i++) {
+                const wy = py + 4 + Math.floor(tileHash(x,y,i+40) * (TILE-8));
+                const woff = tileHash(x,y,i+43) * 6 - 3;
+                ctx.strokeStyle=`rgba(80,160,220,${0.10+tileHash(x,y,i+46)*0.08})`;
+                ctx.lineWidth=1; ctx.beginPath();
+                ctx.moveTo(px+woff, wy); ctx.lineTo(px+TILE*0.7+woff, wy+1); ctx.stroke();
+            }
+        }
+        // Pass 4 — shaded 3-face rock mountains
+        for(let y=0;y<H;y++) for(let x=0;x<W;x++) {
+            if(State.grid[y*W+x]!==GRID.ROCK) continue;
+            const px=x*TILE, py=y*TILE;
+            // full silhouette (darkest, provides outline)
+            ctx.fillStyle='#222';
+            ctx.beginPath(); ctx.moveTo(px-1,py+TILE); ctx.lineTo(px+TILE/2,py+1); ctx.lineTo(px+TILE+1,py+TILE); ctx.fill();
+            // mid tone base
+            ctx.fillStyle='#383838';
+            ctx.beginPath(); ctx.moveTo(px,py+TILE); ctx.lineTo(px+TILE/2,py+3); ctx.lineTo(px+TILE,py+TILE); ctx.fill();
+            // lit right face
+            ctx.fillStyle='#545454';
+            ctx.beginPath(); ctx.moveTo(px+TILE/2,py+3); ctx.lineTo(px+TILE,py+TILE); ctx.lineTo(px+TILE*0.62,py+TILE*0.5); ctx.fill();
+            // crevice line
+            ctx.strokeStyle='#1a1a1a'; ctx.lineWidth=0.8;
+            ctx.beginPath(); ctx.moveTo(px+TILE/2,py+3); ctx.lineTo(px+TILE*0.35,py+TILE*0.42); ctx.stroke();
+            // peak highlight pixel
+            ctx.fillStyle='#888'; ctx.fillRect(px+TILE/2-1,py+2,2,2);
+        }
     },
-    
-    drawEntities() { State.entities.sort((a,b) => a.y - b.y); State.entities.forEach(e => e.draw(ctx)); },
+
+    drawEntities() { State.entities.sort((a,b)=>a.y-b.y); State.entities.forEach(e=>e.draw(ctx)); },
 
     drawFX() {
-        State.particles = State.particles.filter(p=>p.life>0);
-        State.particles.forEach(p => {
+        State.particles=State.particles.filter(p=>p.life>0);
+        State.particles.forEach(p=>{
             ctx.strokeStyle=p.c; ctx.lineWidth=2;
-            ctx.beginPath(); ctx.moveTo(p.x*TILE, p.y*TILE); ctx.lineTo(p.tx*TILE, p.ty*TILE); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(p.x*TILE,p.y*TILE); ctx.lineTo(p.tx*TILE,p.ty*TILE); ctx.stroke();
             p.life--;
         });
     },
 
     click(w) {
-        if(State.mode !== 'PLAY') return;
-        if(w.tx<0 || w.tx>=W || w.ty<0 || w.ty>=H) return;
+        if(State.mode!=='PLAY' || State.paused) return;  /* FIX #7: no clicks while paused */
+        if(w.tx<0||w.tx>=W||w.ty<0||w.ty>=H) return;
 
-        if(State.placing && State.placing.type === 'BUL') {
-            const idx = w.ty*W + w.tx;
-            if(State.gold >= 100) {
-                State.gold -= 100;
-                State.grid[idx] = GRID.GRASS;
-                const entIdx = State.entities.findIndex(e => Math.floor(e.x)===w.tx && Math.floor(e.y)===w.ty);
-                if(entIdx !== -1) {
-                    const e = State.entities[entIdx];
+        if(State.placing && State.placing.type==='BUL') {
+            const idx=w.ty*W+w.tx;
+            if(State.gold>=100) {
+                State.gold-=100; State.grid[idx]=GRID.GRASS;
+                const entIdx=State.entities.findIndex(e=>Math.floor(e.x)===w.tx && Math.floor(e.y)===w.ty);
+                if(entIdx!==-1) {
+                    const e=State.entities[entIdx];
                     if(e instanceof Building && COSTS[e.type] && !e.isRuin) {
-                        const refund = Math.floor(COSTS[e.type] * 0.75);
-                        State.gold += refund;
-                        Game.toast(`+${refund}g`, w.tx, w.ty, '#0f0'); AudioEngine.play('gold');
+                        const refund=Math.floor(COSTS[e.type]*0.75);
+                        State.gold+=refund;
+                        Game.toast(`+${refund}g`,w.tx,w.ty,'#0f0'); AudioEngine.play('gold');
                     }
-                    e.dead = true;
+                    e.dead=true;
                 }
-                Game.toast("Bulldozed", w.tx, w.ty); AudioEngine.play('build'); Game.ui();
-            } else { Game.toast("Need 100g", w.tx, w.ty); AudioEngine.play('err'); }
-            Game.setPlacing(null);
-            return;
+                Game.toast("Bulldozed",w.tx,w.ty); AudioEngine.play('build'); Game.ui();
+            } else { Game.toast("Need 100g",w.tx,w.ty); AudioEngine.play('err'); }
+            Game.setPlacing(null); return;
         }
 
         if(State.placing) {
-            const idx = w.ty*W + w.tx;
-            if(State.grid[idx] !== GRID.GRASS) { Game.toast("Blocked", w.tx, w.ty); AudioEngine.play('err'); return; }
-            if(State.gold < State.placing.cost) { Game.toast("Need Gold", w.tx, w.ty); AudioEngine.play('err'); return; }
-            State.gold -= State.placing.cost;
-            State.grid[idx] = GRID.BUILD;
-            State.entities.push(new Building(w.tx+0.5, w.ty+0.5, State.placing.type));
-            Game.toast("Building...", w.tx, w.ty); AudioEngine.play('build');
-            Game.setPlacing(null);
-            Game.ui();
-            return;
+            const idx=w.ty*W+w.tx;
+            if(State.grid[idx]!==GRID.GRASS) { Game.toast("Blocked",w.tx,w.ty); AudioEngine.play('err'); return; }
+            if(State.gold<State.placing.cost) { Game.toast("Need Gold",w.tx,w.ty); AudioEngine.play('err'); return; }
+            State.gold-=State.placing.cost; State.grid[idx]=GRID.BUILD;
+            const nb=new Building(w.tx+0.5,w.ty+0.5,State.placing.type);
+            if(nb.type==='Tower') nb.level=State.towerTechLevel;
+            State.entities.push(nb);
+            Game.toast("Building...",w.tx,w.ty); AudioEngine.play('build');
+            Game.setPlacing(null); Game.ui(); return;
         }
 
-        const hit = State.entities.find(e => Math.hypot(e.x-0.5-w.tx, e.y-0.5-w.ty) < 0.5);
-        if(hit && hit.team === 'player' && !hit.isRuin) {
-            State.selection = hit; Game.showCtx(hit); AudioEngine.play('sel');
+        const hit=State.entities.find(e=>Math.hypot(e.x-0.5-w.tx,e.y-0.5-w.ty)<0.5);
+        if(hit && hit.team==='player' && !hit.isRuin) {
+            State.selection=hit; Game.showCtx(hit); AudioEngine.play('sel');
         } else if(State.selection && State.selection instanceof Unit) {
-            State.selection.target = {x: w.tx+0.5, y: w.ty+0.5};
-            State.particles.push({x:w.tx+0.5, y:w.ty+0.5, tx:w.tx+0.5, ty:w.ty+0.5, life:10, c:'#0f0'});
-            State.selection = null; Game.hideCtx(); AudioEngine.play('sel');
+            State.selection.target={x:w.tx+0.5,y:w.ty+0.5};
+            State.particles.push({x:w.tx+0.5,y:w.ty+0.5,tx:w.tx+0.5,ty:w.ty+0.5,life:10,c:'#0f0'});
+            State.selection=null; Game.hideCtx(); AudioEngine.play('sel');
         } else {
-            State.selection = null; Game.hideCtx();
+            State.selection=null; Game.hideCtx();
         }
     },
-    
+
     startWave() {
-        State.waveActive=true; State.toSpawn=5+Math.floor(State.wave*1.5); 
+        document.getElementById('wave-countdown').classList.add('hidden');
+        State.waveCountdownEnd=0;
+        State.waveActive=true; State.toSpawn=5+Math.floor(State.wave*1.5);
         State.nextSpawn=Date.now();
         document.getElementById('ui-wave').innerText=State.wave;
-        Game.toast(`Wave ${State.wave}`, 20, 20); AudioEngine.play('alarm');
+        Game.toast(`Wave ${State.wave}`,20,20); AudioEngine.play('alarm');
     },
 
-    toast(msg, x, y, color) {
-        const d = document.createElement('div'); d.className='toast'; d.innerText=msg;
-        if(color) d.style.color = color;
-        document.body.appendChild(d); setTimeout(()=>d.remove(), 1500);
+    /* FIX #3: convert world-tile coords to screen coords; clamp to viewport */
+    toast(msg, wx, wy, color) {
+        const d=document.createElement('div');
+        d.className='toast'; d.innerText=msg;
+        if(color) d.style.color=color;
+        const sx = (wx*TILE)*State.scale + State.offset.x;
+        const sy = (wy*TILE)*State.scale + State.offset.y;
+        d.style.left = Math.max(40, Math.min(canvas.width-40,  sx))+'px';
+        d.style.top  = Math.max(80, Math.min(canvas.height-120,sy))+'px';
+        document.body.appendChild(d);
+        setTimeout(()=>d.remove(),1500);
     },
-    
+
     setPlacing(p) {
-        if(State.placing && p && State.placing.type === p.type) State.placing = null;
-        else State.placing = p;
+        if(State.placing && p && State.placing.type===p.type) State.placing=null;
+        else State.placing=p;
         document.querySelectorAll('#hud-bot .btn').forEach(b=>b.classList.remove('selected'));
         if(State.placing) document.getElementById(`btn-${State.placing.type}`).classList.add('selected');
     },
-    
-    ui() { document.getElementById('ui-gold').innerText = Math.floor(State.gold); },
-    
+
+    /* FIX #16: upkeep warning — gold turns orange when below 2× next upkeep cost */
+    ui() {
+        const gold=Math.floor(State.gold);
+        const el=document.getElementById('ui-gold');
+        el.innerText=gold;
+        let upkeepCost=0;
+        State.entities.forEach(e=>{ if(e instanceof Unit && e.team==='player') upkeepCost+=e.level; });
+        el.style.color = gold===0 ? '#ff4444' : gold<upkeepCost*2 ? '#ff8800' : 'white';
+    },
+
+    /* FIX #7: pause / resume */
+    togglePause() {
+        if(State.gameOver) return;
+        State.paused=!State.paused;
+        document.getElementById('pause-screen').classList.toggle('hidden',!State.paused);
+        document.getElementById('btn-pause').innerHTML=State.paused?'&#9654;':'&#9646;&#9646;';
+    },
+
     showCtx(e) {
         const el=document.getElementById('context-menu'); el.classList.remove('hidden');
-        document.getElementById('ctx-name').innerText=e.type + (e.level ? ` (Lvl ${e.level})` : '');
+        document.getElementById('ctx-name').innerText=e.type+(e.level?` (Lvl ${e.level})`:'');
         document.getElementById('ctx-info').innerText=`HP: ${Math.floor(e.hp)}/${Math.floor(e.maxHp)}`;
         const act=document.getElementById('ctx-actions'); act.innerHTML='';
-        
-        if(e instanceof Building && e.hp < e.maxHp && !e.isRuin) {
-            const cost = Math.floor((1 - e.hp/e.maxHp) * (COSTS[e.type] || 200));
-            const r=document.createElement('div'); r.className='action-btn alt'; 
+
+        if(e instanceof Building && e.hp<e.maxHp && !e.isRuin) {
+            const cost=Math.floor((1-e.hp/e.maxHp)*(COSTS[e.type]||200));
+            const r=document.createElement('div'); r.className='action-btn alt';
             r.innerText=`Repair (${cost}g)`;
-            r.onclick=()=>{ if(State.gold>=cost) { State.gold-=cost; e.hp=e.maxHp; Game.ui(); Game.toast("Repaired", e.x, e.y); Game.showCtx(e); AudioEngine.play('build'); } else AudioEngine.play('err'); }; act.appendChild(r);
+            r.onclick=()=>{ if(State.gold>=cost){State.gold-=cost;e.hp=e.maxHp;Game.ui();Game.toast("Repaired",e.x,e.y);Game.showCtx(e);AudioEngine.play('build');}else AudioEngine.play('err'); };
+            act.appendChild(r);
         }
-        if(e instanceof Building && e.type !== 'TownCenter' && !e.isRuin) {
+        if(e instanceof Building && e.type!=='TownCenter' && !e.isRuin) {
             const d=document.createElement('div'); d.className='action-btn danger'; d.innerText=`Destruct (Refund)`;
-            d.onclick=()=>{ const refund = Math.floor((COSTS[e.type]||0)*0.75); State.gold+=refund; e.dead=true; State.grid[Math.floor(e.y)*W+Math.floor(e.x)] = GRID.GRASS; Game.ui(); Game.toast(`+${refund}g`, e.x, e.y); Game.hideCtx(); AudioEngine.play('gold'); }; act.appendChild(d);
+            d.onclick=()=>{ const refund=Math.floor((COSTS[e.type]||0)*0.75); State.gold+=refund; e.dead=true; State.grid[Math.floor(e.y)*W+Math.floor(e.x)]=GRID.GRASS; Game.ui(); Game.toast(`+${refund}g`,e.x,e.y); Game.hideCtx(); AudioEngine.play('gold'); };
+            act.appendChild(d);
         }
         if(e.type==='Barracks') {
             const t=document.createElement('div'); t.className='action-btn'; t.innerText=`Train Soldier (50g)`;
-            t.onclick=()=>{ if(State.gold>=50){ State.gold-=50; const u=new Unit(e.x+1, e.y, 'Soldier', 'player', e.level); State.entities.push(u); Game.ui(); Game.toast("Soldier Ready", e.x, e.y); AudioEngine.play('build'); } else AudioEngine.play('err'); }; act.appendChild(t);
+            t.onclick=()=>{ if(State.gold>=50){State.gold-=50;const u=new Unit(e.x+1,e.y,'Soldier','player',e.level);State.entities.push(u);Game.ui();Game.toast("Soldier Ready",e.x,e.y);AudioEngine.play('build');}else AudioEngine.play('err'); };
+            act.appendChild(t);
             const b=document.createElement('div'); b.className='action-btn alt'; b.innerText=`Upgrade Tech (150g)`;
-            b.onclick=()=>{ if(State.gold>=150){ State.gold-=150; e.level++; Game.ui(); Game.toast("Tech Upgraded", e.x, e.y); Game.showCtx(e); AudioEngine.play('gold'); } else AudioEngine.play('err'); }; act.appendChild(b);
+            b.onclick=()=>{ if(State.gold>=150){State.gold-=150;e.level++;Game.ui();Game.toast("Tech Upgraded",e.x,e.y);Game.showCtx(e);AudioEngine.play('gold');}else AudioEngine.play('err'); };
+            act.appendChild(b);
         }
         if(e.type==='TownCenter') {
             const b=document.createElement('div'); b.className='action-btn'; b.innerText=`Train Builder (50g)`;
-            b.onclick=()=>{ if(State.gold>=50){ State.gold-=50; State.entities.push(new Unit(e.x+1, e.y, 'Builder', 'player', e.level)); Game.ui(); Game.toast("Builder Ready", e.x, e.y); AudioEngine.play('build'); } else AudioEngine.play('err'); }; act.appendChild(b);
+            b.onclick=()=>{ if(State.gold>=50){State.gold-=50;State.entities.push(new Unit(e.x+1,e.y,'Builder','player',e.level));Game.ui();Game.toast("Builder Ready",e.x,e.y);AudioEngine.play('build');}else AudioEngine.play('err'); };
+            act.appendChild(b);
             const u=document.createElement('div'); u.className='action-btn alt'; u.innerText=`Upgrade Base (300g)`;
-            u.onclick=()=>{ if(State.gold>=300){ State.gold-=300; e.level++; e.maxHp*=1.05; e.hp=e.maxHp; State.entities.filter(u=>u.type==='Soldier'&&Math.hypot(u.x-e.x,u.y-e.y)<5).forEach(u=>u.applyLevel(e.level)); Game.ui(); Game.toast("Base Upgraded", e.x, e.y); Game.showCtx(e); AudioEngine.play('gold'); } else AudioEngine.play('err'); }; act.appendChild(u);
+            u.onclick=()=>{ if(State.gold>=300){
+                State.gold-=300; e.level++; e.maxHp*=1.05; e.hp=e.maxHp;
+                State.towerTechLevel++;
+                State.entities.filter(u=>u.type==='Soldier'&&Math.hypot(u.x-e.x,u.y-e.y)<5).forEach(u=>u.applyLevel(e.level));
+                Game.ui();
+                Game.toast(`Base Lv${e.level} | Tower Tech Lv${State.towerTechLevel}`,e.x,e.y,'#00ffcc');
+                Game.showCtx(e); AudioEngine.play('gold');
+            }else AudioEngine.play('err'); };
+            act.appendChild(u);
+        }
+        if(e.type==='Tower' && !e.isRuin) {
+            const upgCost=80*e.level;
+            const t=document.createElement('div'); t.className='action-btn alt';
+            t.innerText=`Upgrade Tower Lv${e.level}→${e.level+1} (${upgCost}g)`;
+            t.onclick=()=>{ if(State.gold>=upgCost){
+                State.gold-=upgCost; e.level++;
+                Game.ui(); Game.toast(`Tower → Lv${e.level}`,e.x,e.y,'#00ffcc');
+                Game.showCtx(e); AudioEngine.play('gold');
+            }else AudioEngine.play('err'); };
+            act.appendChild(t);
         }
         if(e instanceof Unit) {
             const b=document.createElement('div'); b.className='action-btn alt';
-            const newType = e.type === 'Soldier' ? 'Builder' : 'Soldier';
+            const newType=e.type==='Soldier'?'Builder':'Soldier';
             b.innerText=`Convert to ${newType}`;
-            b.onclick=()=>{ 
-                e.type = newType; 
-                let newLevel = 1;
-                if(newType === 'Builder') {
-                    const builders = State.entities.filter(u => u.type === 'Builder' && !u.dead);
-                    const maxLvl = builders.length > 0 ? Math.max(...builders.map(u=>u.level)) : 1;
-                    newLevel = Math.max(1, maxLvl - 2);
+            b.onclick=()=>{
+                e.type=newType;
+                let newLevel=1;
+                if(newType==='Builder'){
+                    const builders=State.entities.filter(u=>u.type==='Builder'&&!u.dead);
+                    const maxLvl=builders.length>0?Math.max(...builders.map(u=>u.level)):1;
+                    newLevel=Math.max(1,maxLvl-2);
                 }
-                e.applyLevel(newLevel); 
-                if(newType==='Builder') { e.color=COLORS.builder; e.range=1.2; e.holdGold=false; }
-                else { e.color=COLORS.player; e.range=4.0; }
-                Game.hideCtx(); Game.toast("Converted", e.x, e.y); AudioEngine.play('sel');
-            }; act.appendChild(b);
+                e.applyLevel(newLevel);
+                if(newType==='Builder'){e.color=COLORS.builder;e.range=1.2;e.holdGold=false;}
+                else{e.color=COLORS.player;e.range=4.0;}
+                Game.hideCtx(); Game.toast("Converted",e.x,e.y); AudioEngine.play('sel');
+            };
+            act.appendChild(b);
         }
     },
     hideCtx() { document.getElementById('context-menu').classList.add('hidden'); },
@@ -520,275 +703,472 @@ const Game = {
     },
 
     play(lvl) {
-        State.mode='PLAY'; State.gameOver=false;
+        State.mode='PLAY'; State.gameOver=false; State.paused=false;
         document.querySelectorAll('.menu-screen').forEach(e=>e.classList.add('hidden'));
         document.getElementById('hud-top').classList.remove('hidden');
         document.getElementById('hud-bot').classList.remove('hidden');
-        State.level=JSON.parse(JSON.stringify(lvl)); State.grid=[...State.level.grid]; State.entities=[]; State.gold=State.level.startGold; State.wave=1;
+        document.getElementById('btn-pause').innerHTML='&#9646;&#9646;';
+        State.level=JSON.parse(JSON.stringify(lvl));
+        State.grid=[...State.level.grid];
+        State.entities=[]; State.gold=State.level.startGold; State.wave=1;
+        State.waveCountdownEnd=0; State.waveActive=false; State.towerTechLevel=1;
         State.level.mines.forEach(m=>State.entities.push(new Building(m.x+0.5,m.y+0.5,'Mine','neutral')));
         const b=State.level.waypoints[State.level.waypoints.length-1];
         if(b) {
-            State.entities.push(new Building(b.x+0.5, b.y+0.5, 'TownCenter', 'player'));
+            State.entities.push(new Building(b.x+0.5,b.y+0.5,'TownCenter','player'));
             State.grid[b.y*W+b.x]=GRID.BUILD;
-            State.entities.push(new Unit(b.x+1.5, b.y+0.5, 'Builder', 'player', 1));
+            State.entities.push(new Unit(b.x+1.5,b.y+0.5,'Builder','player',1));
         }
         const m=document.getElementById('hud-bot'); m.innerHTML='';
         [{n:'WALL',c:10,t:'Wall'},{n:'TOWER',c:80,t:'Tower'},{n:'BARRACKS',c:150,t:'Barracks'},{n:'BULLDOZER',c:100,t:'BUL'}].forEach(i=>{
             const b=document.createElement('div'); b.className='btn'; b.id=`btn-${i.t}`;
             b.innerHTML=`${i.n}<div class="cost">${i.c}</div>`;
-            b.onclick=(e)=>{e.stopPropagation(); Game.setPlacing({type:i.t,cost:i.c}); AudioEngine.play('sel'); };
+            b.onclick=(e)=>{e.stopPropagation();Game.setPlacing({type:i.t,cost:i.c});AudioEngine.play('sel');};
             m.appendChild(b);
         });
-        Game.ui(); Game.startWave(); State.lastUpkeep = Date.now();
+        Game.ui(); Game.startWave(); State.lastUpkeep=Date.now();
     },
+
     toMenu() {
-        State.mode='MENU'; document.querySelectorAll('.menu-screen').forEach(e=>e.classList.add('hidden'));
+        State.mode='MENU'; State.paused=false;
+        document.querySelectorAll('.menu-screen').forEach(e=>e.classList.add('hidden'));
         document.getElementById('main-menu').classList.remove('hidden');
         document.getElementById('hud-top').classList.add('hidden');
         document.getElementById('hud-bot').classList.add('hidden');
         document.getElementById('editor-ui').classList.add('hidden');
+        document.getElementById('wave-countdown').classList.add('hidden');
         Storage.load();
     },
+
     editor() {
-        Game.toMenu(); document.getElementById('main-menu').classList.add('hidden');
+        Game.toMenu();
+        document.getElementById('main-menu').classList.add('hidden');
         document.getElementById('editor-ui').classList.remove('hidden');
-        State.mode='EDITOR'; Editor.lvl={name:"New", grid:new Array(W*H).fill(0), mines:[], waypoints:[], startGold:600};
+        State.mode='EDITOR';
+        Editor.lvl={name:"New",grid:new Array(W*H).fill(0),mines:[],waypoints:[],startGold:600};
         State.grid=Editor.lvl.grid; State.level=Editor.lvl;
+        /* FIX #5: highlight default tool on open */
+        Editor.setTool('wall', document.getElementById('etool-wall'));
     }
 };
 
-// --- ENTITIES ---
-class Entity { constructor(x, y, type, team) { this.x=x; this.y=y; this.type=type; this.team=team; this.dead=false; this.hp=100; this.maxHp=100; this.level=1; this.id=Math.random(); } }
+// ─── ENTITIES ────────────────────────────────────────────────────────────────
+class Entity {
+    constructor(x,y,type,team){ this.x=x;this.y=y;this.type=type;this.team=team;this.dead=false;this.hp=100;this.maxHp=100;this.level=1;this.id=Math.random(); }
+}
 
 class Unit extends Entity {
-    constructor(x, y, type, team, level=1) {
-        super(x, y, type, team);
-        this.baseStats = { speed:2.5, radius:0.25, dmg:10, hp:60 };
+    constructor(x,y,type,team,level=1) {
+        super(x,y,type,team);
+        this.baseStats={speed:2.5,radius:0.25,dmg:10,hp:60};
         this.holdGold=false; this.path=[]; this.target=null; this.lastAtk=0; this.lastDmg=0;
-        this.wallHits=0; this.ignoreIds=[];
+        this.wallHits=0; this.ignoreIds=[]; this.flashFrames=0;
         this.applyLevel(level);
-        if(type==='Builder') { this.color=COLORS.builder; this.range=1.2; }
-        else if(team==='enemy') { this.configureEnemy(); }
-        else { this.color=COLORS.player; this.range=4.0; }
+        if(type==='Builder')      { this.color=COLORS.builder; this.range=1.2; }
+        else if(team==='enemy')   { this.configureEnemy(); }
+        else                      { this.color=COLORS.player;  this.range=4.0; }
     }
     applyLevel(lvl) {
-        this.level = lvl; const m = lvl - 1;
-        this.radius = this.baseStats.radius * (1 + m*0.03);
-        this.maxHp = this.baseStats.hp * (1 + m*0.04); this.hp = this.maxHp;
-        this.speed = this.baseStats.speed * (1 + m*0.02);
-        this.dmg = this.baseStats.dmg * (1 + m*0.03);
+        this.level=lvl; const m=lvl-1;
+        this.radius = this.baseStats.radius*(1+m*0.03);
+        this.maxHp  = this.baseStats.hp*(1+m*0.04); this.hp=this.maxHp;
+        this.speed  = this.baseStats.speed*(1+m*0.02);
+        this.dmg    = this.baseStats.dmg*(1+m*0.03);
     }
     configureEnemy() {
-        const idx = Math.min(8, Math.floor((this.dmg-5)/5));
-        this.color = ATK_COLORS[idx];
-        if(this.maxHp > 100) this.radius = 0.35; else this.radius = 0.25;
-        this.range = Math.max(2.0, this.level * 0.2); // Dynamic Range
+        const idx=Math.min(8,Math.floor((this.dmg-5)/5));
+        this.color=ATK_COLORS[idx];
+        this.radius=this.maxHp>100?0.35:0.25;
+        this.range=Math.max(2.0,this.level*0.2);
     }
     update(dt) {
-        // Soldier Regen
-        if(this.team === 'player' && this.type === 'Soldier' && Date.now() - this.lastDmg > 3000 && this.hp < this.maxHp) {
-            this.hp += this.maxHp * 0.01 * (dt/1000);
-            if(this.hp > this.maxHp) this.hp = this.maxHp;
+        // Soldier passive regen
+        if(this.team==='player' && this.type==='Soldier' && Date.now()-this.lastDmg>3000 && this.hp<this.maxHp) {
+            this.hp=Math.min(this.maxHp, this.hp + this.maxHp*0.01*(dt/1000));
         }
 
-        const targetTeam = this.team==='player'?'enemy':'player';
-        const foe = State.entities.find(e => 
-            e.team === targetTeam && !e.dead && !e.isRuin && 
+        const targetTeam=this.team==='player'?'enemy':'player';
+        const foe=State.entities.find(e=>
+            e.team===targetTeam && !e.dead && !e.isRuin &&
             !this.ignoreIds.includes(e.id) &&
-            Math.hypot(e.x - this.x, e.y - this.y) < this.range
+            Math.hypot(e.x-this.x,e.y-this.y)<this.range
         );
 
         if(foe) {
-            if(Date.now() > this.lastAtk+1000) {
-                // Wall Logic
-                if(this.team === 'enemy' && foe.type === 'Wall') {
+            if(Date.now()>this.lastAtk+1000) {
+                // Wall evasion logic
+                if(this.team==='enemy' && foe.type==='Wall') {
                     this.wallHits++;
-                    if(this.wallHits > 2) {
-                        this.ignoreIds.push(foe.id); // Ignore this wall
-                        this.wallHits = 0;
-                        return; // Move instead of attack
-                    }
+                    if(this.wallHits>2) { this.ignoreIds.push(foe.id); this.wallHits=0; return; }
                 }
-                
                 foe.takeDamage(this.dmg);
-                if(foe.dead && foe.team==='enemy') { 
-                    State.gold += Math.ceil(foe.level * 2.5); 
-                    Game.ui(); 
-                    Game.toast(`+${Math.ceil(foe.level*2.5)}g`, this.x, this.y, '#ffd700'); 
+                /* FIX #1: gold awarded ONLY here — removed duplicate in takeDamage() */
+                if(foe.dead && foe.team==='enemy') {
+                    State.gold+=Math.ceil(foe.level*2.5);
+                    Game.ui();
+                    Game.toast(`+${Math.ceil(foe.level*2.5)}g`, foe.x, foe.y, '#ffd700');
                 }
-                State.particles.push({x:this.x,y:this.y,tx:foe.x,ty:foe.y,life:5,c:'#fff'}); AudioEngine.play('hit');
-                this.lastAtk=Date.now();
-            } return;
+                State.particles.push({x:this.x,y:this.y,tx:foe.x,ty:foe.y,life:5,c:'#fff'});
+                AudioEngine.play('hit'); this.lastAtk=Date.now();
+            }
+            return;
         }
 
-        let dest = null;
+        let dest=null;
         if(this.team==='enemy') {
             if(this.wpIdx===undefined) this.wpIdx=0;
             const wp=State.level.waypoints[this.wpIdx];
-            if(wp) { dest={x:wp.x+0.5, y:wp.y+0.5}; if(Math.hypot(dest.x-this.x, dest.y-this.y) < 0.2) this.wpIdx++; }
+            if(wp){ dest={x:wp.x+0.5,y:wp.y+0.5}; if(Math.hypot(dest.x-this.x,dest.y-this.y)<0.2) this.wpIdx++; }
         } else if(this.type==='Builder') {
-            const capacity = 10 + (this.level * 2);
-            // HEAL LOGIC
-            if(this.state === 'HEALING') {
-                if(this.hp >= this.maxHp || State.gold < 1) { this.state = 'IDLE'; } 
+            const capacity=10+(this.level*2);
+            if(this.state==='HEALING') {
+                if(this.hp>=this.maxHp || State.gold<1) { this.state='IDLE'; }
                 else {
-                    this.hp += this.maxHp * 0.1 * (dt/1000); // 10%/sec
-                    // Cost calc approximated for frame: 1g per 10%
-                    // Probability based cost application to avoid floats
-                    if(Math.random() < (dt/1000)) { State.gold--; Game.ui(); }
-                    return; // Busy healing
+                    this.hp=Math.min(this.maxHp, this.hp+this.maxHp*0.1*(dt/1000));
+                    if(Math.random()<(dt/1000)) { State.gold--; Game.ui(); }
+                    return;
+                }
+            }
+            if(this.holdGold) {
+                const tc=State.entities.find(e=>e.type==='TownCenter');
+                if(tc){
+                    dest={x:tc.x,y:tc.y};
+                    if(Math.hypot(dest.x-this.x,dest.y-this.y)<1.5){
+                        State.gold+=capacity; this.holdGold=false; Game.ui(); AudioEngine.play('gold');
+                        if(this.hp<this.maxHp && State.gold>5) this.state='HEALING';
+                    }
+                }
+            } else {
+                const mine=State.entities.find(e=>e.type==='Mine'&&!e.dead);
+                if(mine){
+                    dest={x:mine.x,y:mine.y};
+                    if(Math.hypot(dest.x-this.x,dest.y-this.y)<1.5){
+                        this.holdGold=true;
+                        if(mine.capacity>0){ mine.capacity-=capacity; if(mine.capacity<=0) mine.takeDamage(9999); }
+                    }
+                }
+            }
+        } else if(this.target) {
+            dest=this.target; if(Math.hypot(dest.x-this.x,dest.y-this.y)<0.1) this.target=null;
+        }
+
+        if(dest) {
+            if(this.team==='enemy' || (this.type==='Builder'&&this.holdGold)) this.moveSmart(dest.x,dest.y,dt);
+            else this.move(dest.x,dest.y,dt);
+        }
+    }
+
+    moveSmart(tx,ty,dt) {
+        // When start===end, A* returns [] (truthy but empty) — never store it or the unit freezes.
+        // When no valid path exists, fall back to direct movement (same pattern as move()).
+        let nx=tx, ny=ty;
+        if(!this.path||this.path.length===0||Math.random()<0.05){
+            const p=Pathfinder.findPath(Math.floor(this.x),Math.floor(this.y),Math.floor(tx),Math.floor(ty),State.grid);
+            if(p && p.length>0) this.path=p; else this.path=null;
+        }
+        if(this.path&&this.path.length>0){
+            const next=this.path[0];
+            const d2=Math.hypot(next.x+0.5-this.x,next.y+0.5-this.y);
+            if(d2<0.1) this.path.shift();
+            nx=next.x+0.5; ny=next.y+0.5;
+        }
+        // Always commit a step — toward path node if we have one, directly toward target otherwise
+        const d=Math.hypot(nx-this.x,ny-this.y);
+        const step=this.speed*(dt/1000);
+        if(d>step){ this.x+=(nx-this.x)/d*step; this.y+=(ny-this.y)/d*step; }
+        else { this.x=nx; this.y=ny; }
+    }
+
+    /* FIX #17: accepts dt */
+    move(tx,ty,dt) {
+        let nx=tx, ny=ty;
+        const dist=Math.hypot(tx-this.x,ty-this.y);
+        if(dist>0.5&&(!this.path||this.path.length===0||Math.random()<0.05)){
+            const p=Pathfinder.findPath(Math.floor(this.x),Math.floor(this.y),Math.floor(tx),Math.floor(ty),State.grid);
+            if(p) this.path=p;
+        }
+        if(this.path&&this.path.length>0){
+            const next=this.path[0];
+            const d2=Math.hypot(next.x+0.5-this.x,next.y+0.5-this.y);
+            if(d2<0.1) this.path.shift();
+            nx=next.x+0.5; ny=next.y+0.5;
+        }
+        const d=Math.hypot(nx-this.x,ny-this.y);
+        const step=this.speed*(dt/1000);
+        if(d>step){ this.x+=(nx-this.x)/d*step; this.y+=(ny-this.y)/d*step; }
+        else { this.x=nx; this.y=ny; }
+    }
+
+    takeDamage(n) {
+        this.hp-=n; this.lastDmg=Date.now(); this.flashFrames=3; AudioEngine.play('hit');
+        if(this.hp<=0 && !this.dead) {
+            this.dead=true;
+            /* FIX #1: gold grant REMOVED from here; handled in Unit.update() to prevent double-award */
+        }
+    }
+
+    draw(ctx) {
+        const cx=this.x*TILE, cy=this.y*TILE;
+        const r=this.radius*TILE;  // ~10px normal, ~14px boss
+
+        ctx.save();
+
+        // ── Universal dark outline: renders sprite readable on ANY terrain ──
+        ctx.fillStyle='rgba(0,0,0,0.55)';
+        ctx.beginPath(); ctx.arc(cx,cy,r+2.5,0,Math.PI*2); ctx.fill();
+
+        if(this.team==='enemy') {
+            // 6-pointed star polygon — angular and menacing
+            ctx.fillStyle=this.color;
+            ctx.beginPath();
+            for(let i=0;i<6;i++){
+                const a=i/6*Math.PI*2 - Math.PI/2;
+                const rad=(i%2===0)?r:r*0.62;
+                i===0 ? ctx.moveTo(cx+Math.cos(a)*rad,cy+Math.sin(a)*rad)
+                      : ctx.lineTo(cx+Math.cos(a)*rad,cy+Math.sin(a)*rad);
+            }
+            ctx.closePath(); ctx.fill();
+            // Glowing red eyes
+            ctx.fillStyle='#200';
+            ctx.beginPath(); ctx.arc(cx-r*0.28,cy-r*0.12,r*0.24,0,Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(cx+r*0.28,cy-r*0.12,r*0.24,0,Math.PI*2); ctx.fill();
+            ctx.fillStyle='#f33';
+            ctx.beginPath(); ctx.arc(cx-r*0.28,cy-r*0.12,r*0.13,0,Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(cx+r*0.28,cy-r*0.12,r*0.13,0,Math.PI*2); ctx.fill();
+            // Boss gold crown spikes
+            if(this.color===COLORS.boss) {
+                ctx.fillStyle='#ffd700';
+                for(let i=-1;i<=1;i++){
+                    ctx.beginPath();
+                    ctx.moveTo(cx+i*r*0.44,cy-r*0.95);
+                    ctx.lineTo(cx+i*r*0.44-r*0.15,cy-r*0.58);
+                    ctx.lineTo(cx+i*r*0.44+r*0.15,cy-r*0.58);
+                    ctx.closePath(); ctx.fill();
                 }
             }
 
+        } else if(this.type==='Builder') {
+            // Circle body
+            ctx.fillStyle=this.color;
+            ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+            // Yellow hardhat (flat ellipse arcing over the top)
+            ctx.fillStyle='#e6b800';
+            ctx.beginPath(); ctx.ellipse(cx,cy-r*0.5,r*0.92,r*0.44,0,Math.PI,0); ctx.fill();
+            // Hardhat brim line
+            ctx.fillStyle='#c9a200';
+            ctx.fillRect(cx-r*0.92,cy-r*0.5,r*1.84,r*0.16);
+            // Skin face
+            ctx.fillStyle='#c8a87a';
+            ctx.beginPath(); ctx.arc(cx,cy+r*0.05,r*0.46,0,Math.PI*2); ctx.fill();
+            // Wrench (L-shape in grey)
+            const lw=Math.max(1.5,r*0.16);
+            ctx.strokeStyle='#bbb'; ctx.lineWidth=lw; ctx.lineCap='round';
+            ctx.beginPath(); ctx.moveTo(cx+r*0.72,cy+r*0.22); ctx.lineTo(cx+r*1.08,cy-r*0.22); ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(cx+r*1.08,cy-r*0.22); ctx.lineTo(cx+r*1.22,cy-r*0.08); ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(cx+r*1.08,cy-r*0.22); ctx.lineTo(cx+r*0.94,cy-r*0.38); ctx.stroke();
+            // Gold sack when carrying
             if(this.holdGold) {
-                const tc=State.entities.find(e=>e.type==='TownCenter');
-                if(tc) { 
-                    dest={x:tc.x,y:tc.y}; 
-                    if(Math.hypot(dest.x-this.x,dest.y-this.y)<1.5){ 
-                        State.gold+=capacity; this.holdGold=false; Game.ui(); AudioEngine.play('gold'); 
-                        if(this.hp < this.maxHp && State.gold > 5) this.state = 'HEALING'; // Enter heal mode
-                    } 
-                }
-            } else {
-                const m=State.entities.find(e=>e.type==='Mine' && !e.dead);
-                if(m) { dest={x:m.x,y:m.y}; if(Math.hypot(dest.x-this.x,dest.y-this.y)<1.5) { this.holdGold=true; if(m.capacity>0) { m.capacity -= capacity; if(m.capacity<=0) m.takeDamage(9999); } } }
+                ctx.fillStyle='#ffd700';
+                ctx.beginPath(); ctx.arc(cx-r*0.82,cy+r*0.28,r*0.32,0,Math.PI*2); ctx.fill();
+                ctx.fillStyle='#a07800'; ctx.lineWidth=1;
+                ctx.beginPath(); ctx.arc(cx-r*0.82,cy+r*0.28,r*0.32,0,Math.PI*2); ctx.stroke();
             }
-        } else if(this.target) {
-            dest = this.target; if(Math.hypot(dest.x-this.x, dest.y-this.y) < 0.1) this.target=null;
+
+        } else {
+            // Soldier: circle body + helmet
+            ctx.fillStyle=this.color;
+            ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+            // Darker helmet covering the top half
+            ctx.fillStyle='#194a82';
+            ctx.beginPath(); ctx.ellipse(cx,cy-r*0.28,r*0.88,r*0.68,0,Math.PI,0); ctx.fill();
+            // Skin face strip
+            ctx.fillStyle='#c8a87a';
+            ctx.beginPath(); ctx.arc(cx,cy+r*0.08,r*0.44,0,Math.PI*2); ctx.fill();
+            // Chin strap
+            ctx.fillStyle='#14406e';
+            ctx.fillRect(cx-r*0.44,cy+r*0.28,r*0.14,r*0.32);
+            ctx.fillRect(cx+r*0.30,cy+r*0.28,r*0.14,r*0.32);
         }
-        
-        if(dest) { 
-            // Enemies or Loaded Builders use smart pathing to avoid walls/obstacles
-            if(this.team === 'enemy' || (this.type === 'Builder' && this.holdGold)) this.moveSmart(dest.x, dest.y); 
-            else this.move(dest.x, dest.y); 
+
+        // Hit flash: white overlay for flashFrames frames after taking damage
+        if(this.flashFrames>0) {
+            ctx.globalAlpha=0.55;
+            ctx.fillStyle='#ffffff';
+            ctx.beginPath(); ctx.arc(cx,cy,r+1,0,Math.PI*2); ctx.fill();
+            ctx.globalAlpha=1;
+            this.flashFrames--;
         }
-    }
-    moveSmart(tx, ty) {
-        if(Math.hypot(tx-this.x, ty-this.y) < 0.1) return;
-        if(!this.path || this.path.length===0 || Math.random()<0.05) { const p = Pathfinder.findPath(Math.floor(this.x), Math.floor(this.y), Math.floor(tx), Math.floor(ty), State.grid); if(p) this.path = p; }
-        if(this.path && this.path.length > 0) {
-            const next = this.path[0];
-            const d = Math.hypot(next.x+0.5 - this.x, next.y+0.5 - this.y);
-            if(d < 0.1) this.path.shift();
-            else { const step = this.speed * 0.016; this.x += (next.x+0.5 - this.x)/d * step; this.y += (next.y+0.5 - this.y)/d * step; }
-        } else this.move(tx, ty);
-    }
-    move(tx, ty) {
-        let nx=tx, ny=ty; const dist = Math.hypot(tx-this.x, ty-this.y);
-        if(dist > 0.5 && (!this.path || this.path.length===0 || Math.random()<0.05)) { const p = Pathfinder.findPath(Math.floor(this.x), Math.floor(this.y), Math.floor(tx), Math.floor(ty), State.grid); if(p) this.path = p; }
-        if(this.path && this.path.length > 0) {
-            const next = this.path[0]; const d2 = Math.hypot(next.x+0.5-this.x, next.y+0.5-this.y);
-            if(d2 < 0.1) this.path.shift(); nx = next.x+0.5; ny = next.y+0.5;
+
+        ctx.restore();
+
+        // Level dots (above sprite)
+        if(this.team==='player') drawLevelDots(ctx,cx,cy-r-10,this.level);
+        // HP bar
+        ctx.fillStyle='#600'; ctx.fillRect(cx-10,cy-r-16,20,3);
+        ctx.fillStyle='#0f0'; ctx.fillRect(cx-10,cy-r-16,20*(this.hp/this.maxHp),3);
+        // Selection ring
+        if(State.selection===this){
+            ctx.strokeStyle='#fff'; ctx.lineWidth=2;
+            ctx.beginPath(); ctx.arc(cx,cy,r+5,0,Math.PI*2); ctx.stroke();
         }
-        const d = Math.hypot(nx-this.x, ny-this.y); const step = this.speed * 0.016; 
-        if(d > step) { this.x += (nx-this.x)/d * step; this.y += (ny-this.y)/d * step; } else { this.x = nx; this.y = ny; }
-    }
-    takeDamage(n) { 
-        this.hp-=n; this.lastDmg=Date.now(); AudioEngine.play('hit'); 
-        if(this.hp<=0 && !this.dead) {
-            this.dead=true;
-            if(this.team==='enemy') { 
-                State.gold += Math.ceil(this.level * 2.5); // Economy Fix
-                Game.ui(); 
-                Game.toast(`+${Math.ceil(this.level*2.5)}g`, this.x, this.y, '#ffd700'); 
-            }
-        }
-    }
-    draw(ctx) {
-        const cx=this.x*TILE, cy=this.y*TILE; ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(cx, cy, this.radius*TILE, 0, Math.PI*2); ctx.fill();
-        if(this.team === 'player') drawLevelDots(ctx, cx, cy - 15, this.level);
-        ctx.fillStyle='red'; ctx.fillRect(cx-10,cy-20,20,3); ctx.fillStyle='#0f0'; ctx.fillRect(cx-10,cy-20,20*(this.hp/this.maxHp),3);
-        if(State.selection===this) { ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.stroke(); }
     }
 }
 
 class Building extends Entity {
-    constructor(x, y, type, team='player') { super(x, y, type, team); this.maxHp = type==='TownCenter'?2000:500; this.hp=100; this.progress=0; this.lastS=0; this.capacity = 500; this.isRuin = false; }
+    constructor(x,y,type,team='player') {
+        super(x,y,type,team);
+        this.maxHp=type==='TownCenter'?2000:500;
+        /* FIX #6: TownCenter starts fully built at full HP; player-placed buildings start under construction */
+        this.progress = type==='TownCenter' ? 100 : 0;
+        this.hp       = type==='TownCenter' ? this.maxHp : 1;
+        this.lastS=0; this.capacity=500; this.isRuin=false;
+    }
     update() {
         if(this.isRuin) return;
-        if(this.progress < 100) { this.progress+=0.5; this.hp=(this.progress/100)*this.maxHp; }
-        else if(this.type==='TownCenter' || this.type==='Tower') {
-            const rng = this.type==='Tower'?6:4;
+        if(this.progress<100){ this.progress+=0.5; this.hp=(this.progress/100)*this.maxHp; }
+        else if(this.type==='TownCenter'||this.type==='Tower') {
+            // Range and damage scale with this tower's own level
+            const rng = this.type==='Tower' ? 5 + this.level : 4;
+            const dmg = 20 + (this.level * 5);
             if(Date.now()>this.lastS+1000) {
-                const f=State.entities.find(e=>e.team==='enemy' && Math.hypot(e.x-this.x, e.y-this.y)<rng);
-                if(f) { f.takeDamage(20 + (this.level*2)); State.particles.push({x:this.x,y:this.y,tx:f.x,ty:f.y,life:5,c:COLORS.player}); AudioEngine.play('shoot'); this.lastS=Date.now(); }
+                // Only target living enemies (!e.dead prevents double-rewarding a kill)
+                const f=State.entities.find(e=>e.team==='enemy' && !e.dead && Math.hypot(e.x-this.x,e.y-this.y)<rng);
+                if(f){
+                    const wasAlive = !f.dead;   // always true here, but explicit for clarity
+                    f.takeDamage(dmg);
+                    State.particles.push({x:this.x,y:this.y,tx:f.x,ty:f.y,life:5,c:COLORS.player});
+                    AudioEngine.play('shoot');
+                    this.lastS=Date.now();
+                    // Award gold only if THIS shot was the kill (wasAlive → now dead)
+                    if(wasAlive && f.dead){
+                        const reward=Math.ceil(f.level*2.5);
+                        State.gold+=reward;
+                        Game.ui();
+                        Game.toast(`+${reward}g`,f.x,f.y,'#ffd700');
+                    }
+                }
             }
         }
     }
-    takeDamage(n) { 
+    takeDamage(n) {
         if(this.isRuin) return; this.hp-=n; AudioEngine.play('hit');
-        if(this.type === 'TownCenter') { const ov = document.getElementById('ui'); ov.style.boxShadow="inset 0 0 50px red"; setTimeout(()=>ov.style.boxShadow="none", 100); }
-        if(this.hp<=0) { 
-            if(this.type==='TownCenter') { document.getElementById('game-over-screen').classList.remove('hidden'); State.gameOver=true; AudioEngine.play('alarm'); }
-            else if(this.type==='Mine') {
-                this.dead = true; let found=false, tries=0;
-                while(!found && tries<100) {
+        if(this.type==='TownCenter'){ const ov=document.getElementById('ui'); ov.style.boxShadow="inset 0 0 50px red"; setTimeout(()=>ov.style.boxShadow="none",100); }
+        if(this.hp<=0){
+            if(this.type==='TownCenter'){
+                /* FIX #10: track best wave */
+                const survived=State.wave-1;
+                if(survived>State.bestWave){ State.bestWave=survived; localStorage.setItem('pc_best_wave',survived); }
+                document.getElementById('go-wave').textContent=`Survived ${survived} wave${survived!==1?'s':''}`;
+                document.getElementById('go-best').textContent=`Personal best: Wave ${State.bestWave}`;
+                document.getElementById('game-over-screen').classList.remove('hidden');
+                State.gameOver=true; AudioEngine.play('alarm');
+            } else if(this.type==='Mine'){
+                this.dead=true; let found=false, tries=0;
+                while(!found&&tries<100){
                     const rx=Math.floor(Math.random()*W), ry=Math.floor(Math.random()*H);
-                    if(State.grid[ry*W+rx]===GRID.GRASS) { State.entities.push(new Building(rx+0.5, ry+0.5, 'Mine', 'neutral')); found=true; } tries++;
+                    if(State.grid[ry*W+rx]===GRID.GRASS){ State.entities.push(new Building(rx+0.5,ry+0.5,'Mine','neutral')); found=true; } tries++;
                 }
-            } else { this.isRuin = true; this.hp = 0; }
+            } else {
+                this.isRuin=true; this.hp=0;
+                /* FIX #4: free grid cell so player can build on the ruin site */
+                State.grid[Math.floor(this.y)*W+Math.floor(this.x)]=GRID.GRASS;
+            }
         }
     }
     draw(ctx) {
         const cx=this.x*TILE, cy=this.y*TILE, sz=TILE*0.8;
-        if(this.isRuin) { ctx.fillStyle = COLORS.ruin; ctx.fillRect(cx-sz/2, cy-sz/2, sz, sz); ctx.strokeStyle = '#000'; ctx.beginPath(); ctx.moveTo(cx-sz/2, cy-sz/2); ctx.lineTo(cx+sz/2, cy+sz/2); ctx.stroke(); return; }
+        if(this.isRuin){
+            ctx.fillStyle=COLORS.ruin; ctx.fillRect(cx-sz/2,cy-sz/2,sz,sz);
+            ctx.strokeStyle='#000'; ctx.beginPath(); ctx.moveTo(cx-sz/2,cy-sz/2); ctx.lineTo(cx+sz/2,cy+sz/2); ctx.stroke();
+            return;
+        }
         if(this.progress<100) ctx.globalAlpha=0.5;
-        if(this.type==='Barracks') { ctx.fillStyle = COLORS.barracks; ctx.fillRect(cx-sz/2, cy-sz/4, sz, sz*0.75); ctx.beginPath(); ctx.moveTo(cx-sz/2, cy-sz/4); ctx.lineTo(cx, cy-sz/1.2); ctx.lineTo(cx+sz/2, cy-sz/4); ctx.fill(); } 
-        else if (this.type==='Tower') { ctx.fillStyle = COLORS.tower; ctx.fillRect(cx-sz/3, cy-sz/2, sz*0.66, sz); ctx.fillStyle = '#632'; ctx.fillRect(cx-sz/2, cy-sz/2, sz, sz/3); } 
-        else if (this.type==='TownCenter') { ctx.fillStyle = '#444'; ctx.fillRect(cx-sz/1.5, cy-sz/1.5, sz*1.33, sz*1.33); ctx.fillStyle = COLORS.towncenter; ctx.fillRect(cx-sz/2, cy-sz/2, sz, sz); ctx.fillStyle = '#333'; ctx.beginPath(); ctx.arc(cx-sz/1.5, cy-sz/1.5, 5, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(cx+sz/1.5, cy-sz/1.5, 5, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(cx-sz/1.5, cy+sz/1.5, 5, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(cx+sz/1.5, cy+sz/1.5, 5, 0, Math.PI*2); ctx.fill(); } 
-        else { ctx.fillStyle = this.type==='Mine'?COLORS.mine:COLORS.wall; ctx.fillRect(cx-sz/2, cy-sz/2, sz, sz); }
+        if(this.type==='Barracks'){
+            ctx.fillStyle=COLORS.barracks; ctx.fillRect(cx-sz/2,cy-sz/4,sz,sz*0.75);
+            ctx.beginPath(); ctx.moveTo(cx-sz/2,cy-sz/4); ctx.lineTo(cx,cy-sz/1.2); ctx.lineTo(cx+sz/2,cy-sz/4); ctx.fill();
+        } else if(this.type==='Tower'){
+            ctx.fillStyle=COLORS.tower; ctx.fillRect(cx-sz/3,cy-sz/2,sz*0.66,sz);
+            ctx.fillStyle='#632'; ctx.fillRect(cx-sz/2,cy-sz/2,sz,sz/3);
+        } else if(this.type==='TownCenter'){
+            ctx.fillStyle='#444'; ctx.fillRect(cx-sz/1.5,cy-sz/1.5,sz*1.33,sz*1.33);
+            ctx.fillStyle=COLORS.towncenter; ctx.fillRect(cx-sz/2,cy-sz/2,sz,sz);
+            ctx.fillStyle='#333';
+            [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([dx,dy])=>{ ctx.beginPath(); ctx.arc(cx+dx*sz/1.5,cy+dy*sz/1.5,5,0,Math.PI*2); ctx.fill(); });
+        } else {
+            ctx.fillStyle=this.type==='Mine'?COLORS.mine:COLORS.wall;  /* FIX #14: COLORS.wall now defined */
+            ctx.fillRect(cx-sz/2,cy-sz/2,sz,sz);
+        }
         ctx.globalAlpha=1.0;
-        if(this.progress >= 100 && (this.type === 'Barracks' || this.type === 'TownCenter')) drawLevelDots(ctx, cx, cy - sz/1.3, this.level);
-        if(this.progress<100) { ctx.fillStyle='cyan'; ctx.fillRect(cx-15, cy-25, 30*(this.progress/100), 5); } 
-        else { ctx.fillStyle='red'; ctx.fillRect(cx-15, cy-25, 30, 4); ctx.fillStyle='#0f0'; ctx.fillRect(cx-15, cy-25, 30*(this.hp/this.maxHp), 4); }
-        if(State.selection===this) { ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.strokeRect(cx-sz/2-2,cy-sz/2-2,sz+4,sz+4); }
+        if(this.progress>=100&&(this.type==='Barracks'||this.type==='TownCenter')) drawLevelDots(ctx,cx,cy-sz/1.3,this.level);
+        if(this.progress<100){ ctx.fillStyle='cyan'; ctx.fillRect(cx-15,cy-25,30*(this.progress/100),5); }
+        else{ ctx.fillStyle='red'; ctx.fillRect(cx-15,cy-25,30,4); ctx.fillStyle='#0f0'; ctx.fillRect(cx-15,cy-25,30*(this.hp/this.maxHp),4); }
+        if(State.selection===this){ ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.strokeRect(cx-sz/2-2,cy-sz/2-2,sz+4,sz+4); }
     }
 }
 
-// --- SYSTEM ---
+// ─── STORAGE ─────────────────────────────────────────────────────────────────
 const Storage = {
-    save(lvl) { let d = JSON.parse(localStorage.getItem(SAVE_ID))||[]; d.push(lvl); localStorage.setItem(SAVE_ID, JSON.stringify(d)); },
-    load() {
-        let d = JSON.parse(localStorage.getItem(SAVE_ID)); if(!d) d = this.def();
-        const l = document.getElementById('level-list'); l.innerHTML='';
-        d.forEach(v => {
-            const b=document.createElement('div'); b.className='big-btn'; b.style.fontSize='16px'; b.innerText=v.name;
-            b.onclick=()=>Game.play(v); l.appendChild(b);
-        });
+    save(lvl){ let d=JSON.parse(localStorage.getItem(SAVE_ID))||[]; d.push(lvl); localStorage.setItem(SAVE_ID,JSON.stringify(d)); },
+    load(){
+        let d=JSON.parse(localStorage.getItem(SAVE_ID)); if(!d) d=this.def();
+        const l=document.getElementById('level-list'); l.innerHTML='';
+        d.forEach(v=>{ const b=document.createElement('div'); b.className='big-btn'; b.style.fontSize='16px'; b.innerText=v.name; b.onclick=()=>Game.play(v); l.appendChild(b); });
     },
-    wipe() { localStorage.removeItem(SAVE_ID); location.reload(); },
-    def() {
-        const g = new Array(W*H).fill(0); for(let x=8;x<32;x++) g[15*W+x]=GRID.ROCK; g[15*W+20]=0; 
-        const d = [{name:"Training Camp", grid:g, mines:[{x:10,y:10},{x:30,y:20}], waypoints:[{x:20,y:35},{x:20,y:20},{x:5,y:20},{x:5,y:5}], startGold:600}];
-        localStorage.setItem(SAVE_ID, JSON.stringify(d)); return d;
+    wipe(){ localStorage.removeItem(SAVE_ID); location.reload(); },
+    def(){
+        const g=new Array(W*H).fill(0); for(let x=8;x<32;x++) g[15*W+x]=GRID.ROCK; g[15*W+20]=0;
+        const d=[{name:"Training Camp",grid:g,mines:[{x:10,y:10},{x:30,y:20}],waypoints:[{x:20,y:35},{x:20,y:20},{x:5,y:20},{x:5,y:5}],startGold:600}];
+        localStorage.setItem(SAVE_ID,JSON.stringify(d)); return d;
     }
 };
 
+// ─── EDITOR ──────────────────────────────────────────────────────────────────
 const Editor = {
-    tool: 'wall', lvl: null,
-    drawOverlay() {
+    tool:'wall', lvl:null,
+    drawOverlay(){
         Game.drawMap();
         ctx.fillStyle=COLORS.mine; this.lvl.mines.forEach(m=>ctx.fillRect(m.x*TILE+10,m.y*TILE+10,20,20));
         ctx.strokeStyle='#fff'; ctx.beginPath();
-        this.lvl.waypoints.forEach((p,i)=>{ const x=p.x*TILE+20, y=p.y*TILE+20; if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y); ctx.strokeText(i,x,y); }); ctx.stroke();
+        this.lvl.waypoints.forEach((p,i)=>{ const x=p.x*TILE+20,y=p.y*TILE+20; if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y); ctx.strokeText(i,x,y); }); ctx.stroke();
     },
-    paint(w) {
+    paint(w){
         if(w.tx<0||w.tx>=W||w.ty<0||w.ty>=H) return;
         const i=w.ty*W+w.tx;
-        if(this.tool==='wall') this.lvl.grid[i]=GRID.ROCK;
+        if(this.tool==='wall')  this.lvl.grid[i]=GRID.ROCK;
         if(this.tool==='water') this.lvl.grid[i]=GRID.WATER;
         if(this.tool==='grass') this.lvl.grid[i]=GRID.GRASS;
-        if(this.tool==='mine') { const f=this.lvl.mines.findIndex(m=>m.x===w.tx&&m.y===w.ty); if(f<0)this.lvl.mines.push({x:w.tx,y:w.ty}); }
-        if(this.tool==='path') this.lvl.waypoints.push({x:w.tx,y:w.ty});
+        if(this.tool==='mine')  { const f=this.lvl.mines.findIndex(m=>m.x===w.tx&&m.y===w.ty); if(f<0) this.lvl.mines.push({x:w.tx,y:w.ty}); }
+        if(this.tool==='path')  this.lvl.waypoints.push({x:w.tx,y:w.ty});
+        /* FIX #13: erase tool clears terrain + mine + waypoint at tile */
+        if(this.tool==='erase'){
+            this.lvl.grid[i]=GRID.GRASS;
+            this.lvl.mines     = this.lvl.mines.filter(m=>!(m.x===w.tx&&m.y===w.ty));
+            this.lvl.waypoints = this.lvl.waypoints.filter(p=>!(p.x===w.tx&&p.y===w.ty));
+        }
     },
-    save() { this.lvl.name=document.getElementById('lvl-name').value; Storage.save(this.lvl); alert("Saved"); },
-    setTool(t) { this.tool=t; document.querySelectorAll('#editor-ui .btn').forEach(b=>b.classList.remove('selected')); }
+    /* FIX #13: clear all waypoints */
+    clearPath(){ this.lvl.waypoints=[]; },
+    save(){
+        /* FIX #12: validate before saving */
+        if(this.lvl.waypoints.length<2){ alert("Need at least 2 path points.\nFirst point = enemy spawn, last point = your base location."); return; }
+        if(this.lvl.mines.length<1)    { alert("Add at least one Gold Mine (GOLD tool)."); return; }
+        this.lvl.name = document.getElementById('lvl-name').value.trim() || 'Unnamed Map';
+        Storage.save(this.lvl); alert("Saved!");
+    },
+    /* FIX #5: accept btn element, add .selected to the new active tool */
+    setTool(t, btn){
+        this.tool=t;
+        document.querySelectorAll('#editor-ui .btn').forEach(b=>b.classList.remove('selected'));
+        if(btn) btn.classList.add('selected');
+    }
 };
 
-// --- BOOT ---
+// ─── BOOT ────────────────────────────────────────────────────────────────────
 Input.init();
 Game.toMenu();
-Game.loop();
+requestAnimationFrame(Game.loop);
 </script>
 </body>
 </html>
