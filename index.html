@@ -7,37 +7,36 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Pocket Commander v22</title>
-
-    <link rel="manifest" href='data:application/manifest+json;base64,ewogICJuYW1lIjogIlBvY2tldCBDb21tYW5kZXIiLAogICJzaG9ydF9uYW1lIjogIlBvY2tldFJUUyIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiZGlzcGxheSI6ICJmdWxsc2NyZWVuIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjMGIwYjBmIiwKICAidGhlbWVfY29sb3IiOiAiIzBiMGIwZiIsCiAgImljb25zIjogW10KfQ=='>
+    <title>Pocket Commander v27</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    <link rel="apple-touch-icon" href="icon-192.png">
 
     <style>
         :root { --bg: #0b0b0f; --panel: rgba(25, 30, 40, 0.98); --accent: #00ffcc; --danger: #ff4444; }
         body { margin: 0; overflow: hidden; background: var(--bg); font-family: 'Segoe UI', sans-serif; user-select: none; color: white; -webkit-user-select: none; touch-action: none; overscroll-behavior: none; }
         canvas { display: block; width: 100%; height: 100%; }
-
+        
         #ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; z-index: 10; }
         .pointer-auto { pointer-events: auto; }
         .hidden { display: none !important; }
 
         /* HUD */
-        .top-bar { background: var(--panel); padding: 8px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; min-height: 40px; }
-        .stats { font-size: 16px; font-weight: bold; color: #ffd700; text-shadow: 1px 1px 0 #000; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
+        .top-bar { background: var(--panel); padding: 8px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; height: 40px; }
+        .stats { font-size: 16px; font-weight: bold; color: #ffd700; text-shadow: 1px 1px 0 #000; display: flex; gap:15px; }
         .bot-bar { background: var(--panel); padding: 10px; display: flex; gap: 8px; overflow-x: auto; border-top: 2px solid #333; justify-content: center; min-height: 80px; align-items: center; }
-
+        
         /* BUTTONS */
-        .btn {
-            background: #2a2a35; border: 2px solid #4a4a55; color: #eee;
-            min-width: 65px; height: 65px; border-radius: 6px;
+        .btn { 
+            background: #2a2a35; border: 2px solid #4a4a55; color: #eee; 
+            min-width: 65px; height: 65px; border-radius: 6px; 
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             font-size: 10px; font-weight: bold; cursor: pointer; position: relative; transition: background 0.1s;
         }
         .btn:active { transform: scale(0.95); background: #3a3a45; }
         .btn.selected { border-color: var(--accent); background: #1a3a3a; box-shadow: 0 0 10px var(--accent) inset; color: var(--accent); }
         .cost { color: #ffd700; margin-top: 3px; font-size: 12px; }
-        .nav-btn { padding: 6px 12px; border: 1px solid #555; background: #333; color: white; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 14px; line-height: 1.2; }
-        /* FIX: muted state styling */
-        .nav-btn.muted { border-color: var(--danger); color: var(--danger); }
+        .nav-btn { padding: 8px 16px; border: 1px solid #555; background: #333; color: white; border-radius: 4px; font-weight: bold; cursor: pointer; }
 
         /* MENUS */
         .menu-screen { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.92); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20; padding: 20px; box-sizing: border-box; }
@@ -55,246 +54,519 @@
         .help-text h3 { color: var(--accent); border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 20px; }
         .help-text a { color: #4da6ff; text-decoration: none; }
 
-        /* TOAST — FIX: no hardcoded center; left/top set from JS */
-        .toast { position: absolute; color: var(--accent); font-weight: bold; font-size: 15px; pointer-events: none; text-shadow: 0 2px 4px black; animation: floatUp 1.5s forwards; white-space: nowrap; z-index: 100; }
-        @keyframes floatUp { 0% { opacity:1; transform:translate(-50%,-50%); } 100% { opacity:0; transform:translate(-50%,calc(-50% - 60px)); } }
-
+        /* TOAST */
+        .toast { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--accent); font-weight: bold; font-size: 20px; pointer-events: none; text-shadow: 0 2px 4px black; animation: floatUp 1.5s forwards; white-space: nowrap; z-index: 100; }
+        @keyframes floatUp { 0% { opacity: 1; transform: translate(-50%, -50%); } 100% { opacity: 0; transform: translate(-50%, -100px); } }
+        
         .upkeep-anim { color: #ff4444 !important; animation: shake 0.5s; }
-        @keyframes shake { 0%,100% { transform:translateX(0); } 25% { transform:translateX(-5px); } 75% { transform:translateX(5px); } }
+        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 100% { transform: translateX(0); } }
 
-        /* WAVE COUNTDOWN */
-        #wave-countdown { color: var(--accent); font-size: 14px; animation: pulse 1s ease-in-out infinite; }
-        @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.45; } }
+        /* ACHIEVEMENT BANNER */
+        .ach-banner { position: absolute; top: 14%; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, rgba(255,215,0,0.16), rgba(0,255,204,0.16)); border: 2px solid #ffd700; border-radius: 12px; padding: 12px 28px; display: flex; gap: 14px; align-items: center; z-index: 200; box-shadow: 0 0 24px rgba(255,215,0,0.45); animation: achIn 0.5s ease-out; pointer-events: none; }
+        .ach-banner .ach-icon { font-size: 38px; }
+        .ach-banner .ach-title { font-size: 11px; letter-spacing: 2px; color: #ffd700; font-weight: bold; }
+        .ach-banner .ach-name { font-size: 21px; font-weight: bold; color: white; text-shadow: 0 0 10px rgba(255,215,0,0.6); }
+        .ach-banner .ach-desc { font-size: 13px; color: #ccc; }
+        @keyframes achIn { from { opacity: 0; transform: translateX(-50%) translateY(-26px) scale(0.85); } to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); } }
+
+        /* ACHIEVEMENT PANEL */
+        .ach-card { display: flex; gap: 12px; align-items: center; background: rgba(255,255,255,0.04); border: 1px solid #333; border-radius: 8px; padding: 10px 14px; margin-bottom: 10px; }
+        .ach-card.unlocked { border-color: #ffd700; background: rgba(255,215,0,0.07); }
+        .ach-card .ach-name { font-weight: bold; color: #eee; }
+        .ach-card.unlocked .ach-name { color: #ffd700; }
+        .ach-card .ach-desc { font-size: 12px; color: #999; }
+        .ach-bar { height: 6px; background: #222; border-radius: 3px; margin-top: 6px; overflow: hidden; }
+        .ach-bar-fill { height: 100%; background: linear-gradient(90deg, #00ffcc, #ffd700); border-radius: 3px; }
     </style>
 </head>
 <body>
 
-<canvas id="gameCanvas"></canvas>
+    <canvas id="gameCanvas"></canvas>
 
-<div id="ui">
-    <div id="hud-top" class="top-bar pointer-auto hidden">
-        <div class="stats">
-            <span id="ui-gold-wrap">GOLD: <span id="ui-gold" style="color:white">0</span></span>
-            <span>WAVE: <span id="ui-wave" style="color:white">1</span></span>
-            <!-- FIX: wave countdown badge -->
-            <span id="wave-countdown" class="hidden"></span>
+    <div id="ui">
+        <div id="hud-top" class="top-bar pointer-auto hidden">
+            <div class="stats">
+                <span id="ui-gold-wrap">GOLD: <span id="ui-gold" style="color:white">0</span></span>
+                <span>WAVE: <span id="ui-wave" style="color:white">1</span></span>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center;">
+                <button class="nav-btn sound-btn" id="btn-sound" title="Toggle sound" onclick="AudioEngine.toggleMute()">🔊</button>
+                <button class="nav-btn" onclick="Game.toMenu()">MENU</button>
+            </div>
         </div>
-        <div style="display:flex; gap:6px; align-items:center;">
-            <!-- FIX: mute button -->
-            <button class="nav-btn" id="btn-mute" onclick="AudioEngine.toggleMute()" title="Mute">&#128266;</button>
-            <!-- FIX: pause button -->
-            <button class="nav-btn" id="btn-pause" onclick="Game.togglePause()" title="Pause">&#9646;&#9646;</button>
-            <button class="nav-btn" onclick="Game.toMenu()">MENU</button>
+
+        <div id="context-menu" class="pointer-auto hidden">
+            <h3 id="ctx-name" style="margin:0 0 5px 0; color:var(--accent); text-transform:uppercase;">Selected</h3>
+            <div id="ctx-info" style="font-size:12px; color:#ccc;">HP: 100</div>
+            <div id="ctx-actions"></div>
+        </div>
+
+        <div id="hud-bot" class="bot-bar pointer-auto hidden"></div>
+    </div>
+
+    <div id="main-menu" class="menu-screen">
+        <h1 style="color:var(--accent); font-size: 40px; margin-bottom: 5px; text-shadow: 0 0 20px var(--accent); text-align: center;">POCKET COMMANDER</h1>
+        <p style="color:#888; font-size: 14px; margin-bottom: 20px;">RTS TOWER DEFENSE</p>
+        <div id="level-list" style="margin: 10px; width: 100%; max-width: 400px; max-height: 200px; overflow-y: auto; border: 1px solid #333; background: #000;"></div>
+        <div style="display:flex; flex-direction: column; gap:10px; align-items: center;">
+            <button class="big-btn" id="btn-daily" style="border-color:var(--accent); color:var(--accent)" onclick="Game.playDaily()">☀ DAILY CHALLENGE</button>
+            <button class="big-btn" onclick="Game.playRandom()">🎲 RANDOM MAP</button>
+            <p id="daily-info" style="color:#888; font-size:12px; margin:0 0 4px 0;"></p>
+        </div>
+        <div style="display:flex; flex-direction: column; gap:10px; align-items: center;">
+            <button class="big-btn" id="btn-ach" onclick="Game.ach()">ACHIEVEMENTS</button>
+            <button class="big-btn" onclick="Game.editor()">LEVEL EDITOR</button>
+            <button class="big-btn" style="border-color:#444; color:#ccc" onclick="Game.help()">HELP & INFO</button>
+            <button class="big-btn sound-btn" id="btn-sound-menu" data-label="1" style="padding:8px 40px; font-size:14px; border-color:#444; color:#ccc" onclick="AudioEngine.toggleMute()">🔊 SOUND ON</button>
+            <button class="big-btn" style="border-color:var(--danger); color:var(--danger)" onclick="Storage.wipe()">RESET DATA</button>
         </div>
     </div>
 
-    <div id="context-menu" class="pointer-auto hidden">
-        <h3 id="ctx-name" style="margin:0 0 5px 0; color:var(--accent); text-transform:uppercase;">Selected</h3>
-        <div id="ctx-info" style="font-size:12px; color:#ccc;">HP: 100</div>
-        <div id="ctx-actions"></div>
+    <!-- HELP SCREEN -->
+    <div id="help-screen" class="menu-screen hidden">
+        <h1>HELP & INFO</h1>
+        <div class="help-text">
+            <p>You are the commander. Under continuous attack waves of enemy forces, you must build defenses, train an army, and protect your Town Center at all costs.</p>
+            <p><strong>Tips:</strong></p>
+            <ul>
+                <li>Builders automatically heal at base (Costs Gold).</li>
+                <li>Soldiers regenerate health if out of combat.</li>
+                <li>Use Walls to reroute enemies (Enemies break walls if stuck).</li>
+                <li>The PATH button (bottom bar) shows the enemy walk route and each enemy's live path — great for wall placement planning.</li>
+                <li>Every 10 waves, a Boss appears and a new Gold Mine spawns.</li>
+                <li>Biomes 🌿 Grasslands · 🏜️ Desert · ❄️ Snowfield · 🦟 Swamp — each has themed enemies with different stats (fast scorpions, tanky frostlings, hard-hitting slimes).</li>
+            </ul>
+            <h3>INSTALLATION</h3>
+            <p>Add to Home Screen on iOS (Share Btn) or Android (Chrome Menu) for a full app experience.</p>
+            <p>This is a PWA — after the first load the game is cached by a service worker and plays fully offline.</p>
+            <h3>SUPPORT</h3>
+            <p><a href="https://github.com/gurkanctn/PocketCommander-Pro/issues" target="_blank">View GitHub Issues</a></p>
+        </div>
+        <button class="big-btn" onclick="Game.toMenu()">BACK</button>
     </div>
 
-    <div id="hud-bot" class="bot-bar pointer-auto hidden"></div>
-</div>
-
-<div id="main-menu" class="menu-screen">
-    <h1 style="color:var(--accent); font-size:40px; margin-bottom:5px; text-shadow:0 0 20px var(--accent); text-align:center;">POCKET COMMANDER</h1>
-    <p style="color:#888; font-size:14px; margin-bottom:20px;">RTS TOWER DEFENSE</p>
-    <div id="level-list" style="margin:10px; width:100%; max-width:400px; max-height:200px; overflow-y:auto; border:1px solid #333; background:#000;"></div>
-    <div style="display:flex; flex-direction:column; gap:10px; align-items:center;">
-        <button class="big-btn" onclick="Game.editor()">LEVEL EDITOR</button>
-        <button class="big-btn" style="border-color:#444; color:#ccc" onclick="Game.help()">HELP &amp; INFO</button>
-        <button class="big-btn" style="border-color:var(--danger); color:var(--danger)" onclick="Storage.wipe()">RESET DATA</button>
+    <!-- ACHIEVEMENTS SCREEN -->
+    <div id="ach-screen" class="menu-screen hidden">
+        <h1 style="color:var(--accent);">ACHIEVEMENTS</h1>
+        <div id="ach-list" class="help-text" style="width:100%; max-width:540px;"></div>
+        <button class="big-btn" onclick="Game.toMenu()">BACK</button>
     </div>
-</div>
 
-<!-- HELP SCREEN -->
-<div id="help-screen" class="menu-screen hidden">
-    <h1>HELP &amp; INFO</h1>
-    <div class="help-text">
-        <p>You are the commander. Under continuous attack waves of enemy forces, you must build defenses, train an army, and protect your Town Center at all costs.</p>
-        <p><strong>Tips:</strong></p>
-        <ul>
-            <li>Builders automatically heal at base (Costs Gold).</li>
-            <li>Soldiers regenerate health if out of combat.</li>
-            <li>Use Walls to reroute enemies (Enemies break walls if stuck).</li>
-            <li>Every 10 waves, a Boss appears and a new Gold Mine spawns.</li>
-            <li>Tap &#9646;&#9646; to pause. Tap &#128266; to mute audio.</li>
-            <li>Gold counter turns orange when upkeep is due soon.</li>
-        </ul>
-        <h3>LEVEL EDITOR</h3>
-        <p>Paint terrain, place GOLD mines, and set a PATH (first point = enemy spawn, last point = your base). Use ERASE to remove tiles, mines, or waypoints. CLR PATH resets all waypoints.</p>
-        <h3>INSTALLATION</h3>
-        <p>Add to Home Screen on iOS (Share Btn) or Android (Chrome Menu) for a full app experience.</p>
-        <h3>SUPPORT</h3>
-        <p><a href="https://github.com/gurkanctn/PocketCommander-Pro/issues" target="_blank">View GitHub Issues</a></p>
+    <div id="game-over-screen" class="menu-screen hidden" style="background: rgba(40,0,0,0.95);">
+        <h1 style="font-size: 50px; color: var(--danger);">DEFEAT</h1>
+        <p style="color:#ccc">THE BASE HAS FALLEN</p>
+        <button class="big-btn" onclick="Game.toMenu()">MENU</button>
     </div>
-    <button class="big-btn" onclick="Game.toMenu()">BACK</button>
-</div>
 
-<!-- GAME OVER SCREEN — FIX: added wave count + best wave display -->
-<div id="game-over-screen" class="menu-screen hidden" style="background:rgba(40,0,0,0.95);">
-    <h1 style="font-size:50px; color:var(--danger);">DEFEAT</h1>
-    <p style="color:#ccc">THE BASE HAS FALLEN</p>
-    <p id="go-wave" style="color:#ffd700; font-size:20px; margin:8px 0 4px;"></p>
-    <p id="go-best" style="color:#aaa; font-size:14px; margin:0 0 20px;"></p>
-    <button class="big-btn" onclick="Game.toMenu()">MENU</button>
-</div>
-
-<!-- PAUSE SCREEN — FIX: new -->
-<div id="pause-screen" class="menu-screen hidden" style="background:rgba(0,0,30,0.82);">
-    <h1 style="color:var(--accent); font-size:40px;">PAUSED</h1>
-    <button class="big-btn" onclick="Game.togglePause()">RESUME</button>
-    <button class="big-btn" onclick="Game.toMenu()">MENU</button>
-</div>
-
-<!-- EDITOR UI — FIX: added ERASE tool + CLR PATH, buttons now pass `this` for highlight -->
-<div id="editor-ui" class="menu-screen hidden" style="background:none; pointer-events:none; padding:0;">
-    <div class="pointer-auto" style="position:absolute; top:0; left:0; width:100%; background:rgba(0,0,0,0.85); padding:10px; display:flex; justify-content:space-between; box-sizing:border-box;">
-        <input id="lvl-name" value="New Map" style="background:#333; color:white; border:1px solid #555; padding:5px; width:120px;">
-        <div><button class="nav-btn" onclick="Editor.save()">SAVE</button> <button class="nav-btn" style="color:var(--danger)" onclick="Game.toMenu()">EXIT</button></div>
+    <div id="editor-ui" class="menu-screen hidden" style="background:none; pointer-events:none; padding:0;">
+        <div class="pointer-auto" style="position:absolute; top:0; left:0; width:100%; background:rgba(0,0,0,0.85); padding:10px; display:flex; justify-content:space-between; box-sizing:border-box;">
+            <input id="lvl-name" value="New Map" style="background:#333; color:white; border:1px solid #555; padding:5px; width:120px;">
+            <div><button class="nav-btn" onclick="Editor.save()">SAVE</button> <button class="nav-btn" style="color:var(--danger)" onclick="Game.toMenu()">EXIT</button></div>
+        </div>
+        <div class="pointer-auto" style="position:absolute; bottom:20px; width:100%; display:flex; justify-content:center; gap:5px; flex-wrap: wrap;">
+            <button class="btn" onclick="Editor.setTool('wall')">ROCK</button>
+            <button class="btn" onclick="Editor.setTool('water')">LAKE</button>
+            <button class="btn" onclick="Editor.setTool('grass')">GRASS</button>
+            <button class="btn" onclick="Editor.setTool('mine')">GOLD</button>
+            <button class="btn" onclick="Editor.setTool('path')">PATH</button>
+            <span style="flex-basis:100%;"></span>
+            <button class="btn biome-btn" data-biome="grass" onclick="Editor.setBiome('grass')" title="Grasslands">🌿</button>
+            <button class="btn biome-btn" data-biome="desert" onclick="Editor.setBiome('desert')" title="Desert">🏜️</button>
+            <button class="btn biome-btn" data-biome="snow" onclick="Editor.setBiome('snow')" title="Snowfield">❄️</button>
+            <button class="btn biome-btn" data-biome="swamp" onclick="Editor.setBiome('swamp')" title="Swamp">🦟</button>
+        </div>
     </div>
-    <div class="pointer-auto" style="position:absolute; bottom:20px; width:100%; display:flex; justify-content:center; gap:5px; flex-wrap:wrap;">
-        <button class="btn" id="etool-wall"  onclick="Editor.setTool('wall',this)">ROCK</button>
-        <button class="btn" id="etool-water" onclick="Editor.setTool('water',this)">LAKE</button>
-        <button class="btn" id="etool-grass" onclick="Editor.setTool('grass',this)">GRASS</button>
-        <button class="btn" id="etool-mine"  onclick="Editor.setTool('mine',this)">GOLD</button>
-        <button class="btn" id="etool-path"  onclick="Editor.setTool('path',this)">PATH</button>
-        <button class="btn" id="etool-erase" onclick="Editor.setTool('erase',this)">ERASE</button>
-        <button class="btn" onclick="Editor.clearPath()" style="border-color:#884400; color:#ffaa44; font-size:9px;">CLR<br>PATH</button>
-    </div>
-</div>
 
 <script>
 /**
- * POCKET COMMANDER RTS - V22
- *
- * FIXES applied vs V21:
- *  1. Double-gold on kill  — removed award from Unit.takeDamage(); only in Unit.update()
- *  2. Real delta-time      — Game.loop(ts) uses rAF timestamp; dt clamped to 50ms
- *  3. Toast positioning    — world tile coords converted to screen coords
- *  4. Ruin grid tile       — isRuin now resets grid cell to GRASS so player can rebuild
- *  5. Editor tool highlight — setTool(t, btn) adds .selected to the active button
- *  6. Building HP init     — TownCenter starts fully built; other buildings start at hp=1
- *  7. Pause                — State.paused, Game.togglePause(), pause screen
- *  8. Mute button          — AudioEngine.muted, toggleMute()
- *  9. Wave countdown       — State.waveCountdownEnd shown in HUD between waves
- * 10. Best-wave score      — tracked in localStorage, shown on game-over screen
- * 11. Pan clamping         — Input.clampOffset() called after every offset mutation
- * 12. Editor validation    — save() checks waypoints >= 2, mines >= 1
- * 13. Editor erase tool    — 'erase' removes terrain + mines + waypoints; clearPath()
- * 14. COLORS.wall missing  — added '#4a4a4a'
- * 15. AudioEngine 'shoot'  — added missing case
- * 16. Upkeep warning       — gold counter turns orange when low relative to upkeep
- * 17. Movement uses dt     — moveSmart/move accept dt for frame-rate-independent speed
+ * POCKET COMMANDER RTS - V27
+ * - Enemy path visualization (Task 24): the enemy walk route through the
+ *   level waypoints is drawn as an animated dashed overlay, plus each live
+ *   enemy's current A* path (shows wall rerouting). Toggleable via PATH
+ *   HUD button (default on, persisted in pc_rts_show_paths).
+ * - Adaptive dt (Task 21): wall-clock frame timing, dt clamped to [0,60]ms,
+ *   SIM GROUPS (gameplay / budgeted pathfinding / FX) so speed is frame-rate
+ *   independent and slow devices stay at correct game speed
+ * - Biomes (grass/desert/snow/swamp) with themed enemies, colors and maps
+ * - PWA: web manifest + service worker for offline play
+ * - Sound effects overhaul: layered Web Audio synthesis, noise percussion,
+ *   master compressor chain, pitch jitter, mute toggle (🔊 in HUD + menu)
+ * - Smart Enemy Wall Routing
+ * - Dynamic Enemy Range
+ * - Builder Auto-Heal (Costly)
+ * - Soldier Passive Regen
+ * - Procedural Map Generator + Daily Challenge (seeded by date)
+ * - Achievement System with visual unlock banners
  */
 
 const TILE = 40;
 const W = 40, H = 40;
-const SAVE_ID = 'pc_rts_v22';
+const SAVE_ID = 'pc_rts_v21_smart';
 
-const GRID  = { GRASS:0, ROCK:1, WATER:2, BUILD:3 };
+const GRID = { GRASS:0, ROCK:1, WATER:2, BUILD:3 };
 const COLORS = {
-    grass:'#151b15', rock:'#444', water:'#335588', mine:'#ccaa00',
-    player:'#3498DB', builder:'#F39C12', enemy:'#E74C3C', boss:'#8E44AD',
-    barracks:'#5544aa', towncenter:'#0055aa', tower:'#aa4400', ruin:'#2a2a2a',
-    wall:'#4a4a4a'   /* FIX #14: was undefined */
+    grass: '#151b15', rock: '#444', water: '#335588', mine: '#ccaa00',
+    player: '#3498DB', builder: '#F39C12', enemy: '#E74C3C', boss: '#8E44AD',
+    barracks: '#5544aa', towncenter: '#0055aa', tower: '#aa4400', wall: '#888', ruin: '#2a2a2a'
 };
 
-const COSTS     = { Wall:10, Tower:80, Barracks:150 };
-const ATK_COLORS = ['#888','#8B4513','#800080','#ff0000','#ffa500','#ffff00','#00ff00','#0000ff','#ffffff'];
+const COSTS = { Wall: 10, Tower: 80, Barracks: 150 };
+const ATK_COLORS = ['#888', '#8B4513', '#800080', '#ff0000', '#ffa500', '#ffff00', '#00ff00', '#0000ff', '#ffffff'];
+
+// --- BIOMES ---
+// Each biome themes the map (tile colors), the enemies (color / name / shape /
+// stats) and the procedural generator flavor. Levels carry a `biome` id;
+// unknown or missing ids fall back to 'grass' so old saved levels keep working.
+const BIOMES = {
+    grass: {
+        name: 'Grasslands', icon: '🌿', enemyName: 'Raider',
+        ground: '#151b15', ground2: '#1d241d', rock: '#444', water: '#335588', mine: '#ccaa00',
+        enemy: '#E74C3C', boss: '#8E44AD', enemyShape: 'circle', bossShape: 'diamond',
+        speedMul: 1.0, hpMul: 1.0, dmgMul: 1.0,
+        rockMul: 1.0, lakeMul: 1.0, mineMul: 1.0, startGold: 500, tint: 'rgba(0,255,204,0.02)'
+    },
+    desert: {
+        name: 'Desert', icon: '🏜️', enemyName: 'Scorpion',
+        ground: '#3a2e18', ground2: '#4a3a20', rock: '#8a6d3b', water: '#1e5f66', mine: '#e0c050',
+        enemy: '#ffb347', boss: '#e04f00', enemyShape: 'tri', bossShape: 'diamond',
+        speedMul: 1.25, hpMul: 0.85, dmgMul: 0.9,
+        rockMul: 1.5, lakeMul: 0.6, mineMul: 1.2, startGold: 550, tint: 'rgba(255,180,80,0.03)'
+    },
+    snow: {
+        name: 'Snowfield', icon: '❄️', enemyName: 'Frostling',
+        ground: '#1c2833', ground2: '#263748', rock: '#7f8c9e', water: '#1f4e79', mine: '#9fd8ff',
+        enemy: '#aee2ff', boss: '#5dade2', enemyShape: 'square', bossShape: 'diamond',
+        speedMul: 0.85, hpMul: 1.35, dmgMul: 1.1,
+        rockMul: 1.2, lakeMul: 0.5, mineMul: 1.0, startGold: 600, tint: 'rgba(174,226,255,0.03)'
+    },
+    swamp: {
+        name: 'Swamp', icon: '🦟', enemyName: 'Slime',
+        ground: '#12241a', ground2: '#1a3325', rock: '#3f5a3a', water: '#1d5c3a', mine: '#c9b458',
+        enemy: '#7ac74f', boss: '#6a3a8a', enemyShape: 'circle', bossShape: 'diamond',
+        speedMul: 0.9, hpMul: 1.15, dmgMul: 1.25,
+        rockMul: 0.8, lakeMul: 1.8, mineMul: 0.8, startGold: 450, tint: 'rgba(122,199,79,0.03)'
+    }
+};
+const BIOME_KEYS = Object.keys(BIOMES);
+function getBiome() { return BIOMES[(State.level && State.level.biome) || 'grass'] || BIOMES.grass; }
 
 const State = {
-    mode:'MENU', gold:0, wave:1, selection:null, placing:null,
-    grid:[], entities:[], particles:[],
-    offset:{x:0,y:0}, scale:1, gameOver:false,
-    lastUpkeep:0, paused:false, waveCountdownEnd:0,
-    waveActive:false, toSpawn:0, nextSpawn:0, level:null,
-    towerTechLevel: 1,   // global tech tier; new towers spawn at this level
-    bestWave: parseInt(localStorage.getItem('pc_best_wave')||'0', 10)
+    mode: 'MENU', gold: 0, wave: 1, selection: null, placing: null, mouseWorld: null,
+    grid: [], entities: [], particles: [],
+    offset: {x:0, y:0}, scale: 1, gameOver: false,
+    lastUpkeep: 0,
+    // Task 21 — adaptive dt: wall-clock frame timing + sim group budgets
+    lastFrame: 0,      // previous frame timestamp (performance.now / rAF base)
+    frameCount: 0,     // frames simulated (diagnostics)
+    pathBudget: 0,     // remaining A* pathfinding calls allowed this frame (Group B)
+    simDt: 16,         // dt (ms) used by the current sim tick; default = 60fps frame
+    // Task 24 — enemy path visualization toggle (default ON, persisted)
+    showPaths: true
 };
 
-// ─── AUDIO ───────────────────────────────────────────────────────────────────
+// --- AUDIO ---
+// Richer Web Audio synthesis: layered voices, noise percussion, ADSR-ish envelopes,
+// master gain -> compressor chain (prevents clipping), pitch jitter, mute toggle.
 const AudioEngine = {
-    ctx:null,
-    muted:false,   /* FIX #8 */
+    ctx: null, master: null, comp: null, noiseBuf: null,
+    muted: false, MUTE_KEY: 'pc_rts_muted',
+
     init() {
-        if(!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        if(!this.ctx) {
+            const AC = window.AudioContext || window.webkitAudioContext;
+            if(!AC) return;
+            this.ctx = new AC();
+            // Master chain: gain -> compressor -> destination
+            this.comp = this.ctx.createDynamicsCompressor();
+            this.comp.threshold.value = -18;
+            this.comp.knee.value = 24;
+            this.comp.ratio.value = 12;
+            this.comp.attack.value = 0.003;
+            this.comp.release.value = 0.25;
+            this.master = this.ctx.createGain();
+            this.master.gain.value = this.muted ? 0 : 0.85;
+            this.master.connect(this.comp);
+            this.comp.connect(this.ctx.destination);
+            // Shared 1s white-noise buffer for percussive voices
+            const len = this.ctx.sampleRate;
+            this.noiseBuf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+            const d = this.noiseBuf.getChannelData(0);
+            for(let i=0;i<len;i++) d[i] = Math.random()*2-1;
+        }
         if(this.ctx.state === 'suspended') this.ctx.resume();
     },
-    /* FIX #8: toggle mute */
-    toggleMute() {
-        this.muted = !this.muted;
-        const btn = document.getElementById('btn-mute');
-        btn.innerHTML = this.muted ? '&#128263;' : '&#128266;';
-        btn.classList.toggle('muted', this.muted);
+
+    loadMute() { try { this.muted = localStorage.getItem(this.MUTE_KEY) === '1'; } catch(e) {} },
+
+    setMuted(m) {
+        this.muted = m;
+        try { localStorage.setItem(this.MUTE_KEY, m ? '1' : '0'); } catch(e) {}
+        if(this.master) this.master.gain.value = m ? 0 : 0.85;
+        this.refreshUI();
     },
-    play(type) {
-        if(!this.ctx || this.muted) return;  /* FIX #8 */
+
+    toggleMute() { this.setMuted(!this.muted); },
+
+    refreshUI() {
+        document.querySelectorAll('.sound-btn').forEach(b => {
+            b.innerText = this.muted ? '🔇' : '🔊';
+            if(b.dataset.label) b.innerText += ' ' + (this.muted ? 'SOUND OFF' : 'SOUND ON');
+        });
+    },
+
+    // Exponential-fade envelope on a gain node (Web Audio cannot ramp to 0)
+    _env(g, t, peak, dur, attack) {
+        const a = attack || 0.003;
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(Math.max(0.0001, peak), t + a);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    },
+
+    // Single oscillator voice: type, freq start/end, duration, peak, optional delay + opts
+    _tone(type, f0, f1, dur, peak, t0, opts) {
+        if(!this.ctx) return;
+        const t = this.ctx.currentTime + (t0 || 0);
         const o = this.ctx.createOscillator();
+        o.type = type;
+        o.frequency.setValueAtTime(Math.max(1, f0), t);
+        if(f1 != null && f1 !== f0) {
+            const sweepT = t + ((opts && opts.sweep) || dur);
+            o.frequency.exponentialRampToValueAtTime(Math.max(1, f1), Math.max(t + 0.01, sweepT));
+        }
         const g = this.ctx.createGain();
-        o.connect(g); g.connect(this.ctx.destination);
-        const t = this.ctx.currentTime;
+        this._env(g, t, ((opts && opts.peak != null) ? opts.peak : 1) * peak, dur, opts && opts.attack);
+        o.connect(g); g.connect(this.master || this.ctx.destination);
+        o.start(t); o.stop(t + dur + 0.06);
+        return o;
+    },
+
+    // Noise burst through a biquad filter (impacts, booms, shimmer)
+    _noise(dur, peak, t0, opts) {
+        if(!this.ctx) return;
+        const t = this.ctx.currentTime + (t0 || 0);
+        const src = this.ctx.createBufferSource();
+        src.buffer = this.noiseBuf; src.loop = true;
+        const f = this.ctx.createBiquadFilter();
+        f.type = (opts && opts.filterType) || 'lowpass';
+        f.frequency.setValueAtTime((opts && opts.f0) || 1200, t);
+        if(opts && opts.f1) f.frequency.exponentialRampToValueAtTime(Math.max(20, opts.f1), t + dur);
+        f.Q.value = (opts && opts.q) || 0.7;
+        const g = this.ctx.createGain();
+        this._env(g, t, peak, dur, opts && opts.attack);
+        src.connect(f); f.connect(g); g.connect(this.master || this.ctx.destination);
+        src.start(t); src.stop(t + dur + 0.06);
+    },
+
+    // Pitch jitter so repeated sounds stay organic
+    _jit(ratio) { return 1 + (Math.random()*2 - 1) * (ratio || 0.06); },
+
+    play(type) {
+        if(!this.ctx || this.muted) return;
+        const j = this._jit;
         switch(type) {
-            case 'sel':   o.type='sine';     o.frequency.setValueAtTime(600,t); g.gain.exponentialRampToValueAtTime(0.01,t+0.10); o.start(t); o.stop(t+0.10); break;
-            case 'build': o.type='square';   o.frequency.setValueAtTime(150,t); g.gain.exponentialRampToValueAtTime(0.01,t+0.10); o.start(t); o.stop(t+0.10); break;
-            case 'err':   o.type='sawtooth'; o.frequency.setValueAtTime(100,t); o.frequency.linearRampToValueAtTime(50,t+0.2); g.gain.setValueAtTime(0.1,t); g.gain.linearRampToValueAtTime(0,t+0.2); o.start(t); o.stop(t+0.2); break;
-            case 'hit':   o.type='triangle'; o.frequency.setValueAtTime(100,t); g.gain.exponentialRampToValueAtTime(0.01,t+0.10); o.start(t); o.stop(t+0.10); break;
-            /* FIX #15: 'shoot' case was missing */
-            case 'shoot': o.type='sine';     o.frequency.setValueAtTime(800,t); o.frequency.exponentialRampToValueAtTime(400,t+0.08); g.gain.setValueAtTime(0.05,t); g.gain.exponentialRampToValueAtTime(0.01,t+0.08); o.start(t); o.stop(t+0.08); break;
-            case 'gold':  o.type='sine';     o.frequency.setValueAtTime(1000,t); g.gain.exponentialRampToValueAtTime(0.01,t+0.30); o.start(t); o.stop(t+0.30); break;
-            case 'alarm': o.type='square';   o.frequency.setValueAtTime(440,t); o.frequency.setValueAtTime(330,t+0.2); g.gain.linearRampToValueAtTime(0,t+0.4); o.start(t); o.stop(t+0.4); break;
+            // soft UI click
+            case 'sel':
+                this._tone('sine', 660, 880, 0.07, 0.05, 0);
+                break;
+            // construction: pitch drop thunk + noise knock + metallic ping
+            case 'build':
+                this._tone('square', 150, 95, 0.14, 0.11, 0, {sweep: 0.09});
+                this._noise(0.08, 0.10, 0, {f0: 900, f1: 200});
+                this._tone('triangle', 300, 380, 0.10, 0.04, 0.05);
+                break;
+            // error: detuned saws sweeping down + low square
+            case 'err':
+                this._tone('sawtooth', 120, 55, 0.22, 0.09, 0, {sweep: 0.18});
+                this._tone('sawtooth', 135, 62, 0.22, 0.07, 0, {sweep: 0.18});
+                this._tone('square', 60, 40, 0.22, 0.06, 0, {sweep: 0.18});
+                break;
+            // impact: thump + noise crack (jittered so hits vary)
+            case 'hit': {
+                const v = j(0.15);
+                this._tone('triangle', 130*v, 60*v, 0.09, 0.12, 0);
+                this._noise(0.06, 0.07, 0, {f0: 1800, f1: 500, filterType: 'bandpass', q: 1.2});
+                break;
+            }
+            // enemy death: falling boom + noise burst
+            case 'death': {
+                const v = j(0.12);
+                this._tone('triangle', 220*v, 40*v, 0.32, 0.16, 0, {sweep: 0.25});
+                this._noise(0.28, 0.13, 0, {f0: 1200, f1: 120});
+                this._tone('sine', 90, 35, 0.3, 0.10, 0.02, {sweep: 0.24});
+                break;
+            }
+            // boss death: bigger version
+            case 'bossdeath': {
+                const v = j(0.08);
+                this._tone('triangle', 160*v, 30*v, 0.7, 0.22, 0, {sweep: 0.55});
+                this._noise(0.6, 0.18, 0, {f0: 1400, f1: 60});
+                this._tone('sawtooth', 70, 25, 0.6, 0.10, 0.05, {sweep: 0.5});
+                break;
+            }
+            // coin: two bright plinks (B5 -> E6) + shimmer harmonic
+            case 'gold':
+                this._tone('sine', 988, null, 0.07, 0.09, 0);
+                this._tone('sine', 1319, null, 0.12, 0.09, 0.055);
+                this._tone('sine', 2637, null, 0.08, 0.025, 0.055);
+                break;
+            // wave-start siren: two-tone alarm with detuned layer
+            case 'alarm':
+                this._tone('square', 440, 330, 0.5, 0.09, 0, {sweep: 0.22});
+                this._tone('square', 443, 333, 0.5, 0.06, 0, {sweep: 0.22});
+                this._tone('sawtooth', 220, 165, 0.5, 0.05, 0, {sweep: 0.22});
+                break;
+            // laser zap: bright sweep down
+            case 'shoot': {
+                const v = j(0.08);
+                this._tone('sawtooth', 950*v, 220*v, 0.13, 0.09, 0, {sweep: 0.11});
+                this._tone('square', 1500*v, 600*v, 0.08, 0.035, 0, {sweep: 0.06});
+                break;
+            }
+            // achievement fanfare: C5 E5 G5 C6 + shimmer
+            case 'achievement':
+                this._tone('sine', 523, null, 0.16, 0.12, 0);
+                this._tone('sine', 659, null, 0.16, 0.12, 0.13);
+                this._tone('sine', 784, null, 0.2, 0.12, 0.26);
+                this._tone('sine', 1047, null, 0.3, 0.10, 0.39);
+                this._tone('sine', 2093, null, 0.3, 0.03, 0.39);
+                break;
+            // upgrade: rising sweep
+            case 'upgrade':
+                this._tone('sawtooth', 260, 920, 0.28, 0.10, 0, {sweep: 0.24});
+                this._tone('square', 130, 460, 0.28, 0.07, 0, {sweep: 0.24});
+                this._tone('sine', 1040, 1860, 0.2, 0.04, 0.1, {sweep: 0.15});
+                break;
+            // unit trained: two punchy blips
+            case 'train':
+                this._tone('square', 392, null, 0.09, 0.08, 0);
+                this._tone('square', 587, null, 0.12, 0.08, 0.09);
+                break;
+            // new mine found: sparkly arpeggio + high shimmer
+            case 'mine':
+                this._tone('sine', 880, null, 0.09, 0.09, 0);
+                this._tone('sine', 1109, null, 0.09, 0.09, 0.07);
+                this._tone('sine', 1319, null, 0.16, 0.09, 0.14);
+                this._noise(0.15, 0.03, 0.14, {f0: 6000, f1: 3000, filterType: 'highpass'});
+                break;
+            // game over: slow descending fall + rumble
+            case 'gameover':
+                this._tone('sawtooth', 220, 110, 0.9, 0.11, 0, {sweep: 0.7});
+                this._tone('sine', 174, 87, 0.9, 0.09, 0.1, {sweep: 0.7});
+                this._noise(0.8, 0.08, 0.05, {f0: 400, f1: 60});
+                break;
+            // demolition: heavy low boom
+            case 'demolish':
+                this._tone('triangle', 90, 30, 0.4, 0.16, 0, {sweep: 0.3});
+                this._noise(0.35, 0.14, 0, {f0: 700, f1: 80});
+                break;
+            // convert: shimmering upward gliss
+            case 'convert':
+                this._tone('sine', 420, 1260, 0.25, 0.08, 0, {sweep: 0.2});
+                this._tone('sine', 630, 1890, 0.25, 0.04, 0.03, {sweep: 0.2});
+                break;
+            // move order: quick soft tick
+            case 'move':
+                this._tone('sine', 320, 420, 0.06, 0.04, 0);
+                break;
         }
     }
 };
 
 const canvas = document.getElementById('gameCanvas');
-const ctx    = canvas.getContext('2d');
+const ctx = canvas.getContext('2d');
 
-// Stable per-tile hash — returns 0..1 float, deterministic from (tx,ty,slot)
-// Used so grass flecks don't flicker between frames
-function tileHash(tx, ty, slot) {
-    let h = Math.imul(tx * 374761393 + ty * 1234567891, slot * 67890127 + 1);
-    h = Math.imul(h ^ (h >>> 13), 0x1b873593);
-    return ((h ^ (h >>> 11)) >>> 0) / 0xffffffff;
-}
+// --- PARTICLE FX ---
+const FX = {
+    MAX: 300,
+    spawn(p) {
+        if(State.particles.length >= this.MAX) State.particles.shift();
+        State.particles.push(p);
+    },
+    sparks(x, y, n, c, speed) {
+        for(let i=0;i<n;i++) {
+            const a = Math.random()*Math.PI*2, s = speed*(0.4+Math.random()*0.8);
+            this.spawn({type:'spark', x, y, vx:Math.cos(a)*s, vy:Math.sin(a)*s, life:10+Math.random()*10, maxLife:20, c, size:1.5+Math.random()*2});
+        }
+    },
+    ring(x, y, c, r, vr, life) {
+        this.spawn({type:'ring', x, y, r, vr, life, maxLife:life, c, lw:2.5});
+    },
+    poof(x, y, c, n, speed) {
+        for(let i=0;i<n;i++) {
+            const a = Math.random()*Math.PI*2, s = speed*(0.2+Math.random()*0.8);
+            this.spawn({type:'poof', x, y, vx:Math.cos(a)*s, vy:Math.sin(a)*s, life:12+Math.random()*10, maxLife:22, c, size:2+Math.random()*3});
+        }
+    },
+    // Task 21 — wall-clock synced: life and motion scale by dt/16 so particles
+    // behave identically at 30fps, 60fps or 144fps (dt is clamped to [0,60]ms
+    // in Game.loop, so worst case is a 3.75-frame equivalent per tick).
+    update(dt) {
+        const k = (dt || 16) / 16; // 16ms = one legacy "frame" of particle time
+        const ps = State.particles;
+        for(let i=0;i<ps.length;i++) {
+            const p = ps[i];
+            p.life -= k;
+            if(p.life <= 0) continue;
+            if(p.type==='spark' || p.type==='poof') { p.x += p.vx*0.016*k; p.y += p.vy*0.016*k; }
+            else if(p.type==='ring') p.r += p.vr*k;
+        }
+        State.particles = ps.filter(p => p.life > 0);
+    },
+    draw(ctx) {
+        for(const p of State.particles) {
+            const a = Math.max(0, p.life/(p.maxLife || (p.life+1)));
+            ctx.globalAlpha = a;
+            if(p.type==='spark' || p.type==='poof') {
+                ctx.fillStyle = p.c;
+                ctx.fillRect(p.x*TILE - p.size/2, p.y*TILE - p.size/2, p.size, p.size);
+            } else if(p.type==='ring') {
+                ctx.strokeStyle = p.c; ctx.lineWidth = p.lw*a;
+                ctx.beginPath(); ctx.arc(p.x*TILE, p.y*TILE, p.r*TILE, 0, Math.PI*2); ctx.stroke();
+            } else {
+                ctx.strokeStyle = p.c; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(p.x*TILE, p.y*TILE); ctx.lineTo(p.tx*TILE, p.ty*TILE); ctx.stroke();
+            }
+        }
+        ctx.globalAlpha = 1;
+    }
+};
 
 function drawLevelDots(ctx, cx, cy, level) {
     let rem = level;
-    const blues   = Math.floor(rem/125); rem %= 125;
-    const greens  = Math.floor(rem/25);  rem %= 25;
-    const yellows = Math.floor(rem/5);   rem %= 5;
-    const whites  = rem;
+    const blues = Math.floor(rem / 125); rem %= 125;
+    const greens = Math.floor(rem / 25); rem %= 25;
+    const yellows = Math.floor(rem / 5); rem %= 5;
+    const whites = rem;
     let dots = [];
-    for(let i=0;i<blues;i++)   dots.push('#00f');
-    for(let i=0;i<greens;i++)  dots.push('#0f0');
-    for(let i=0;i<yellows;i++) dots.push('#ff0');
-    for(let i=0;i<whites;i++)  dots.push('#fff');
-    const spacing = 5, totalW = (dots.length-1)*spacing;
-    let sx = cx - totalW/2;
-    dots.forEach((color,i)=>{ ctx.fillStyle=color; ctx.beginPath(); ctx.arc(sx+i*spacing, cy, 2.5, 0, Math.PI*2); ctx.fill(); });
+    for(let i=0; i<blues; i++) dots.push('#00f');
+    for(let i=0; i<greens; i++) dots.push('#0f0');
+    for(let i=0; i<yellows; i++) dots.push('#ff0');
+    for(let i=0; i<whites; i++) dots.push('#fff');
+    const spacing = 5;
+    const totalW = (dots.length-1) * spacing;
+    let startX = cx - totalW/2;
+    dots.forEach((color, i) => { ctx.fillStyle = color; ctx.beginPath(); ctx.arc(startX + i*spacing, cy, 2.5, 0, Math.PI*2); ctx.fill(); });
 }
 
-// ─── PATHFINDER ──────────────────────────────────────────────────────────────
 const Pathfinder = {
     findPath(sx, sy, ex, ey, grid) {
-        if(grid[ey*W+ex]!==0 && Math.hypot(sx-ex,sy-ey)>1.5) return null;
-        let open=[{x:sx,y:sy,g:0,f:0,p:null}], closed=new Set(), safe=0;
-        const h=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y);
-        while(open.length>0) {
-            if(safe++>1500) return null;
+        // NOTE: destination tile may be BUILD (TownCenter), so don't reject non-GRASS destinations
+        let open = [{x:sx, y:sy, g:0, f:0, p:null}], closed = new Set(), safe = 0;
+        const h = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+        while(open.length > 0) {
+            if(safe++ > 1500) return null;
             let best=0; for(let i=1;i<open.length;i++) if(open[i].f<open[best].f) best=i;
-            let curr=open.splice(best,1)[0];
-            if(curr.x===ex&&curr.y===ey){let p=[];while(curr.p){p.push({x:curr.x,y:curr.y});curr=curr.p;}return p.reverse();}
+            let curr = open.splice(best,1)[0];
+            if(curr.x===ex && curr.y===ey) { let p=[]; while(curr.p){p.push({x:curr.x,y:curr.y});curr=curr.p;} return p.reverse(); }
             closed.add(curr.x+','+curr.y);
-            [{x:0,y:-1},{x:0,y:1},{x:-1,y:0},{x:1,y:0}].forEach(n=>{
+            [{x:0,y:-1},{x:0,y:1},{x:-1,y:0},{x:1,y:0}].forEach(n => {
                 const nx=curr.x+n.x, ny=curr.y+n.y;
-                if(nx>=0&&nx<W&&ny>=0&&ny<H&&!closed.has(nx+','+ny)){
-                    if(grid[ny*W+nx]===0||(nx===ex&&ny===ey)){
+                if(nx>=0 && nx<W && ny>=0 && ny<H && !closed.has(nx+','+ny)) {
+                    if(grid[ny*W+nx] === 0 || (nx===ex && ny===ey)) {
                         const g=curr.g+1;
-                        let old=open.find(o=>o.x===nx&&o.y===ny);
-                        if(!old) open.push({x:nx,y:ny,g:g,f:g+h({x:nx,y:ny},{x:ex,y:ey}),p:curr});
-                        else if(g<old.g){old.g=g;old.f=g+h({x:nx,y:ny},{x:ex,y:ey});old.p=curr;}
+                        let old=open.find(o=>o.x===nx && o.y===ny);
+                        if(!old) open.push({x:nx, y:ny, g:g, f:g+h({x:nx,y:ny},{x:ex,y:ey}), p:curr});
+                        else if(g<old.g) { old.g=g; old.f=g+h({x:nx,y:ny},{x:ex,y:ey}); old.p=curr; }
                     }
                 }
             });
@@ -303,396 +575,410 @@ const Pathfinder = {
     }
 };
 
-// ─── INPUT ───────────────────────────────────────────────────────────────────
 const Input = {
-    touches:[],
+    touches: [], 
     init() {
         window.addEventListener('resize', this.resize); this.resize();
-        ['touchstart','touchmove','touchend','mousedown','mousemove','mouseup'].forEach(e=>{
+        ['touchstart','touchmove','touchend','mousedown','mousemove','mouseup'].forEach(e => {
             canvas.addEventListener(e, ev=>this.handle(ev), {passive:false});
             window.addEventListener(e, ev=>{ if(ev.target!==canvas) this.end(0); });
         });
-        canvas.addEventListener('wheel', e=>this.wheel(e));
+        canvas.addEventListener('wheel', e => this.wheel(e));
     },
-    resize() { canvas.width=window.innerWidth; canvas.height=window.innerHeight; },
+    resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; },
     handle(e) {
         AudioEngine.init();
         if(e.type.startsWith('mouse')) {
-            if(e.type==='mousedown') this.start(0,e.clientX,e.clientY);
-            if(e.type==='mousemove') this.move(0,e.clientX,e.clientY);
-            if(e.type==='mouseup')   this.end(0);
+            if(e.type==='mousedown') this.start(0, e.clientX, e.clientY);
+            if(e.type==='mousemove') this.move(0, e.clientX, e.clientY);
+            if(e.type==='mouseup') this.end(0);
         } else {
             e.preventDefault();
-            if(e.type==='touchstart') for(let i=0;i<e.changedTouches.length;i++) this.start(e.changedTouches[i].identifier,e.changedTouches[i].clientX,e.changedTouches[i].clientY);
-            if(e.type==='touchmove')  for(let i=0;i<e.changedTouches.length;i++) this.move(e.changedTouches[i].identifier,e.changedTouches[i].clientX,e.changedTouches[i].clientY);
-            if(e.type==='touchend')   for(let i=0;i<e.changedTouches.length;i++) this.end(e.changedTouches[i].identifier);
+            if(e.type==='touchstart') for(let i=0; i<e.changedTouches.length; i++) this.start(e.changedTouches[i].identifier, e.changedTouches[i].clientX, e.changedTouches[i].clientY);
+            if(e.type==='touchmove') for(let i=0; i<e.changedTouches.length; i++) this.move(e.changedTouches[i].identifier, e.changedTouches[i].clientX, e.changedTouches[i].clientY);
+            if(e.type==='touchend') for(let i=0; i<e.changedTouches.length; i++) this.end(e.changedTouches[i].identifier);
         }
     },
     toWorld(sx, sy) {
-        return {
-            x:  (sx - State.offset.x) / State.scale,
-            y:  (sy - State.offset.y) / State.scale,
-            tx: Math.floor(((sx - State.offset.x) / State.scale) / TILE),
-            ty: Math.floor(((sy - State.offset.y) / State.scale) / TILE)
+        return { 
+            x: (sx - State.offset.x) / State.scale, 
+            y: (sy - State.offset.y) / State.scale,
+            tx: Math.floor(((sx - State.offset.x) / State.scale)/TILE),
+            ty: Math.floor(((sy - State.offset.y) / State.scale)/TILE)
         };
     },
-    /* FIX #11: clamp pan so the map can never scroll fully off-screen */
-    clampOffset() {
-        const mapW = W * TILE * State.scale;
-        const mapH = H * TILE * State.scale;
-        const pad  = 60; // px of map that must remain visible at each edge
-        State.offset.x = Math.max(-(mapW - pad), Math.min(canvas.width  - pad, State.offset.x));
-        State.offset.y = Math.max(-(mapH - pad), Math.min(canvas.height - pad, State.offset.y));
-    },
     start(id, x, y) {
-        this.touches.push({id,x,y,startX:x,startY:y,drag:false});
-        if(this.touches.length===1 && State.mode==='EDITOR') Editor.paint(this.toWorld(x,y));
+        this.touches.push({id, x, y, startX:x, startY:y, drag:false});
+        State.mouseWorld = this.toWorld(x, y);
+        if(this.touches.length === 1 && State.mode === 'EDITOR') Editor.paint(this.toWorld(x,y));
     },
     move(id, x, y) {
-        const t=this.touches.find(t=>t.id===id); if(!t) return;
-        if(this.touches.length===1) {
-            const dx=x-t.x, dy=y-t.y;
-            if(Math.hypot(x-t.startX,y-t.startY)>10) t.drag=true;
-            if(!t.drag && State.mode==='EDITOR') Editor.paint(this.toWorld(x,y));
-            else { State.offset.x+=dx; State.offset.y+=dy; this.clampOffset(); }  /* FIX #11 */
-        } else if(this.touches.length===2) {
-            const t2=this.touches.find(o=>o.id!==id);
-            const d1=Math.hypot(t.x-t2.x,t.y-t2.y), d2=Math.hypot(x-t2.x,y-t2.y);
-            const cx=(x+t2.x)/2, cy=(y+t2.y)/2;
-            const s=Math.max(0.3,Math.min(3,State.scale+(d2-d1)*0.005));
-            State.offset.x -= (cx-State.offset.x)*(s/State.scale-1);
-            State.offset.y -= (cy-State.offset.y)*(s/State.scale-1);
-            State.scale=s;
-            this.clampOffset();  /* FIX #11 */
+        const t = this.touches.find(t => t.id === id); if(!t) return;
+        if(this.touches.length === 1) {
+            const dx = x - t.x, dy = y - t.y;
+            if(Math.hypot(x-t.startX, y-t.startY)>10) t.drag = true;
+            if(!t.drag && State.mode === 'EDITOR') Editor.paint(this.toWorld(x,y));
+            else { State.offset.x += dx; State.offset.y += dy; }
+        } else if (this.touches.length === 2) {
+            const t2 = this.touches.find(o => o.id !== id);
+            const d1 = Math.hypot(t.x - t2.x, t.y - t2.y), d2 = Math.hypot(x - t2.x, y - t2.y);
+            const cx = (x + t2.x)/2, cy = (y + t2.y)/2;
+            const s = Math.max(0.3, Math.min(3, State.scale + (d2 - d1) * 0.005));
+            State.offset.x -= (cx - State.offset.x) * (s/State.scale - 1);
+            State.offset.y -= (cy - State.offset.y) * (s/State.scale - 1);
+            State.scale = s;
         }
-        t.x=x; t.y=y;
+        t.x = x; t.y = y;
+        State.mouseWorld = this.toWorld(x, y);
     },
     end(id) {
-        const idx=this.touches.findIndex(t=>t.id===id); if(idx===-1) return;
-        const t=this.touches[idx];
-        if(this.touches.length===1 && !t.drag) Game.click(this.toWorld(t.x,t.y));
-        this.touches.splice(idx,1);
+        const idx = this.touches.findIndex(t => t.id === id); if(idx === -1) return;
+        const t = this.touches[idx];
+        if(this.touches.length === 1 && !t.drag) Game.click(this.toWorld(t.x, t.y));
+        this.touches.splice(idx, 1);
     },
     wheel(e) {
-        const d=e.deltaY>0?-0.1:0.1;
-        const s=Math.max(0.3,Math.min(3,State.scale+d));
-        State.offset.x -= (canvas.width/2  - State.offset.x)*(d/State.scale);
-        State.offset.y -= (canvas.height/2 - State.offset.y)*(d/State.scale);
-        State.scale=s;
-        this.clampOffset();  /* FIX #11 */
+        const d = e.deltaY > 0 ? -0.1 : 0.1;
+        const s = Math.max(0.3, Math.min(3, State.scale + d));
+        State.offset.x -= (canvas.width/2 - State.offset.x) * (d/State.scale);
+        State.offset.y -= (canvas.height/2 - State.offset.y) * (d/State.scale);
+        State.scale = s;
     }
 };
 
-// ─── GAME ────────────────────────────────────────────────────────────────────
 const Game = {
-    _lastTs: 0,
-
-    /* FIX #2: rAF timestamp → real delta time, clamped to 50 ms */
-    loop(ts=0) {
+    // Task 21 — adaptive dt. rAF supplies a high-res wall-clock timestamp;
+    // dt = elapsed ms since the last frame, clamped to [0, 60]. The 60ms cap
+    // keeps tab-switch / lag hitches from teleporting the sim (worst case is
+    // ~16fps rendered at the correct game speed); 30fps (dt≈33ms) is the
+    // playability floor and stays fully accurate. Every sim group scales by
+    // dt so game speed is frame-rate independent.
+    loop(ts) {
         requestAnimationFrame(Game.loop);
-        const dt = Math.min(50, ts - (Game._lastTs || ts - 16));
-        Game._lastTs = ts;
-
-        ctx.fillStyle='#050508'; ctx.fillRect(0,0,canvas.width,canvas.height);
-        ctx.save(); ctx.translate(State.offset.x,State.offset.y); ctx.scale(State.scale,State.scale);
+        const now = (ts != null) ? ts : (typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now());
+        if(State.lastFrame === 0) State.lastFrame = now;
+        const dt = Math.min(Math.max(now - State.lastFrame, 0), 60);
+        State.lastFrame = now; State.simDt = dt;
+        ctx.fillStyle = '#050508'; ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.save(); ctx.translate(State.offset.x, State.offset.y); ctx.scale(State.scale, State.scale);
         Game.drawMap();
-        if(State.mode==='PLAY' && !State.gameOver) {
-            if(!State.paused) Game.updateEntities(dt);  /* FIX #7: skip when paused */
-            Game.drawEntities(); Game.drawFX();
-        } else if(State.mode==='EDITOR') {
-            Editor.drawOverlay();
-        }
+        if(State.mode === 'PLAY') {
+            if(!State.gameOver) Game.updateEntities(dt);
+            Game.drawPaths();
+            FX.update(dt); Game.drawEntities(); Game.drawFX();
+            if(State.placing) Game.drawPlacing();
+        } else if (State.mode === 'EDITOR') { Editor.drawOverlay(); }
         ctx.restore();
-
-        /* FIX #9: wave countdown ticker (runs outside pause) */
-        if(State.mode==='PLAY' && State.waveCountdownEnd>0 && !State.waveActive) {
-            const rem = Math.ceil((State.waveCountdownEnd - Date.now()) / 1000);
-            const el  = document.getElementById('wave-countdown');
-            if(rem>0) { el.classList.remove('hidden'); el.textContent=`NEXT WAVE: ${rem}s`; }
-            else      { el.classList.add('hidden'); State.waveCountdownEnd=0; }
-        }
     },
 
-    /* FIX #2: accepts real dt now; removed hardcoded const dt=16 */
     updateEntities(dt) {
+        State.frameCount++;
+        // SIM GROUPS (Task 21) — split compute into cadence buckets so a slow
+        // device never pays full cost every frame:
+        //  A) Gameplay sim (units/buildings) below — always runs, dt-scaled.
+        //  B) Pathfinding — budgeted: A* is the priciest op, so per-frame
+        //     refreshes are capped at ~6% of entity count (pathBudget). Units
+        //     holding a path skip refresh once the budget is spent; empty-path
+        //     (correctness-critical) lookups always run.
+        //  C) FX/particles — dt-scaled inside FX.update.
+        State.pathBudget = Math.max(3, Math.round(State.entities.length * 0.06));
         // UPKEEP
         if(Date.now() > State.lastUpkeep + 10000) {
             State.lastUpkeep = Date.now();
-            let totalLevel=0;
-            State.entities.forEach(e=>{ if(e instanceof Unit && e.team==='player') totalLevel+=e.level; });
+            let totalLevel = 0;
+            State.entities.forEach(e => { if(e instanceof Unit && e.team==='player') totalLevel += e.level; });
             State.gold -= totalLevel;
-            Game.toast(`Upkeep: -${totalLevel}g`, State.entities[0]?.x||20, State.entities[0]?.y||20);
-            const el=document.getElementById('ui-gold-wrap');
+            Game.toast(`Upkeep: -${totalLevel}g`, State.entities[0]?.x ?? 20, State.entities[0]?.y ?? 20);
+            const el = document.getElementById('ui-gold-wrap');
             el.classList.remove('upkeep-anim'); void el.offsetWidth; el.classList.add('upkeep-anim');
-            if(State.gold<0) State.gold=0;
+            if(State.gold < 0) State.gold = 0; 
             Game.ui();
         }
 
         // WAVE LOGIC
         if(State.waveActive) {
-            if(Date.now()>State.nextSpawn && State.toSpawn>0) {
-                const s=State.level.waypoints[0];
-                const u=new Unit(s.x, s.y, 'Enemy', 'enemy', State.wave);
-                if(State.wave%10===0) { u.maxHp*=2; u.hp=u.maxHp; u.dmg*=2; u.radius=0.4; u.color=COLORS.boss; }
-                const scale=1+(State.wave*0.1);
-                u.maxHp*=scale; u.hp=u.maxHp; u.dmg*=scale;
-                u.configureEnemy();
+            if(Date.now() > State.nextSpawn && State.toSpawn > 0) {
+                const s = State.level.waypoints[0];
+                const bio = getBiome();
+                const u = new Unit(s.x, s.y, bio.enemyName, 'enemy', State.wave);
+                if(State.wave % 10 === 0) {
+                    u.maxHp *= 2; u.hp = u.maxHp; u.dmg *= 2; u.radius = 0.4; u.color = bio.boss; u.isBoss = true; u.shape = bio.bossShape || bio.enemyShape;
+                }
+                const scale = 1 + (State.wave * 0.1);
+                u.maxHp *= scale; u.hp = u.maxHp; u.dmg *= scale;
                 State.entities.push(u);
+                if(State.wave % 10 === 0) { FX.ring(s.x+0.5, s.y+0.5, bio.boss, 5, 2, 20); FX.sparks(s.x+0.5, s.y+0.5, 8, bio.boss, 2); }
+                else FX.ring(s.x+0.5, s.y+0.5, bio.enemy, 4, 1.5, 14);
                 State.toSpawn--;
-                State.nextSpawn=Date.now()+Math.max(500,2000-State.wave*100);
-            } else if(State.toSpawn<=0 && !State.entities.some(e=>e.team==='enemy')) {
-                State.waveActive=false; State.wave++;
-                if(State.wave%10===0) {
+                State.nextSpawn = Date.now() + Math.max(500, 2000 - State.wave*100);
+            } else if(State.toSpawn <= 0 && !State.entities.some(e=>e.team==='enemy')) {
+                State.waveActive=false; State.wave++; 
+                if(State.wave % 10 === 0) {
                     let tries=0;
-                    while(tries++<50) {
-                        const rx=Math.floor(Math.random()*W), ry=Math.floor(Math.random()*H);
-                        if(State.grid[ry*W+rx]===GRID.GRASS) {
-                            const m=new Building(rx+0.5,ry+0.5,'Mine','neutral');
-                            m.capacity=500*(1+(State.wave*0.1));
+                    while(tries++ < 50) {
+                        const rx = Math.floor(Math.random()*W), ry = Math.floor(Math.random()*H);
+                        if(State.grid[ry*W+rx] === GRID.GRASS) {
+                            const m = new Building(rx+0.5, ry+0.5, 'Mine', 'neutral');
+                            m.capacity = 500 * (1 + (State.wave*0.1));
                             State.entities.push(m);
-                            Game.toast("New Mine Found!",rx,ry,'#FFD700'); AudioEngine.play('gold'); break;
+                            Game.toast("New Mine Found!", rx, ry, '#FFD700'); AudioEngine.play('mine'); FX.ring(rx+0.5, ry+0.5, '#FFD700', 5, 2, 18); FX.sparks(rx+0.5, ry+0.5, 8, '#FFD700', 1.5); break;
                         }
                     }
                 }
-                /* FIX #9: record countdown end time */
-                State.waveCountdownEnd = Date.now() + 3000;
                 setTimeout(()=>Game.startWave(), 3000);
             }
         }
-
-        State.entities = State.entities.filter(e=>!e.dead);
-        State.entities.forEach(e=>e.update(dt));  /* FIX #2: pass real dt */
+        
+        // Entity Update Loop (Group A) — wall-clock dt computed in Game.loop
+        State.entities = State.entities.filter(e => !e.dead);
+        State.entities.forEach(e => e.update(dt));
     },
 
     drawMap() {
-        // Pass 1 — base fill for every tile
-        for(let y=0;y<H;y++) for(let x=0;x<W;x++) {
-            const t=State.grid[y*W+x], px=x*TILE, py=y*TILE;
-            if(t===GRID.WATER) { ctx.fillStyle='#1e3d6e'; ctx.fillRect(px,py,TILE+1,TILE+1); }
-            else               { ctx.fillStyle='#1a2218'; ctx.fillRect(px,py,TILE,TILE); }
-        }
-        // Pass 2 — grass texture: 5 stable flecks per grass tile
-        for(let y=0;y<H;y++) for(let x=0;x<W;x++) {
-            if(State.grid[y*W+x]!==GRID.GRASS) continue;
-            const px=x*TILE, py=y*TILE;
-            for(let i=0;i<5;i++) {
-                const fx = px + 1 + Math.floor(tileHash(x,y,i*3)   * (TILE-3));
-                const fy = py + 1 + Math.floor(tileHash(x,y,i*3+1) * (TILE-3));
-                const r  = 0.7 + tileHash(x,y,i*3+2) * 1.3;
-                const gr = 56 + Math.floor(tileHash(x,y,i+15) * 26);
-                ctx.fillStyle = `rgb(${24+Math.floor(tileHash(x,y,i+20)*14)},${gr},${20+Math.floor(tileHash(x,y,i+25)*13)})`;
-                ctx.beginPath(); ctx.arc(fx,fy,r,0,Math.PI*2); ctx.fill();
+        const bio = getBiome();
+        const r=H, c=W;
+        for(let y=0; y<r; y++) { for(let x=0; x<c; x++) {
+            const t = State.grid[y*W+x]; const px=x*TILE, py=y*TILE;
+            if(t === GRID.WATER) { ctx.fillStyle = bio.water; ctx.fillRect(px,py,TILE+1,TILE+1); }
+            else {
+                ctx.fillStyle = bio.ground; ctx.fillRect(px,py,TILE+1,TILE+1);
+                // Stable per-tile speckle (hashed, no flicker)
+                if(((x*31 + y*17) % 11) === 0) { ctx.fillStyle = bio.ground2; ctx.fillRect(px+4, py+4, 6, 6); }
+                ctx.strokeStyle = '#222'; ctx.lineWidth = 1; ctx.strokeRect(px,py,TILE,TILE);
             }
-            ctx.strokeStyle='rgba(0,0,0,0.18)'; ctx.lineWidth=0.5; ctx.strokeRect(px,py,TILE,TILE);
-        }
-        // Pass 3 — water shimmer lines
-        for(let y=0;y<H;y++) for(let x=0;x<W;x++) {
-            if(State.grid[y*W+x]!==GRID.WATER) continue;
-            const px=x*TILE, py=y*TILE;
-            for(let i=0;i<3;i++) {
-                const wy = py + 4 + Math.floor(tileHash(x,y,i+40) * (TILE-8));
-                const woff = tileHash(x,y,i+43) * 6 - 3;
-                ctx.strokeStyle=`rgba(80,160,220,${0.10+tileHash(x,y,i+46)*0.08})`;
-                ctx.lineWidth=1; ctx.beginPath();
-                ctx.moveTo(px+woff, wy); ctx.lineTo(px+TILE*0.7+woff, wy+1); ctx.stroke();
+        }}
+        for(let y=0; y<r; y++) { for(let x=0; x<c; x++) {
+            if(State.grid[y*W+x] === GRID.ROCK) {
+                const px=x*TILE, py=y*TILE; ctx.fillStyle = bio.rock;
+                ctx.beginPath(); ctx.moveTo(px, py+TILE); ctx.lineTo(px+TILE/2, py); ctx.lineTo(px+TILE, py+TILE); ctx.fill();
             }
-        }
-        // Pass 4 — shaded 3-face rock mountains
-        for(let y=0;y<H;y++) for(let x=0;x<W;x++) {
-            if(State.grid[y*W+x]!==GRID.ROCK) continue;
-            const px=x*TILE, py=y*TILE;
-            // full silhouette (darkest, provides outline)
-            ctx.fillStyle='#222';
-            ctx.beginPath(); ctx.moveTo(px-1,py+TILE); ctx.lineTo(px+TILE/2,py+1); ctx.lineTo(px+TILE+1,py+TILE); ctx.fill();
-            // mid tone base
-            ctx.fillStyle='#383838';
-            ctx.beginPath(); ctx.moveTo(px,py+TILE); ctx.lineTo(px+TILE/2,py+3); ctx.lineTo(px+TILE,py+TILE); ctx.fill();
-            // lit right face
-            ctx.fillStyle='#545454';
-            ctx.beginPath(); ctx.moveTo(px+TILE/2,py+3); ctx.lineTo(px+TILE,py+TILE); ctx.lineTo(px+TILE*0.62,py+TILE*0.5); ctx.fill();
-            // crevice line
-            ctx.strokeStyle='#1a1a1a'; ctx.lineWidth=0.8;
-            ctx.beginPath(); ctx.moveTo(px+TILE/2,py+3); ctx.lineTo(px+TILE*0.35,py+TILE*0.42); ctx.stroke();
-            // peak highlight pixel
-            ctx.fillStyle='#888'; ctx.fillRect(px+TILE/2-1,py+2,2,2);
-        }
+        }}
+        // Ambient biome tint
+        if(bio.tint) { ctx.fillStyle = bio.tint; ctx.fillRect(0, 0, c*TILE, r*TILE); }
+    },
+    
+    drawEntities() { State.entities.sort((a,b) => a.y - b.y); State.entities.forEach(e => e.draw(ctx)); },
+
+    // Task 24 — enemy path visualization. Draws (a) the base enemy walk route
+    // (polyline through the level waypoints, animated marching-ants dash so it
+    // reads as a flow, spawn/waypoint/TC markers) and (b) each live enemy's
+    // current A* path in its own color — this shows exactly how walls reroute
+    // enemies in real time. Toggleable via the PATH HUD button.
+    drawPaths() {
+        if(!State.showPaths || !State.level || !State.level.waypoints) return;
+        const wp = State.level.waypoints;
+        if(wp.length === 0) return;
+        const pts = wp.map(p => ({x: p.x*TILE + TILE/2, y: p.y*TILE + TILE/2}));
+        ctx.save();
+        // Soft wide underlay so the route reads over any terrain
+        ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+        ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
+        for(let i=1; i<pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+        ctx.stroke();
+        // Animated dashed flow line
+        ctx.lineWidth = 1.8; ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+        ctx.setLineDash([10, 8]); ctx.lineDashOffset = -((Date.now()/40) % 18);
+        ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
+        for(let i=1; i<pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        // Route markers: gold spawn ring, white intermediate dots, TC target
+        pts.forEach((p, i) => {
+            if(i === 0) {
+                ctx.fillStyle = '#ffd700'; ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI*2); ctx.fill();
+                ctx.strokeStyle = '#000'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI*2); ctx.stroke();
+            } else if(i === pts.length-1) {
+                ctx.fillStyle = 'rgba(255,60,60,0.9)'; ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI*2); ctx.fill();
+                ctx.strokeStyle = '#ffd700'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI*2); ctx.stroke();
+            } else {
+                ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(p.x, p.y, 2.5, 0, Math.PI*2); ctx.fill();
+            }
+        });
+        // Per-enemy live A* paths (their exact current route, incl. reroutes)
+        State.entities.forEach(e => {
+            if(e instanceof Unit && e.team === 'enemy' && e.path && e.path.length > 0) {
+                ctx.strokeStyle = e.isBoss ? 'rgba(255,0,255,0.55)' : 'rgba(255,110,110,0.35)';
+                ctx.lineWidth = 1.4;
+                ctx.beginPath(); ctx.moveTo(e.x*TILE, e.y*TILE);
+                for(const n of e.path) ctx.lineTo((n.x+0.5)*TILE, (n.y+0.5)*TILE);
+                ctx.stroke();
+            }
+        });
+        ctx.restore();
     },
 
-    drawEntities() { State.entities.sort((a,b)=>a.y-b.y); State.entities.forEach(e=>e.draw(ctx)); },
+    togglePaths() {
+        State.showPaths = !State.showPaths;
+        try { localStorage.setItem('pc_rts_show_paths', State.showPaths ? '1' : '0'); } catch(e) {}
+        const b = document.getElementById('btn-path');
+        if(b) { b.classList.toggle('selected', State.showPaths); const c = b.querySelector('.cost'); if(c) c.innerText = State.showPaths ? 'ON' : 'OFF'; }
+    },
+    
+    drawFX() { FX.draw(ctx); },
 
-    drawFX() {
-        State.particles=State.particles.filter(p=>p.life>0);
-        State.particles.forEach(p=>{
-            ctx.strokeStyle=p.c; ctx.lineWidth=2;
-            ctx.beginPath(); ctx.moveTo(p.x*TILE,p.y*TILE); ctx.lineTo(p.tx*TILE,p.ty*TILE); ctx.stroke();
-            p.life--;
-        });
+    drawPlacing() {
+        if(!State.mouseWorld) return;
+        const {tx, ty} = State.mouseWorld;
+        if(tx<0 || tx>=W || ty<0 || ty>=H) return;
+        const p = State.placing; if(!p) return;
+        const isBul = p.type === 'BUL';
+        const valid = isBul ? State.gold >= p.cost : (State.grid[ty*W+tx] === GRID.GRASS && State.gold >= p.cost);
+        const px = tx*TILE, py = ty*TILE;
+        ctx.fillStyle = valid ? 'rgba(0,255,204,0.22)' : 'rgba(255,68,68,0.22)';
+        ctx.fillRect(px+1, py+1, TILE-2, TILE-2);
+        ctx.strokeStyle = valid ? 'rgba(0,255,204,0.9)' : 'rgba(255,68,68,0.9)';
+        ctx.lineWidth = 2; ctx.strokeRect(px+1, py+1, TILE-2, TILE-2);
+        if(p.type === 'Tower') {
+            const cxp = tx*TILE + TILE/2, cyp = ty*TILE + TILE/2, rng = 6*TILE;
+            ctx.fillStyle='rgba(0,255,204,0.04)'; ctx.beginPath(); ctx.arc(cxp, cyp, rng, 0, Math.PI*2); ctx.fill();
+            ctx.strokeStyle='rgba(0,255,204,0.35)'; ctx.setLineDash([8,6]); ctx.lineWidth=1.5;
+            ctx.beginPath(); ctx.arc(cxp, cyp, rng, 0, Math.PI*2); ctx.stroke(); ctx.setLineDash([]);
+        }
+        const color = isBul ? '#ff6644' : ({Wall:COLORS.wall, Tower:COLORS.tower, Barracks:COLORS.barracks})[p.type] || '#888';
+        ctx.globalAlpha = 0.55; ctx.fillStyle = color;
+        ctx.fillRect(tx*TILE + TILE*0.1, ty*TILE + TILE*0.1, TILE*0.8, TILE*0.8);
+        ctx.globalAlpha = 1;
     },
 
     click(w) {
-        if(State.mode!=='PLAY' || State.paused) return;  /* FIX #7: no clicks while paused */
-        if(w.tx<0||w.tx>=W||w.ty<0||w.ty>=H) return;
+        if(State.mode !== 'PLAY') return;
+        if(w.tx<0 || w.tx>=W || w.ty<0 || w.ty>=H) return;
 
-        if(State.placing && State.placing.type==='BUL') {
-            const idx=w.ty*W+w.tx;
-            if(State.gold>=100) {
-                State.gold-=100; State.grid[idx]=GRID.GRASS;
-                const entIdx=State.entities.findIndex(e=>Math.floor(e.x)===w.tx && Math.floor(e.y)===w.ty);
-                if(entIdx!==-1) {
-                    const e=State.entities[entIdx];
+        if(State.placing && State.placing.type === 'BUL') {
+            const idx = w.ty*W + w.tx;
+            if(State.gold >= 100) {
+                State.gold -= 100;
+                State.grid[idx] = GRID.GRASS;
+                const entIdx = State.entities.findIndex(e => Math.floor(e.x)===w.tx && Math.floor(e.y)===w.ty);
+                if(entIdx !== -1) {
+                    const e = State.entities[entIdx];
                     if(e instanceof Building && COSTS[e.type] && !e.isRuin) {
-                        const refund=Math.floor(COSTS[e.type]*0.75);
-                        State.gold+=refund;
-                        Game.toast(`+${refund}g`,w.tx,w.ty,'#0f0'); AudioEngine.play('gold');
+                        const refund = Math.floor(COSTS[e.type] * 0.75);
+                        State.gold += refund;
+                        Game.toast(`+${refund}g`, w.tx, w.ty, '#0f0'); AudioEngine.play('gold');
                     }
-                    e.dead=true;
+                    e.dead = true;
                 }
-                Game.toast("Bulldozed",w.tx,w.ty); AudioEngine.play('build'); Game.ui();
-            } else { Game.toast("Need 100g",w.tx,w.ty); AudioEngine.play('err'); }
-            Game.setPlacing(null); return;
+                Game.toast("Bulldozed", w.tx, w.ty); AudioEngine.play('demolish'); Game.ui();
+                FX.poof(w.tx+0.5, w.ty+0.5, '#888', 8, 1.5); FX.sparks(w.tx+0.5, w.ty+0.5, 6, '#ffaa44', 2);
+            } else { Game.toast("Need 100g", w.tx, w.ty); AudioEngine.play('err'); }
+            Game.setPlacing(null);
+            return;
         }
 
         if(State.placing) {
-            const idx=w.ty*W+w.tx;
-            if(State.grid[idx]!==GRID.GRASS) { Game.toast("Blocked",w.tx,w.ty); AudioEngine.play('err'); return; }
-            if(State.gold<State.placing.cost) { Game.toast("Need Gold",w.tx,w.ty); AudioEngine.play('err'); return; }
-            State.gold-=State.placing.cost; State.grid[idx]=GRID.BUILD;
-            const nb=new Building(w.tx+0.5,w.ty+0.5,State.placing.type);
-            if(nb.type==='Tower') nb.level=State.towerTechLevel;
-            State.entities.push(nb);
-            Game.toast("Building...",w.tx,w.ty); AudioEngine.play('build');
-            Game.setPlacing(null); Game.ui(); return;
+            const idx = w.ty*W + w.tx;
+            if(State.grid[idx] !== GRID.GRASS) { Game.toast("Blocked", w.tx, w.ty); AudioEngine.play('err'); return; }
+            if(State.gold < State.placing.cost) { Game.toast("Need Gold", w.tx, w.ty); AudioEngine.play('err'); return; }
+            State.gold -= State.placing.cost;
+            State.grid[idx] = GRID.BUILD;
+            let bLevel = 1;
+            if(State.placing.type === 'Tower') {
+                const tc = State.entities.find(e => e.type === 'TownCenter' && e.team === 'player');
+                if(tc) bLevel = tc.level;
+            }
+            State.entities.push(new Building(w.tx+0.5, w.ty+0.5, State.placing.type, 'player', bLevel));
+            Stats.add('buildingsBuilt', 1);
+            Game.toast("Building...", w.tx, w.ty); AudioEngine.play('build');
+            FX.poof(w.tx+0.5, w.ty+0.5, '#aaa', 6, 1.0); FX.ring(w.tx+0.5, w.ty+0.5, '#00ffcc', 3, 1.2, 12);
+            Game.setPlacing(null);
+            Game.ui();
+            return;
         }
 
-        const hit=State.entities.find(e=>Math.hypot(e.x-0.5-w.tx,e.y-0.5-w.ty)<0.5);
-        if(hit && hit.team==='player' && !hit.isRuin) {
-            State.selection=hit; Game.showCtx(hit); AudioEngine.play('sel');
+        const hit = State.entities.find(e => Math.hypot(e.x-0.5-w.tx, e.y-0.5-w.ty) < 0.5);
+        if(hit && hit.team === 'player' && !hit.isRuin) {
+            State.selection = hit; Game.showCtx(hit); AudioEngine.play('sel'); FX.ring(hit.x, hit.y, '#00ffcc', 3, 1.2, 12);
         } else if(State.selection && State.selection instanceof Unit) {
-            State.selection.target={x:w.tx+0.5,y:w.ty+0.5};
-            State.particles.push({x:w.tx+0.5,y:w.ty+0.5,tx:w.tx+0.5,ty:w.ty+0.5,life:10,c:'#0f0'});
-            State.selection=null; Game.hideCtx(); AudioEngine.play('sel');
+            State.selection.target = {x: w.tx+0.5, y: w.ty+0.5};
+            FX.ring(w.tx+0.5, w.ty+0.5, '#0f0', 4, 1.5, 14);
+            FX.sparks(w.tx+0.5, w.ty+0.5, 3, '#0f0', 0.8);
+            State.selection = null; Game.hideCtx(); AudioEngine.play('move');
         } else {
-            State.selection=null; Game.hideCtx();
+            State.selection = null; Game.hideCtx();
         }
     },
-
+    
     startWave() {
-        document.getElementById('wave-countdown').classList.add('hidden');
-        State.waveCountdownEnd=0;
-        State.waveActive=true; State.toSpawn=5+Math.floor(State.wave*1.5);
-        State.nextSpawn=Date.now();
+        State.waveActive=true; State.toSpawn=5+Math.floor(State.wave*1.5); 
+        State.nextSpawn=Date.now()+1000; // 1-second delay before first enemy
         document.getElementById('ui-wave').innerText=State.wave;
-        Game.toast(`Wave ${State.wave}`,20,20); AudioEngine.play('alarm');
+        Game.toast(`Wave ${State.wave} — ${getBiome().enemyName}s incoming!`, 20, 20); AudioEngine.play('alarm');
+        Stats.set('waveReached', State.wave);
     },
 
-    /* FIX #3: convert world-tile coords to screen coords; clamp to viewport */
-    toast(msg, wx, wy, color) {
-        const d=document.createElement('div');
-        d.className='toast'; d.innerText=msg;
-        if(color) d.style.color=color;
-        const sx = (wx*TILE)*State.scale + State.offset.x;
-        const sy = (wy*TILE)*State.scale + State.offset.y;
-        d.style.left = Math.max(40, Math.min(canvas.width-40,  sx))+'px';
-        d.style.top  = Math.max(80, Math.min(canvas.height-120,sy))+'px';
-        document.body.appendChild(d);
-        setTimeout(()=>d.remove(),1500);
+    toast(msg, x, y, color) {
+        const d = document.createElement('div'); d.className='toast'; d.innerText=msg;
+        if(color) d.style.color = color;
+        // Position near world coords, clamped to screen bounds
+        if(x != null && y != null) {
+            const sx = x * TILE * State.scale + State.offset.x;
+            const sy = y * TILE * State.scale + State.offset.y;
+            d.style.left = Math.max(40, Math.min(window.innerWidth - 40, sx)) + 'px';
+            d.style.top = Math.max(40, Math.min(window.innerHeight - 40, sy)) + 'px';
+            d.style.transform = 'none';
+        }
+        document.body.appendChild(d); setTimeout(()=>d.remove(), 1500);
     },
-
+    
     setPlacing(p) {
-        if(State.placing && p && State.placing.type===p.type) State.placing=null;
-        else State.placing=p;
-        document.querySelectorAll('#hud-bot .btn').forEach(b=>b.classList.remove('selected'));
+        if(State.placing && p && State.placing.type === p.type) State.placing = null;
+        else State.placing = p;
+        document.querySelectorAll('#hud-bot .btn').forEach(b=>{ if(b.id !== 'btn-path') b.classList.remove('selected'); });
         if(State.placing) document.getElementById(`btn-${State.placing.type}`).classList.add('selected');
     },
-
-    /* FIX #16: upkeep warning — gold turns orange when below 2× next upkeep cost */
-    ui() {
-        const gold=Math.floor(State.gold);
-        const el=document.getElementById('ui-gold');
-        el.innerText=gold;
-        let upkeepCost=0;
-        State.entities.forEach(e=>{ if(e instanceof Unit && e.team==='player') upkeepCost+=e.level; });
-        el.style.color = gold===0 ? '#ff4444' : gold<upkeepCost*2 ? '#ff8800' : 'white';
-    },
-
-    /* FIX #7: pause / resume */
-    togglePause() {
-        if(State.gameOver) return;
-        State.paused=!State.paused;
-        document.getElementById('pause-screen').classList.toggle('hidden',!State.paused);
-        document.getElementById('btn-pause').innerHTML=State.paused?'&#9654;':'&#9646;&#9646;';
-    },
-
+    
+    ui() { document.getElementById('ui-gold').innerText = Math.floor(State.gold); },
+    
     showCtx(e) {
         const el=document.getElementById('context-menu'); el.classList.remove('hidden');
-        document.getElementById('ctx-name').innerText=e.type+(e.level?` (Lvl ${e.level})`:'');
-        document.getElementById('ctx-info').innerText=`HP: ${Math.floor(e.hp)}/${Math.floor(e.maxHp)}`;
+        document.getElementById('ctx-name').innerText=e.type + (e.level ? ` (Lvl ${e.level})` : '');
+        let info = `HP: ${Math.floor(e.hp)}/${Math.floor(e.maxHp)}`;
+        if(e instanceof Building && (e.type === 'Tower' || e.type === 'TownCenter')) info += `  DMG: ${e.attackDmg()}`;
+        document.getElementById('ctx-info').innerText = info;
         const act=document.getElementById('ctx-actions'); act.innerHTML='';
-
-        if(e instanceof Building && e.hp<e.maxHp && !e.isRuin) {
-            const cost=Math.floor((1-e.hp/e.maxHp)*(COSTS[e.type]||200));
-            const r=document.createElement('div'); r.className='action-btn alt';
+        
+        if(e instanceof Building && e.hp < e.maxHp && !e.isRuin) {
+            const cost = Math.floor((1 - e.hp/e.maxHp) * (COSTS[e.type] || 200));
+            const r=document.createElement('div'); r.className='action-btn alt'; 
             r.innerText=`Repair (${cost}g)`;
-            r.onclick=()=>{ if(State.gold>=cost){State.gold-=cost;e.hp=e.maxHp;Game.ui();Game.toast("Repaired",e.x,e.y);Game.showCtx(e);AudioEngine.play('build');}else AudioEngine.play('err'); };
-            act.appendChild(r);
+            r.onclick=()=>{ if(State.gold>=cost) { State.gold-=cost; e.hp=e.maxHp; Game.ui(); Game.toast("Repaired", e.x, e.y); Game.showCtx(e); AudioEngine.play('build'); FX.sparks(e.x, e.y, 5, '#0f0', 1); } else AudioEngine.play('err'); }; act.appendChild(r);
         }
-        if(e instanceof Building && e.type!=='TownCenter' && !e.isRuin) {
+        if(e instanceof Building && e.type !== 'TownCenter' && !e.isRuin) {
             const d=document.createElement('div'); d.className='action-btn danger'; d.innerText=`Destruct (Refund)`;
-            d.onclick=()=>{ const refund=Math.floor((COSTS[e.type]||0)*0.75); State.gold+=refund; e.dead=true; State.grid[Math.floor(e.y)*W+Math.floor(e.x)]=GRID.GRASS; Game.ui(); Game.toast(`+${refund}g`,e.x,e.y); Game.hideCtx(); AudioEngine.play('gold'); };
-            act.appendChild(d);
+            d.onclick=()=>{ const refund = Math.floor((COSTS[e.type]||0)*0.75); State.gold+=refund; e.dead=true; State.grid[Math.floor(e.y)*W+Math.floor(e.x)] = GRID.GRASS; Game.ui(); Game.toast(`+${refund}g`, e.x, e.y); Game.hideCtx(); AudioEngine.play('demolish'); FX.ring(e.x, e.y, '#f88', 6, 2, 16); FX.poof(e.x, e.y, '#888', 8, 1.5); }; act.appendChild(d);
         }
         if(e.type==='Barracks') {
             const t=document.createElement('div'); t.className='action-btn'; t.innerText=`Train Soldier (50g)`;
-            t.onclick=()=>{ if(State.gold>=50){State.gold-=50;const u=new Unit(e.x+1,e.y,'Soldier','player',e.level);State.entities.push(u);Game.ui();Game.toast("Soldier Ready",e.x,e.y);AudioEngine.play('build');}else AudioEngine.play('err'); };
-            act.appendChild(t);
-            const b=document.createElement('div'); b.className='action-btn alt'; b.innerText=`Upgrade Tech (150g)`;
-            b.onclick=()=>{ if(State.gold>=150){State.gold-=150;e.level++;Game.ui();Game.toast("Tech Upgraded",e.x,e.y);Game.showCtx(e);AudioEngine.play('gold');}else AudioEngine.play('err'); };
-            act.appendChild(b);
+            t.onclick=()=>{ if(State.gold>=50){ State.gold-=50; const u=new Unit(e.x+1, e.y, 'Soldier', 'player', e.level); State.entities.push(u); Stats.add('unitsTrained', 1); Game.ui(); Game.toast("Soldier Ready", e.x, e.y); AudioEngine.play('train'); FX.ring(e.x, e.y, COLORS.player, 3, 1.2, 12); } else AudioEngine.play('err'); }; act.appendChild(t);
+            const b=document.createElement('div'); b.className='action-btn alt'; b.innerText=`Upgrade Tech → L${e.level+1} (150g)`;
+            b.onclick=()=>{ if(State.gold>=150){ State.gold-=150; e.level++; e.applyLevel(e.level); State.entities.filter(u=>u.type==='Soldier'&&u.team==='player').forEach(u=>u.applyLevel(e.level)); Game.ui(); Game.toast("Tech Upgraded → Lvl "+e.level, e.x, e.y); Game.showCtx(e); AudioEngine.play('upgrade'); FX.sparks(e.x, e.y, 6, '#ffd700', 1.2); } else AudioEngine.play('err'); }; act.appendChild(b);
         }
         if(e.type==='TownCenter') {
             const b=document.createElement('div'); b.className='action-btn'; b.innerText=`Train Builder (50g)`;
-            b.onclick=()=>{ if(State.gold>=50){State.gold-=50;State.entities.push(new Unit(e.x+1,e.y,'Builder','player',e.level));Game.ui();Game.toast("Builder Ready",e.x,e.y);AudioEngine.play('build');}else AudioEngine.play('err'); };
-            act.appendChild(b);
-            const u=document.createElement('div'); u.className='action-btn alt'; u.innerText=`Upgrade Base (300g)`;
-            u.onclick=()=>{ if(State.gold>=300){
-                State.gold-=300; e.level++; e.maxHp*=1.05; e.hp=e.maxHp;
-                State.towerTechLevel++;
-                State.entities.filter(u=>u.type==='Soldier'&&Math.hypot(u.x-e.x,u.y-e.y)<5).forEach(u=>u.applyLevel(e.level));
-                Game.ui();
-                Game.toast(`Base Lv${e.level} | Tower Tech Lv${State.towerTechLevel}`,e.x,e.y,'#00ffcc');
-                Game.showCtx(e); AudioEngine.play('gold');
-            }else AudioEngine.play('err'); };
-            act.appendChild(u);
-        }
-        if(e.type==='Tower' && !e.isRuin) {
-            const upgCost=80*e.level;
-            const t=document.createElement('div'); t.className='action-btn alt';
-            t.innerText=`Upgrade Tower Lv${e.level}→${e.level+1} (${upgCost}g)`;
-            t.onclick=()=>{ if(State.gold>=upgCost){
-                State.gold-=upgCost; e.level++;
-                Game.ui(); Game.toast(`Tower → Lv${e.level}`,e.x,e.y,'#00ffcc');
-                Game.showCtx(e); AudioEngine.play('gold');
-            }else AudioEngine.play('err'); };
-            act.appendChild(t);
+            b.onclick=()=>{ if(State.gold>=50){ State.gold-=50; State.entities.push(new Unit(e.x+1, e.y, 'Builder', 'player', e.level)); Stats.add('unitsTrained', 1); Game.ui(); Game.toast("Builder Ready", e.x, e.y); AudioEngine.play('train'); FX.ring(e.x, e.y, COLORS.builder, 3, 1.2, 12); } else AudioEngine.play('err'); }; act.appendChild(b);
+            const u=document.createElement('div'); u.className='action-btn alt'; u.innerText=`Upgrade Base → L${e.level+1} (300g)`;
+            u.onclick=()=>{ if(State.gold>=300){ State.gold-=300; e.level++; e.applyLevel(e.level); State.entities.filter(u=>u.type==='Builder'&&u.team==='player').forEach(u=>u.applyLevel(e.level)); State.entities.filter(b=>b.type==='Tower'&&b.team==='player').forEach(b=>b.applyLevel(e.level)); Game.ui(); Game.toast("Base Upgraded → Lvl "+e.level, e.x, e.y); Game.showCtx(e); AudioEngine.play('upgrade'); FX.sparks(e.x, e.y, 8, '#ffd700', 1.5); FX.ring(e.x, e.y, '#00ffcc', 5, 1.5, 16); } else AudioEngine.play('err'); }; act.appendChild(u);
         }
         if(e instanceof Unit) {
             const b=document.createElement('div'); b.className='action-btn alt';
-            const newType=e.type==='Soldier'?'Builder':'Soldier';
+            const newType = e.type === 'Soldier' ? 'Builder' : 'Soldier';
             b.innerText=`Convert to ${newType}`;
-            b.onclick=()=>{
-                e.type=newType;
-                let newLevel=1;
-                if(newType==='Builder'){
-                    const builders=State.entities.filter(u=>u.type==='Builder'&&!u.dead);
-                    const maxLvl=builders.length>0?Math.max(...builders.map(u=>u.level)):1;
-                    newLevel=Math.max(1,maxLvl-2);
+            b.onclick=()=>{ 
+                e.type = newType; 
+                let newLevel = 1;
+                if(newType === 'Builder') {
+                    const tc = State.entities.find(b => b.type === 'TownCenter' && b.team === 'player');
+                    newLevel = tc ? tc.level : 1;
+                } else {
+                    const barracks = State.entities.filter(b => b.type === 'Barracks' && b.team === 'player');
+                    newLevel = barracks.length > 0 ? Math.max(...barracks.map(b=>b.level)) : 1;
                 }
-                e.applyLevel(newLevel);
-                if(newType==='Builder'){e.color=COLORS.builder;e.range=1.2;e.holdGold=false;}
-                else{e.color=COLORS.player;e.range=4.0;}
-                Game.hideCtx(); Game.toast("Converted",e.x,e.y); AudioEngine.play('sel');
-            };
-            act.appendChild(b);
+                e.applyLevel(newLevel); 
+                if(newType==='Builder') { e.color=COLORS.builder; e.range=1.2; e.holdGold=false; }
+                else { e.color=COLORS.player; e.range=4.0; }
+                Game.hideCtx(); Game.toast("Converted", e.x, e.y); AudioEngine.play('convert'); FX.sparks(e.x, e.y, 5, e.color, 1.2);
+            }; act.appendChild(b);
         }
     },
     hideCtx() { document.getElementById('context-menu').classList.add('hidden'); },
@@ -703,472 +989,634 @@ const Game = {
     },
 
     play(lvl) {
-        State.mode='PLAY'; State.gameOver=false; State.paused=false;
+        State.mode='PLAY'; State.gameOver=false;
         document.querySelectorAll('.menu-screen').forEach(e=>e.classList.add('hidden'));
         document.getElementById('hud-top').classList.remove('hidden');
         document.getElementById('hud-bot').classList.remove('hidden');
-        document.getElementById('btn-pause').innerHTML='&#9646;&#9646;';
-        State.level=JSON.parse(JSON.stringify(lvl));
-        State.grid=[...State.level.grid];
-        State.entities=[]; State.gold=State.level.startGold; State.wave=1;
-        State.waveCountdownEnd=0; State.waveActive=false; State.towerTechLevel=1;
+        State.level=JSON.parse(JSON.stringify(lvl)); if(!State.level.biome) State.level.biome='grass'; State.grid=[...State.level.grid]; State.entities=[]; State.particles=[]; State.mouseWorld=null; State.gold=State.level.startGold; State.wave=1;
+        Stats.add('gamesPlayed', 1);
         State.level.mines.forEach(m=>State.entities.push(new Building(m.x+0.5,m.y+0.5,'Mine','neutral')));
         const b=State.level.waypoints[State.level.waypoints.length-1];
         if(b) {
-            State.entities.push(new Building(b.x+0.5,b.y+0.5,'TownCenter','player'));
+            State.entities.push(new Building(b.x+0.5, b.y+0.5, 'TownCenter', 'player'));
             State.grid[b.y*W+b.x]=GRID.BUILD;
-            State.entities.push(new Unit(b.x+1.5,b.y+0.5,'Builder','player',1));
+            State.entities.push(new Unit(b.x+1.5, b.y+0.5, 'Builder', 'player', 1));
         }
         const m=document.getElementById('hud-bot'); m.innerHTML='';
         [{n:'WALL',c:10,t:'Wall'},{n:'TOWER',c:80,t:'Tower'},{n:'BARRACKS',c:150,t:'Barracks'},{n:'BULLDOZER',c:100,t:'BUL'}].forEach(i=>{
             const b=document.createElement('div'); b.className='btn'; b.id=`btn-${i.t}`;
             b.innerHTML=`${i.n}<div class="cost">${i.c}</div>`;
-            b.onclick=(e)=>{e.stopPropagation();Game.setPlacing({type:i.t,cost:i.c});AudioEngine.play('sel');};
+            b.onclick=(e)=>{e.stopPropagation(); Game.setPlacing({type:i.t,cost:i.c}); AudioEngine.play('sel'); };
             m.appendChild(b);
         });
-        Game.ui(); Game.startWave(); State.lastUpkeep=Date.now();
+        // Task 24 — PATH toggle (visualize enemy walk paths)
+        const pb = document.createElement('div'); pb.className = 'btn'; pb.id = 'btn-path';
+        pb.innerHTML = `PATH<div class="cost">${State.showPaths ? 'ON' : 'OFF'}</div>`;
+        pb.onclick = (e) => { e.stopPropagation(); Game.togglePaths(); AudioEngine.play('sel'); };
+        m.appendChild(pb);
+        Game.ui(); Game.startWave(); State.lastUpkeep = Date.now();
     },
-
     toMenu() {
-        State.mode='MENU'; State.paused=false;
-        document.querySelectorAll('.menu-screen').forEach(e=>e.classList.add('hidden'));
+        State.mode='MENU'; document.querySelectorAll('.menu-screen').forEach(e=>e.classList.add('hidden'));
         document.getElementById('main-menu').classList.remove('hidden');
         document.getElementById('hud-top').classList.add('hidden');
         document.getElementById('hud-bot').classList.add('hidden');
         document.getElementById('editor-ui').classList.add('hidden');
-        document.getElementById('wave-countdown').classList.add('hidden');
         Storage.load();
+        Achievements.refreshMenu();
     },
-
-    editor() {
-        Game.toMenu();
+    playDaily() {
+        const seed = MapGen.todaySeedStr();
+        const bio = BIOME_KEYS[MapGen.hash(seed) % BIOME_KEYS.length];
+        const lvl = MapGen.generate(seed, bio);
+        lvl.name = 'Daily Challenge ' + seed;
+        Game.play(lvl);
+    },
+    playRandom() {
+        const seed = 'r' + Math.floor(Math.random()*1000000000);
+        const bio = BIOME_KEYS[Math.floor(Math.random()*BIOME_KEYS.length)];
+        const lvl = MapGen.generate(seed, bio);
+        lvl.name = 'Random Map #' + seed.slice(1);
+        Game.play(lvl);
+    },
+    updateDailyInfo() {
+        const el = document.getElementById('daily-info'); if(!el) return;
+        const now = new Date();
+        const end = new Date(now.getFullYear(), now.getMonth(), now.getDate()+1, 0, 0, 0);
+        const left = Math.max(0, end - now);
+        const h = Math.floor(left/3600000), m = Math.floor(left%3600000/60000), s = Math.floor(left%60000/1000);
+        el.innerText = 'Daily seed: ' + MapGen.todaySeedStr() + '  ·  next in ' +
+            String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    },
+    ach() {
         document.getElementById('main-menu').classList.add('hidden');
+        document.getElementById('ach-screen').classList.remove('hidden');
+        Achievements.buildPanel();
+    },
+    editor() {
+        Game.toMenu(); document.getElementById('main-menu').classList.add('hidden');
         document.getElementById('editor-ui').classList.remove('hidden');
-        State.mode='EDITOR';
-        Editor.lvl={name:"New",grid:new Array(W*H).fill(0),mines:[],waypoints:[],startGold:600};
+        State.mode='EDITOR'; Editor.lvl={name:"New", biome:"grass", grid:new Array(W*H).fill(0), mines:[], waypoints:[], startGold:600}; Editor.setBiome('grass');
         State.grid=Editor.lvl.grid; State.level=Editor.lvl;
-        /* FIX #5: highlight default tool on open */
-        Editor.setTool('wall', document.getElementById('etool-wall'));
     }
 };
 
-// ─── ENTITIES ────────────────────────────────────────────────────────────────
-class Entity {
-    constructor(x,y,type,team){ this.x=x;this.y=y;this.type=type;this.team=team;this.dead=false;this.hp=100;this.maxHp=100;this.level=1;this.id=Math.random(); }
-}
+// --- ENTITIES ---
+class Entity { constructor(x, y, type, team) { this.x=x; this.y=y; this.type=type; this.team=team; this.dead=false; this.hp=100; this.maxHp=100; this.level=1; this.id=Math.random(); } }
 
 class Unit extends Entity {
-    constructor(x,y,type,team,level=1) {
-        super(x,y,type,team);
-        this.baseStats={speed:2.5,radius:0.25,dmg:10,hp:60};
+    constructor(x, y, type, team, level=1) {
+        super(x, y, type, team);
+        this.baseStats = { speed:2.5, radius:0.25, dmg:10, hp:60 };
         this.holdGold=false; this.path=[]; this.target=null; this.lastAtk=0; this.lastDmg=0;
-        this.wallHits=0; this.ignoreIds=[]; this.flashFrames=0;
+        this.wallHits=0; this.ignoreIds=[];
         this.applyLevel(level);
-        if(type==='Builder')      { this.color=COLORS.builder; this.range=1.2; }
-        else if(team==='enemy')   { this.configureEnemy(); }
-        else                      { this.color=COLORS.player;  this.range=4.0; }
+        if(type==='Builder') { this.color=COLORS.builder; this.range=1.2; }
+        else if(team==='enemy') { this.configureEnemy(); }
+        else { this.color=COLORS.player; this.range=4.0; }
     }
     applyLevel(lvl) {
-        this.level=lvl; const m=lvl-1;
-        this.radius = this.baseStats.radius*(1+m*0.03);
-        this.maxHp  = this.baseStats.hp*(1+m*0.04); this.hp=this.maxHp;
-        this.speed  = this.baseStats.speed*(1+m*0.02);
-        this.dmg    = this.baseStats.dmg*(1+m*0.03);
+        this.level = lvl; const m = lvl - 1;
+        this.radius = this.baseStats.radius * (1 + m*0.03);
+        this.maxHp = this.baseStats.hp * (1 + m*0.04); this.hp = this.maxHp;
+        this.speed = this.baseStats.speed * (1 + m*0.02);
+        this.dmg = this.baseStats.dmg * (1 + m*0.03);
     }
     configureEnemy() {
-        const idx=Math.min(8,Math.floor((this.dmg-5)/5));
-        this.color=ATK_COLORS[idx];
-        this.radius=this.maxHp>100?0.35:0.25;
-        this.range=Math.max(2.0,this.level*0.2);
+        const bio = getBiome();
+        this.shape = bio.enemyShape;
+        this.color = bio.enemy;
+        // Biome stat modifiers: desert scorpions are fast, snow frostlings are
+        // tanky, swamp slimes hit hard, grassland raiders are baseline.
+        this.speed *= (bio.speedMul || 1);
+        this.maxHp = Math.max(1, Math.ceil(this.maxHp * (bio.hpMul || 1))); this.hp = this.maxHp;
+        this.dmg = Math.max(1, Math.round(this.dmg * (bio.dmgMul || 1)));
+        if(this.maxHp > 100) this.radius = 0.35; else this.radius = 0.25;
+        this.range = Math.max(2.0, this.level * 0.2); // Dynamic Range
     }
     update(dt) {
-        // Soldier passive regen
-        if(this.team==='player' && this.type==='Soldier' && Date.now()-this.lastDmg>3000 && this.hp<this.maxHp) {
-            this.hp=Math.min(this.maxHp, this.hp + this.maxHp*0.01*(dt/1000));
+        // Soldier Regen
+        if(this.team === 'player' && this.type === 'Soldier' && Date.now() - this.lastDmg > 3000 && this.hp < this.maxHp) {
+            this.hp += this.maxHp * 0.01 * (dt/1000);
+            if(this.hp > this.maxHp) this.hp = this.maxHp;
         }
 
-        const targetTeam=this.team==='player'?'enemy':'player';
-        const foe=State.entities.find(e=>
-            e.team===targetTeam && !e.dead && !e.isRuin &&
+        const targetTeam = this.team==='player'?'enemy':'player';
+        const foe = State.entities.find(e => 
+            e.team === targetTeam && !e.dead && !e.isRuin && 
             !this.ignoreIds.includes(e.id) &&
-            Math.hypot(e.x-this.x,e.y-this.y)<this.range
+            Math.hypot(e.x - this.x, e.y - this.y) < this.range
         );
 
         if(foe) {
-            if(Date.now()>this.lastAtk+1000) {
-                // Wall evasion logic
-                if(this.team==='enemy' && foe.type==='Wall') {
+            if(Date.now() > this.lastAtk+1000) {
+                // Wall Logic
+                if(this.team === 'enemy' && foe.type === 'Wall') {
                     this.wallHits++;
-                    if(this.wallHits>2) { this.ignoreIds.push(foe.id); this.wallHits=0; return; }
+                    if(this.wallHits > 2) {
+                        this.ignoreIds.push(foe.id); // Ignore this wall
+                        this.wallHits = 0;
+                        return; // Move instead of attack
+                    }
                 }
+                
                 foe.takeDamage(this.dmg);
-                /* FIX #1: gold awarded ONLY here — removed duplicate in takeDamage() */
-                if(foe.dead && foe.team==='enemy') {
-                    State.gold+=Math.ceil(foe.level*2.5);
-                    Game.ui();
-                    Game.toast(`+${Math.ceil(foe.level*2.5)}g`, foe.x, foe.y, '#ffd700');
-                }
-                State.particles.push({x:this.x,y:this.y,tx:foe.x,ty:foe.y,life:5,c:'#fff'});
-                AudioEngine.play('hit'); this.lastAtk=Date.now();
-            }
-            return;
+                FX.spawn({type:'tracer', x:this.x, y:this.y, tx:foe.x, ty:foe.y, life:5, maxLife:5, c:'#fff'}); FX.sparks(this.x, this.y, 1, '#fff', 0.4); AudioEngine.play('hit');
+                this.lastAtk=Date.now();
+            } return;
         }
 
-        let dest=null;
+        let dest = null;
         if(this.team==='enemy') {
             if(this.wpIdx===undefined) this.wpIdx=0;
             const wp=State.level.waypoints[this.wpIdx];
-            if(wp){ dest={x:wp.x+0.5,y:wp.y+0.5}; if(Math.hypot(dest.x-this.x,dest.y-this.y)<0.2) this.wpIdx++; }
+            if(wp) { dest={x:wp.x+0.5, y:wp.y+0.5}; if(Math.hypot(dest.x-this.x, dest.y-this.y) < 0.2) this.wpIdx++; }
         } else if(this.type==='Builder') {
-            const capacity=10+(this.level*2);
-            if(this.state==='HEALING') {
-                if(this.hp>=this.maxHp || State.gold<1) { this.state='IDLE'; }
+            const capacity = 10 + (this.level * 2);
+            // HEAL LOGIC
+            if(this.state === 'HEALING') {
+                if(this.hp >= this.maxHp || State.gold < 1) { this.state = 'IDLE'; } 
                 else {
-                    this.hp=Math.min(this.maxHp, this.hp+this.maxHp*0.1*(dt/1000));
-                    if(Math.random()<(dt/1000)) { State.gold--; Game.ui(); }
-                    return;
+                    this.hp += this.maxHp * 0.1 * (dt/1000); // 10%/sec
+                    // Cost calc approximated for frame: 1g per 10%
+                    // Probability based cost application to avoid floats
+                    if(Math.random() < (dt/1000)) { State.gold--; Game.ui(); }
+                    return; // Busy healing
                 }
             }
+
             if(this.holdGold) {
                 const tc=State.entities.find(e=>e.type==='TownCenter');
-                if(tc){
-                    dest={x:tc.x,y:tc.y};
-                    if(Math.hypot(dest.x-this.x,dest.y-this.y)<1.5){
-                        State.gold+=capacity; this.holdGold=false; Game.ui(); AudioEngine.play('gold');
-                        if(this.hp<this.maxHp && State.gold>5) this.state='HEALING';
-                    }
+                if(tc) { 
+                    dest={x:tc.x,y:tc.y}; 
+                    if(Math.hypot(dest.x-this.x,dest.y-this.y)<1.5){ 
+                        State.gold+=capacity; Stats.add('goldEarned', capacity); this.holdGold=false; Game.ui(); AudioEngine.play('gold'); FX.sparks(tc.x, tc.y, 5, '#ffd700', 0.8); FX.ring(tc.x, tc.y, '#ffd700', 3, 1, 12);
+                        if(this.hp < this.maxHp && State.gold > 5) this.state = 'HEALING'; // Enter heal mode
+                    } 
                 }
             } else {
-                const mine=State.entities.find(e=>e.type==='Mine'&&!e.dead);
-                if(mine){
-                    dest={x:mine.x,y:mine.y};
-                    if(Math.hypot(dest.x-this.x,dest.y-this.y)<1.5){
-                        this.holdGold=true;
-                        if(mine.capacity>0){ mine.capacity-=capacity; if(mine.capacity<=0) mine.takeDamage(9999); }
-                    }
-                }
+                const m=State.entities.find(e=>e.type==='Mine' && !e.dead);
+                if(m) { dest={x:m.x,y:m.y}; if(Math.hypot(dest.x-this.x,dest.y-this.y)<1.5) { this.holdGold=true; if(m.capacity>0) { m.capacity -= capacity; if(m.capacity<=0) m.takeDamage(9999); } } }
             }
         } else if(this.target) {
-            dest=this.target; if(Math.hypot(dest.x-this.x,dest.y-this.y)<0.1) this.target=null;
+            dest = this.target; if(Math.hypot(dest.x-this.x, dest.y-this.y) < 0.1) this.target=null;
         }
-
-        if(dest) {
-            if(this.team==='enemy' || (this.type==='Builder'&&this.holdGold)) this.moveSmart(dest.x,dest.y,dt);
-            else this.move(dest.x,dest.y,dt);
+        
+        if(dest) { 
+            // Enemies or Loaded Builders use smart pathing to avoid walls/obstacles
+            if(this.team === 'enemy' || (this.type === 'Builder' && this.holdGold)) this.moveSmart(dest.x, dest.y, dt); 
+            else this.move(dest.x, dest.y, dt); 
         }
     }
-
-    moveSmart(tx,ty,dt) {
-        // When start===end, A* returns [] (truthy but empty) — never store it or the unit freezes.
-        // When no valid path exists, fall back to direct movement (same pattern as move()).
-        let nx=tx, ny=ty;
-        if(!this.path||this.path.length===0||Math.random()<0.05){
-            const p=Pathfinder.findPath(Math.floor(this.x),Math.floor(this.y),Math.floor(tx),Math.floor(ty),State.grid);
-            if(p && p.length>0) this.path=p; else this.path=null;
+    // Task 21 — dt-scaled movement + budgeted path refresh. The 5%-per-frame
+    // re-path roll is scaled by dt/16 so refresh rate is wall-clock constant
+    // (~3x/sec at 60fps); refreshes of an EXISTING path also respect the
+    // per-frame pathfinding budget (State.pathBudget) so A* load stays bounded.
+    // Empty-path lookups always run — they're correctness-critical.
+    moveSmart(tx, ty, dt) {
+        if(Math.hypot(tx-this.x, ty-this.y) < 0.1) return;
+        const k = (dt || 16) / 1000;
+        const needPath = !this.path || this.path.length===0;
+        const refresh = !needPath && Math.random() < Math.min(1, 0.05 * (k * 62.5)) && State.pathBudget > 0; // 0.05 * dt/16
+        if(needPath || refresh) {
+            if(refresh) State.pathBudget--;
+            const p = Pathfinder.findPath(Math.floor(this.x), Math.floor(this.y), Math.floor(tx), Math.floor(ty), State.grid); if(p) this.path = p;
         }
-        if(this.path&&this.path.length>0){
-            const next=this.path[0];
-            const d2=Math.hypot(next.x+0.5-this.x,next.y+0.5-this.y);
-            if(d2<0.1) this.path.shift();
-            nx=next.x+0.5; ny=next.y+0.5;
-        }
-        // Always commit a step — toward path node if we have one, directly toward target otherwise
-        const d=Math.hypot(nx-this.x,ny-this.y);
-        const step=this.speed*(dt/1000);
-        if(d>step){ this.x+=(nx-this.x)/d*step; this.y+=(ny-this.y)/d*step; }
-        else { this.x=nx; this.y=ny; }
+        if(this.path && this.path.length > 0) {
+            const next = this.path[0];
+            const d = Math.hypot(next.x+0.5 - this.x, next.y+0.5 - this.y);
+            if(d < 0.1) this.path.shift();
+            else { const step = this.speed * k; this.x += (next.x+0.5 - this.x)/d * step; this.y += (next.y+0.5 - this.y)/d * step; }
+        } else this.move(tx, ty, dt);
     }
-
-    /* FIX #17: accepts dt */
-    move(tx,ty,dt) {
-        let nx=tx, ny=ty;
-        const dist=Math.hypot(tx-this.x,ty-this.y);
-        if(dist>0.5&&(!this.path||this.path.length===0||Math.random()<0.05)){
-            const p=Pathfinder.findPath(Math.floor(this.x),Math.floor(this.y),Math.floor(tx),Math.floor(ty),State.grid);
-            if(p) this.path=p;
+    move(tx, ty, dt) {
+        const k = (dt || 16) / 1000;
+        let nx=tx, ny=ty; const dist = Math.hypot(tx-this.x, ty-this.y);
+        if(dist > 0.5) {
+            const needPath = !this.path || this.path.length===0;
+            const refresh = !needPath && Math.random() < Math.min(1, 0.05 * (k * 62.5)) && State.pathBudget > 0;
+            if(needPath || refresh) {
+                if(refresh) State.pathBudget--;
+                const p = Pathfinder.findPath(Math.floor(this.x), Math.floor(this.y), Math.floor(tx), Math.floor(ty), State.grid); if(p) this.path = p;
+            }
         }
-        if(this.path&&this.path.length>0){
-            const next=this.path[0];
-            const d2=Math.hypot(next.x+0.5-this.x,next.y+0.5-this.y);
-            if(d2<0.1) this.path.shift();
-            nx=next.x+0.5; ny=next.y+0.5;
+        if(this.path && this.path.length > 0) {
+            const next = this.path[0]; const d2 = Math.hypot(next.x+0.5-this.x, next.y+0.5-this.y);
+            if(d2 < 0.1) this.path.shift(); nx = next.x+0.5; ny = next.y+0.5;
         }
-        const d=Math.hypot(nx-this.x,ny-this.y);
-        const step=this.speed*(dt/1000);
-        if(d>step){ this.x+=(nx-this.x)/d*step; this.y+=(ny-this.y)/d*step; }
-        else { this.x=nx; this.y=ny; }
+        const d = Math.hypot(nx-this.x, ny-this.y); const step = this.speed * k; 
+        if(d > step) { this.x += (nx-this.x)/d * step; this.y += (ny-this.y)/d * step; } else { this.x = nx; this.y = ny; }
     }
-
-    takeDamage(n) {
-        this.hp-=n; this.lastDmg=Date.now(); this.flashFrames=3; AudioEngine.play('hit');
+    takeDamage(n) { 
+        this.hp-=n; this.lastDmg=Date.now(); AudioEngine.play('hit'); 
+        FX.sparks(this.x, this.y, 2, '#fff', 1.2);
         if(this.hp<=0 && !this.dead) {
             this.dead=true;
-            /* FIX #1: gold grant REMOVED from here; handled in Unit.update() to prevent double-award */
+            AudioEngine.play(this.isBoss ? 'bossdeath' : 'death');
+            FX.ring(this.x, this.y, this.color, 5, 2.2, 18);
+            FX.sparks(this.x, this.y, 10, this.color, 2.5);
+            if(this.team==='enemy') { 
+                const reward = Math.ceil(this.level * 2.5);
+                State.gold += reward; // Economy Fix
+                Game.ui(); 
+                Game.toast(`+${reward}g`, this.x, this.y, '#ffd700'); 
+                FX.sparks(this.x, this.y, 5, '#ffd700', 1);
+                Stats.add('enemiesKilled', 1);
+                Stats.add('goldEarned', reward);
+                if(this.isBoss) Stats.add('bossesKilled', 1);
+            }
         }
     }
-
+    drawEnemy(ctx, cx, cy) {
+        const r = this.radius*TILE, s = this.shape || 'circle';
+        ctx.fillStyle = this.color;
+        if(s === 'tri') { ctx.beginPath(); ctx.moveTo(cx, cy-r); ctx.lineTo(cx+r, cy+r*0.8); ctx.lineTo(cx-r, cy+r*0.8); ctx.closePath(); ctx.fill(); }
+        else if(s === 'square') { ctx.fillRect(cx-r*0.9, cy-r*0.9, r*1.8, r*1.8); }
+        else if(s === 'diamond') { ctx.beginPath(); ctx.moveTo(cx, cy-r); ctx.lineTo(cx+r*0.8, cy); ctx.lineTo(cx, cy+r); ctx.lineTo(cx-r*0.8, cy); ctx.closePath(); ctx.fill(); }
+        else { ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.fill(); }
+        // Angry eyes so enemy types read at a glance
+        ctx.fillStyle = 'rgba(0,0,0,0.55)';
+        if(s === 'square') { ctx.fillRect(cx-r*0.65, cy-r*0.3, r*0.4, r*0.32); ctx.fillRect(cx+r*0.25, cy-r*0.3, r*0.4, r*0.32); }
+        else { ctx.beginPath(); ctx.arc(cx-r*0.45, cy-r*0.2, Math.max(1.5, r*0.18), 0, Math.PI*2); ctx.arc(cx+r*0.45, cy-r*0.2, Math.max(1.5, r*0.18), 0, Math.PI*2); ctx.fill(); }
+    }
     draw(ctx) {
         const cx=this.x*TILE, cy=this.y*TILE;
-        const r=this.radius*TILE;  // ~10px normal, ~14px boss
-
-        ctx.save();
-
-        // ── Universal dark outline: renders sprite readable on ANY terrain ──
-        ctx.fillStyle='rgba(0,0,0,0.55)';
-        ctx.beginPath(); ctx.arc(cx,cy,r+2.5,0,Math.PI*2); ctx.fill();
-
-        if(this.team==='enemy') {
-            // 6-pointed star polygon — angular and menacing
-            ctx.fillStyle=this.color;
-            ctx.beginPath();
-            for(let i=0;i<6;i++){
-                const a=i/6*Math.PI*2 - Math.PI/2;
-                const rad=(i%2===0)?r:r*0.62;
-                i===0 ? ctx.moveTo(cx+Math.cos(a)*rad,cy+Math.sin(a)*rad)
-                      : ctx.lineTo(cx+Math.cos(a)*rad,cy+Math.sin(a)*rad);
-            }
-            ctx.closePath(); ctx.fill();
-            // Glowing red eyes
-            ctx.fillStyle='#200';
-            ctx.beginPath(); ctx.arc(cx-r*0.28,cy-r*0.12,r*0.24,0,Math.PI*2); ctx.fill();
-            ctx.beginPath(); ctx.arc(cx+r*0.28,cy-r*0.12,r*0.24,0,Math.PI*2); ctx.fill();
-            ctx.fillStyle='#f33';
-            ctx.beginPath(); ctx.arc(cx-r*0.28,cy-r*0.12,r*0.13,0,Math.PI*2); ctx.fill();
-            ctx.beginPath(); ctx.arc(cx+r*0.28,cy-r*0.12,r*0.13,0,Math.PI*2); ctx.fill();
-            // Boss gold crown spikes
-            if(this.color===COLORS.boss) {
-                ctx.fillStyle='#ffd700';
-                for(let i=-1;i<=1;i++){
-                    ctx.beginPath();
-                    ctx.moveTo(cx+i*r*0.44,cy-r*0.95);
-                    ctx.lineTo(cx+i*r*0.44-r*0.15,cy-r*0.58);
-                    ctx.lineTo(cx+i*r*0.44+r*0.15,cy-r*0.58);
-                    ctx.closePath(); ctx.fill();
-                }
-            }
-
-        } else if(this.type==='Builder') {
-            // Circle body
-            ctx.fillStyle=this.color;
-            ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
-            // Yellow hardhat (flat ellipse arcing over the top)
-            ctx.fillStyle='#e6b800';
-            ctx.beginPath(); ctx.ellipse(cx,cy-r*0.5,r*0.92,r*0.44,0,Math.PI,0); ctx.fill();
-            // Hardhat brim line
-            ctx.fillStyle='#c9a200';
-            ctx.fillRect(cx-r*0.92,cy-r*0.5,r*1.84,r*0.16);
-            // Skin face
-            ctx.fillStyle='#c8a87a';
-            ctx.beginPath(); ctx.arc(cx,cy+r*0.05,r*0.46,0,Math.PI*2); ctx.fill();
-            // Wrench (L-shape in grey)
-            const lw=Math.max(1.5,r*0.16);
-            ctx.strokeStyle='#bbb'; ctx.lineWidth=lw; ctx.lineCap='round';
-            ctx.beginPath(); ctx.moveTo(cx+r*0.72,cy+r*0.22); ctx.lineTo(cx+r*1.08,cy-r*0.22); ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(cx+r*1.08,cy-r*0.22); ctx.lineTo(cx+r*1.22,cy-r*0.08); ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(cx+r*1.08,cy-r*0.22); ctx.lineTo(cx+r*0.94,cy-r*0.38); ctx.stroke();
-            // Gold sack when carrying
-            if(this.holdGold) {
-                ctx.fillStyle='#ffd700';
-                ctx.beginPath(); ctx.arc(cx-r*0.82,cy+r*0.28,r*0.32,0,Math.PI*2); ctx.fill();
-                ctx.fillStyle='#a07800'; ctx.lineWidth=1;
-                ctx.beginPath(); ctx.arc(cx-r*0.82,cy+r*0.28,r*0.32,0,Math.PI*2); ctx.stroke();
-            }
-
-        } else {
-            // Soldier: circle body + helmet
-            ctx.fillStyle=this.color;
-            ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
-            // Darker helmet covering the top half
-            ctx.fillStyle='#194a82';
-            ctx.beginPath(); ctx.ellipse(cx,cy-r*0.28,r*0.88,r*0.68,0,Math.PI,0); ctx.fill();
-            // Skin face strip
-            ctx.fillStyle='#c8a87a';
-            ctx.beginPath(); ctx.arc(cx,cy+r*0.08,r*0.44,0,Math.PI*2); ctx.fill();
-            // Chin strap
-            ctx.fillStyle='#14406e';
-            ctx.fillRect(cx-r*0.44,cy+r*0.28,r*0.14,r*0.32);
-            ctx.fillRect(cx+r*0.30,cy+r*0.28,r*0.14,r*0.32);
-        }
-
-        // Hit flash: white overlay for flashFrames frames after taking damage
-        if(this.flashFrames>0) {
-            ctx.globalAlpha=0.55;
-            ctx.fillStyle='#ffffff';
-            ctx.beginPath(); ctx.arc(cx,cy,r+1,0,Math.PI*2); ctx.fill();
-            ctx.globalAlpha=1;
-            this.flashFrames--;
-        }
-
-        ctx.restore();
-
-        // Level dots (above sprite)
-        if(this.team==='player') drawLevelDots(ctx,cx,cy-r-10,this.level);
-        // HP bar
-        ctx.fillStyle='#600'; ctx.fillRect(cx-10,cy-r-16,20,3);
-        ctx.fillStyle='#0f0'; ctx.fillRect(cx-10,cy-r-16,20*(this.hp/this.maxHp),3);
-        // Selection ring
-        if(State.selection===this){
-            ctx.strokeStyle='#fff'; ctx.lineWidth=2;
-            ctx.beginPath(); ctx.arc(cx,cy,r+5,0,Math.PI*2); ctx.stroke();
+        if(this.team === 'enemy') this.drawEnemy(ctx, cx, cy);
+        else { ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(cx, cy, this.radius*TILE, 0, Math.PI*2); ctx.fill(); if(this.team === 'player') drawLevelDots(ctx, cx, cy - 15, this.level); }
+        ctx.fillStyle='red'; ctx.fillRect(cx-10,cy-20,20,3); ctx.fillStyle='#0f0'; ctx.fillRect(cx-10,cy-20,20*(this.hp/this.maxHp),3);
+        if(State.selection===this) {
+            const pulse = 0.5 + 0.5*Math.sin(Date.now()/250);
+            ctx.strokeStyle = `rgba(0,255,204,${0.7+0.3*pulse})`;
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.arc(cx, cy, this.radius*TILE + 4 + 2*pulse, 0, Math.PI*2); ctx.stroke();
         }
     }
 }
 
 class Building extends Entity {
-    constructor(x,y,type,team='player') {
-        super(x,y,type,team);
-        this.maxHp=type==='TownCenter'?2000:500;
-        /* FIX #6: TownCenter starts fully built at full HP; player-placed buildings start under construction */
-        this.progress = type==='TownCenter' ? 100 : 0;
-        this.hp       = type==='TownCenter' ? this.maxHp : 1;
-        this.lastS=0; this.capacity=500; this.isRuin=false;
+    constructor(x, y, type, team='player', level=1) { super(x, y, type, team); this.baseMaxHp = type==='TownCenter'?2000:500; this.progress=1; this.lastS=0; this.capacity = 500; this.isRuin = false; this.applyLevel(level); }
+    applyLevel(lvl) {
+        this.level = lvl; const m = lvl - 1;
+        // Buildings gain +15% max HP per level (towers/TC defence scales with upgrades)
+        this.maxHp = Math.ceil(this.baseMaxHp * (1 + m * 0.15));
+        // Finished buildings get full HP on level-up (upgrades heal); scaffolds stay proportional
+        this.hp = this.progress >= 100 ? this.maxHp : Math.max(1, Math.ceil(this.maxHp * this.progress / 100));
     }
-    update() {
+    attackDmg() {
+        // TownCenter & Tower share one damage curve: 20 base + 2 per level
+        return 20 + (this.level * 2);
+    }
+    // Task 21 — dt-scaled construction: 0.5 progress per 16ms tick (~30%/s at
+    // any fps); decorative sparkle probabilities stay wall-clock. Construction
+    // completes at exactly 100% / full HP (no overshoot at large dt).
+    update(dt) {
         if(this.isRuin) return;
-        if(this.progress<100){ this.progress+=0.5; this.hp=(this.progress/100)*this.maxHp; }
-        else if(this.type==='TownCenter'||this.type==='Tower') {
-            // Range and damage scale with this tower's own level
-            const rng = this.type==='Tower' ? 5 + this.level : 4;
-            const dmg = 20 + (this.level * 5);
-            if(Date.now()>this.lastS+1000) {
-                // Only target living enemies (!e.dead prevents double-rewarding a kill)
-                const f=State.entities.find(e=>e.team==='enemy' && !e.dead && Math.hypot(e.x-this.x,e.y-this.y)<rng);
-                if(f){
-                    const wasAlive = !f.dead;   // always true here, but explicit for clarity
-                    f.takeDamage(dmg);
-                    State.particles.push({x:this.x,y:this.y,tx:f.x,ty:f.y,life:5,c:COLORS.player});
-                    AudioEngine.play('shoot');
-                    this.lastS=Date.now();
-                    // Award gold only if THIS shot was the kill (wasAlive → now dead)
-                    if(wasAlive && f.dead){
-                        const reward=Math.ceil(f.level*2.5);
-                        State.gold+=reward;
-                        Game.ui();
-                        Game.toast(`+${reward}g`,f.x,f.y,'#ffd700');
-                    }
-                }
+        const k = (dt || 16) / 16;
+        if(this.progress < 100) {
+            this.progress += 0.5 * k;
+            if(this.progress >= 100) {
+                this.progress = 100; this.hp = this.maxHp;
+                FX.ring(this.x, this.y, '#00ffcc', 4, 2, 16);
+                FX.sparks(this.x, this.y, 8, '#00ffcc', 1.5);
+                FX.sparks(this.x, this.y, 4, '#ffd700', 1);
             }
+            else {
+                this.hp = (this.progress/100) * this.maxHp;
+                if(Math.random() < 0.08 * k) FX.sparks(this.x + (Math.random()-0.5)*0.6, this.y + (Math.random()-0.5)*0.6, 1, '#ffd700', 0.6);
+            }
+        }
+        else if(this.type==='TownCenter' || this.type==='Tower') {
+            const rng = this.type==='Tower'?6:4;
+            if(Date.now()>this.lastS+1000) {
+                const f=State.entities.find(e=>e.team==='enemy' && Math.hypot(e.x-this.x, e.y-this.y)<rng);
+                if(f) { f.takeDamage(this.attackDmg()); FX.spawn({type:'tracer', x:this.x, y:this.y, tx:f.x, ty:f.y, life:5, maxLife:5, c:COLORS.player}); FX.sparks(this.x, this.y, 2, '#ffd700', 0.6); AudioEngine.play('shoot'); this.lastS=Date.now(); }
+            }
+        }
+        if(this.type === 'Mine' && this.progress >= 100 && Math.random() < 0.03 * k) {
+            FX.spawn({type:'spark', x:this.x + (Math.random()-0.5)*0.5, y:this.y + (Math.random()-0.5)*0.5, vx:0, vy:-0.4, life:14, maxLife:14, c:'#ffd700', size:2});
         }
     }
-    takeDamage(n) {
+    takeDamage(n) { 
         if(this.isRuin) return; this.hp-=n; AudioEngine.play('hit');
-        if(this.type==='TownCenter'){ const ov=document.getElementById('ui'); ov.style.boxShadow="inset 0 0 50px red"; setTimeout(()=>ov.style.boxShadow="none",100); }
-        if(this.hp<=0){
-            if(this.type==='TownCenter'){
-                /* FIX #10: track best wave */
-                const survived=State.wave-1;
-                if(survived>State.bestWave){ State.bestWave=survived; localStorage.setItem('pc_best_wave',survived); }
-                document.getElementById('go-wave').textContent=`Survived ${survived} wave${survived!==1?'s':''}`;
-                document.getElementById('go-best').textContent=`Personal best: Wave ${State.bestWave}`;
-                document.getElementById('game-over-screen').classList.remove('hidden');
-                State.gameOver=true; AudioEngine.play('alarm');
-            } else if(this.type==='Mine'){
-                this.dead=true; let found=false, tries=0;
-                while(!found&&tries<100){
+        FX.sparks(this.x, this.y, 2, '#f88', 1.2);
+        if(this.type === 'TownCenter') { const ov = document.getElementById('ui'); ov.style.boxShadow="inset 0 0 50px red"; setTimeout(()=>ov.style.boxShadow="none", 100); }
+        if(this.hp<=0) { 
+            FX.ring(this.x, this.y, '#f88', 8, 2.5, 22);
+            FX.sparks(this.x, this.y, 14, '#f88', 3);
+            FX.poof(this.x, this.y, '#888', 6, 1.2);
+            if(this.type==='TownCenter') { document.getElementById('game-over-screen').classList.remove('hidden'); State.gameOver=true; AudioEngine.play('gameover'); }
+            else if(this.type==='Mine') {
+                this.dead = true; let found=false, tries=0;
+                while(!found && tries<100) {
                     const rx=Math.floor(Math.random()*W), ry=Math.floor(Math.random()*H);
-                    if(State.grid[ry*W+rx]===GRID.GRASS){ State.entities.push(new Building(rx+0.5,ry+0.5,'Mine','neutral')); found=true; } tries++;
+                    if(State.grid[ry*W+rx]===GRID.GRASS) { State.entities.push(new Building(rx+0.5, ry+0.5, 'Mine', 'neutral')); AudioEngine.play('mine'); FX.ring(rx+0.5, ry+0.5, '#FFD700', 4, 1.5, 14); found=true; } tries++;
                 }
-            } else {
-                this.isRuin=true; this.hp=0;
-                /* FIX #4: free grid cell so player can build on the ruin site */
-                State.grid[Math.floor(this.y)*W+Math.floor(this.x)]=GRID.GRASS;
-            }
+            } else { this.isRuin = true; this.hp = 0; AudioEngine.play('demolish'); }
         }
+    }
+    drawShape(ctx, cx, cy, sz) {
+        if(this.type==='Barracks') { ctx.fillStyle = COLORS.barracks; ctx.fillRect(cx-sz/2, cy-sz/4, sz, sz*0.75); ctx.beginPath(); ctx.moveTo(cx-sz/2, cy-sz/4); ctx.lineTo(cx, cy-sz/1.2); ctx.lineTo(cx+sz/2, cy-sz/4); ctx.fill(); }
+        else if (this.type==='Tower') { ctx.fillStyle = COLORS.tower; ctx.fillRect(cx-sz/3, cy-sz/2, sz*0.66, sz); ctx.fillStyle = '#632'; ctx.fillRect(cx-sz/2, cy-sz/2, sz, sz/3); }
+        else if (this.type==='TownCenter') { ctx.fillStyle = '#444'; ctx.fillRect(cx-sz/1.5, cy-sz/1.5, sz*1.33, sz*1.33); ctx.fillStyle = COLORS.towncenter; ctx.fillRect(cx-sz/2, cy-sz/2, sz, sz); ctx.fillStyle = '#333'; ctx.beginPath(); ctx.arc(cx-sz/1.5, cy-sz/1.5, 5, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(cx+sz/1.5, cy-sz/1.5, 5, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(cx-sz/1.5, cy+sz/1.5, 5, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(cx+sz/1.5, cy+sz/1.5, 5, 0, Math.PI*2); ctx.fill(); }
+        else { ctx.fillStyle = this.type==='Mine' ? (getBiome().mine || COLORS.mine) : COLORS.wall; ctx.fillRect(cx-sz/2, cy-sz/2, sz, sz); }
+    }
+    drawSelected(ctx, cx, cy, sz) {
+        const pulse = 0.5 + 0.5*Math.sin(Date.now()/250);
+        if(this.type === 'TownCenter' || this.type === 'Tower') {
+            const rng = (this.type === 'Tower' ? 6 : 4) * TILE;
+            ctx.fillStyle = 'rgba(0,255,204,0.05)';
+            ctx.beginPath(); ctx.arc(cx, cy, rng, 0, Math.PI*2); ctx.fill();
+            ctx.strokeStyle = `rgba(0,255,204,${0.25+0.2*pulse})`; ctx.setLineDash([8,6]); ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.arc(cx, cy, rng, 0, Math.PI*2); ctx.stroke(); ctx.setLineDash([]);
+        }
+        ctx.strokeStyle = `rgba(0,255,204,${0.6+0.4*pulse})`; ctx.lineWidth = 2 + pulse;
+        ctx.strokeRect(cx-sz/2-2, cy-sz/2-2, sz+4, sz+4);
+        const o = sz/2 + 2, L = 9 + 6*pulse; ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(cx-o, cy-o+L); ctx.lineTo(cx-o, cy-o); ctx.lineTo(cx-o+L, cy-o);
+        ctx.moveTo(cx+o-L, cy-o); ctx.lineTo(cx+o, cy-o); ctx.lineTo(cx+o, cy-o+L);
+        ctx.moveTo(cx-o, cy+o-L); ctx.lineTo(cx-o, cy+o); ctx.lineTo(cx-o+L, cy+o);
+        ctx.moveTo(cx+o-L, cy+o); ctx.lineTo(cx+o, cy+o); ctx.lineTo(cx+o, cy+o-L);
+        ctx.stroke();
     }
     draw(ctx) {
         const cx=this.x*TILE, cy=this.y*TILE, sz=TILE*0.8;
-        if(this.isRuin){
-            ctx.fillStyle=COLORS.ruin; ctx.fillRect(cx-sz/2,cy-sz/2,sz,sz);
-            ctx.strokeStyle='#000'; ctx.beginPath(); ctx.moveTo(cx-sz/2,cy-sz/2); ctx.lineTo(cx+sz/2,cy+sz/2); ctx.stroke();
-            return;
-        }
-        if(this.progress<100) ctx.globalAlpha=0.5;
-        if(this.type==='Barracks'){
-            ctx.fillStyle=COLORS.barracks; ctx.fillRect(cx-sz/2,cy-sz/4,sz,sz*0.75);
-            ctx.beginPath(); ctx.moveTo(cx-sz/2,cy-sz/4); ctx.lineTo(cx,cy-sz/1.2); ctx.lineTo(cx+sz/2,cy-sz/4); ctx.fill();
-        } else if(this.type==='Tower'){
-            ctx.fillStyle=COLORS.tower; ctx.fillRect(cx-sz/3,cy-sz/2,sz*0.66,sz);
-            ctx.fillStyle='#632'; ctx.fillRect(cx-sz/2,cy-sz/2,sz,sz/3);
-        } else if(this.type==='TownCenter'){
-            ctx.fillStyle='#444'; ctx.fillRect(cx-sz/1.5,cy-sz/1.5,sz*1.33,sz*1.33);
-            ctx.fillStyle=COLORS.towncenter; ctx.fillRect(cx-sz/2,cy-sz/2,sz,sz);
-            ctx.fillStyle='#333';
-            [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([dx,dy])=>{ ctx.beginPath(); ctx.arc(cx+dx*sz/1.5,cy+dy*sz/1.5,5,0,Math.PI*2); ctx.fill(); });
+        if(this.isRuin) { ctx.fillStyle = COLORS.ruin; ctx.fillRect(cx-sz/2, cy-sz/2, sz, sz); ctx.strokeStyle = '#000'; ctx.beginPath(); ctx.moveTo(cx-sz/2, cy-sz/2); ctx.lineTo(cx+sz/2, cy+sz/2); ctx.stroke(); return; }
+        if(this.progress<100) {
+            ctx.strokeStyle = 'rgba(255,255,255,0.18)'; ctx.lineWidth = 1.5; ctx.setLineDash([4,5]);
+            ctx.strokeRect(cx-sz/2, cy-sz/2, sz, sz); ctx.setLineDash([]);
+            const grow = Math.max(0.15, this.progress/100);
+            ctx.save();
+            ctx.translate(cx, cy + sz/2); ctx.scale(1, grow); ctx.translate(-cx, -(cy + sz/2));
+            ctx.globalAlpha = 0.35 + 0.65*grow;
+            this.drawShape(ctx, cx, cy, sz);
+            ctx.restore();
+            ctx.globalAlpha = 1;
+            ctx.fillStyle='cyan'; ctx.fillRect(cx-15, cy-25, 30*(this.progress/100), 5);
         } else {
-            ctx.fillStyle=this.type==='Mine'?COLORS.mine:COLORS.wall;  /* FIX #14: COLORS.wall now defined */
-            ctx.fillRect(cx-sz/2,cy-sz/2,sz,sz);
+            this.drawShape(ctx, cx, cy, sz);
+            if(this.type === 'Barracks' || this.type === 'TownCenter' || this.type === 'Tower') drawLevelDots(ctx, cx, cy - sz/1.3, this.level);
+            ctx.fillStyle='red'; ctx.fillRect(cx-15, cy-25, 30, 4); ctx.fillStyle='#0f0'; ctx.fillRect(cx-15, cy-25, 30*(this.hp/this.maxHp), 4);
         }
-        ctx.globalAlpha=1.0;
-        if(this.progress>=100&&(this.type==='Barracks'||this.type==='TownCenter')) drawLevelDots(ctx,cx,cy-sz/1.3,this.level);
-        if(this.progress<100){ ctx.fillStyle='cyan'; ctx.fillRect(cx-15,cy-25,30*(this.progress/100),5); }
-        else{ ctx.fillStyle='red'; ctx.fillRect(cx-15,cy-25,30,4); ctx.fillStyle='#0f0'; ctx.fillRect(cx-15,cy-25,30*(this.hp/this.maxHp),4); }
-        if(State.selection===this){ ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.strokeRect(cx-sz/2-2,cy-sz/2-2,sz+4,sz+4); }
+        if(State.selection===this) this.drawSelected(ctx, cx, cy, sz);
     }
 }
 
-// ─── STORAGE ─────────────────────────────────────────────────────────────────
+// --- SYSTEM ---
 const Storage = {
-    save(lvl){ let d=JSON.parse(localStorage.getItem(SAVE_ID))||[]; d.push(lvl); localStorage.setItem(SAVE_ID,JSON.stringify(d)); },
-    load(){
-        let d=JSON.parse(localStorage.getItem(SAVE_ID)); if(!d) d=this.def();
-        const l=document.getElementById('level-list'); l.innerHTML='';
-        d.forEach(v=>{ const b=document.createElement('div'); b.className='big-btn'; b.style.fontSize='16px'; b.innerText=v.name; b.onclick=()=>Game.play(v); l.appendChild(b); });
+    save(lvl) { let d = JSON.parse(localStorage.getItem(SAVE_ID))||[]; d.push(lvl); localStorage.setItem(SAVE_ID, JSON.stringify(d)); },
+    load() {
+        let d = JSON.parse(localStorage.getItem(SAVE_ID)); if(!d) d = this.def();
+        const l = document.getElementById('level-list'); l.innerHTML='';
+        d.forEach(v => {
+            const b=document.createElement('div'); b.className='big-btn'; b.style.fontSize='16px';
+            const bio = BIOMES[v.biome] || BIOMES.grass;
+            b.innerText=bio.icon + ' ' + v.name + '  ·  ' + bio.name;
+            b.onclick=()=>Game.play(v); l.appendChild(b);
+        });
     },
-    wipe(){ localStorage.removeItem(SAVE_ID); location.reload(); },
-    def(){
-        const g=new Array(W*H).fill(0); for(let x=8;x<32;x++) g[15*W+x]=GRID.ROCK; g[15*W+20]=0;
-        const d=[{name:"Training Camp",grid:g,mines:[{x:10,y:10},{x:30,y:20}],waypoints:[{x:20,y:35},{x:20,y:20},{x:5,y:20},{x:5,y:5}],startGold:600}];
-        localStorage.setItem(SAVE_ID,JSON.stringify(d)); return d;
+    wipe() { localStorage.removeItem(SAVE_ID); Stats.reset(); Achievements.reset(); location.reload(); },
+    def() {
+        const g = new Array(W*H).fill(0); for(let x=8;x<32;x++) g[15*W+x]=GRID.ROCK; g[15*W+20]=0; 
+        const d = [{name:"Training Camp", biome:"grass", grid:g, mines:[{x:10,y:10},{x:30,y:20}], waypoints:[{x:20,y:35},{x:20,y:20},{x:5,y:20},{x:5,y:5}], startGold:600}];
+        localStorage.setItem(SAVE_ID, JSON.stringify(d)); return d;
     }
 };
 
-// ─── EDITOR ──────────────────────────────────────────────────────────────────
-const Editor = {
-    tool:'wall', lvl:null,
-    drawOverlay(){
-        Game.drawMap();
-        ctx.fillStyle=COLORS.mine; this.lvl.mines.forEach(m=>ctx.fillRect(m.x*TILE+10,m.y*TILE+10,20,20));
-        ctx.strokeStyle='#fff'; ctx.beginPath();
-        this.lvl.waypoints.forEach((p,i)=>{ const x=p.x*TILE+20,y=p.y*TILE+20; if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y); ctx.strokeText(i,x,y); }); ctx.stroke();
+// --- STATS & ACHIEVEMENTS ---
+const Stats = {
+    KEY: 'pc_rts_stats',
+    data: {},
+    defaults() { return { enemiesKilled:0, bossesKilled:0, waveReached:0, goldEarned:0, buildingsBuilt:0, unitsTrained:0, gamesPlayed:0 }; },
+    load() { try { this.data = Object.assign(this.defaults(), JSON.parse(localStorage.getItem(this.KEY) || '{}')); } catch(e) { this.data = this.defaults(); } },
+    save() { try { localStorage.setItem(this.KEY, JSON.stringify(this.data)); } catch(e) {} },
+    add(stat, n) { if(!(stat in this.data)) this.data[stat] = 0; this.data[stat] += n; this.save(); Achievements.check(stat); },
+    set(stat, n) { if(n > (this.data[stat] || 0)) { this.data[stat] = n; this.save(); Achievements.check(stat); } },
+    reset() { this.data = this.defaults(); this.save(); }
+};
+
+const ACHIEVEMENTS = [
+    { id:'first_blood', name:'First Blood', desc:'Kill your first enemy', icon:'⚔️', stat:'enemiesKilled', target:1 },
+    { id:'slayer', name:'Slayer', desc:'Kill 50 enemies', icon:'🗡️', stat:'enemiesKilled', target:50 },
+    { id:'exterminator', name:'Exterminator', desc:'Kill 500 enemies', icon:'💀', stat:'enemiesKilled', target:500 },
+    { id:'wave_5', name:'Survivor', desc:'Reach wave 5', icon:'🌊', stat:'waveReached', target:5 },
+    { id:'wave_10', name:'Unstoppable', desc:'Reach wave 10', icon:'🔥', stat:'waveReached', target:10 },
+    { id:'wave_20', name:'Immortal', desc:'Reach wave 20', icon:'👑', stat:'waveReached', target:20 },
+    { id:'architect', name:'Architect', desc:'Build 10 structures', icon:'🏗️', stat:'buildingsBuilt', target:10 },
+    { id:'gold_1k', name:'Gold Hoarder', desc:'Earn 1,000 gold', icon:'💰', stat:'goldEarned', target:1000 },
+    { id:'gold_5k', name:'Tycoon', desc:'Earn 5,000 gold', icon:'🤑', stat:'goldEarned', target:5000 },
+    { id:'boss_1', name:'Boss Slayer', desc:'Defeat a boss', icon:'☠️', stat:'bossesKilled', target:1 },
+    { id:'boss_5', name:'Boss Hunter', desc:'Defeat 5 bosses', icon:'⚡', stat:'bossesKilled', target:5 },
+    { id:'recruiter', name:'Recruiter', desc:'Train 20 units', icon:'🎖️', stat:'unitsTrained', target:20 },
+    { id:'veteran', name:'Veteran', desc:'Play 10 games', icon:'🏆', stat:'gamesPlayed', target:10 }
+];
+
+const Achievements = {
+    KEY: 'pc_rts_achievements',
+    unlocked: {},
+    load() { try { this.unlocked = JSON.parse(localStorage.getItem(this.KEY) || '{}'); } catch(e) { this.unlocked = {}; } },
+    save() { try { localStorage.setItem(this.KEY, JSON.stringify(this.unlocked)); } catch(e) {} },
+    reset() { this.unlocked = {}; this.save(); },
+    count() { return Object.keys(this.unlocked).length; },
+    check(stat) {
+        let any = false;
+        ACHIEVEMENTS.forEach(a => {
+            if(a.stat === stat && !this.unlocked[a.id] && (Stats.data[a.stat] || 0) >= a.target) {
+                this.unlocked[a.id] = Date.now(); any = true;
+                this.banner(a);
+            }
+        });
+        if(any) { this.save(); this.refreshMenu(); }
     },
-    paint(w){
+    checkAll() {
+        let any = false;
+        ACHIEVEMENTS.forEach(a => {
+            if(!this.unlocked[a.id] && (Stats.data[a.stat] || 0) >= a.target) {
+                this.unlocked[a.id] = Date.now(); any = true;
+                this.banner(a);
+            }
+        });
+        if(any) { this.save(); this.refreshMenu(); }
+    },
+    refreshMenu() {
+        const el = document.getElementById('btn-ach'); if(!el) return;
+        el.innerText = 'ACHIEVEMENTS (' + this.count() + '/' + ACHIEVEMENTS.length + ')';
+    },
+    banner(a) {
+        AudioEngine.play('achievement');
+        const d = document.createElement('div'); d.className='ach-banner';
+        d.innerHTML = '<span class="ach-icon">' + a.icon + '</span><div><div class="ach-title">ACHIEVEMENT UNLOCKED</div><div class="ach-name">' + a.name + '</div><div class="ach-desc">' + a.desc + '</div></div>';
+        document.body.appendChild(d);
+        setTimeout(()=>{ d.style.transition='opacity 0.6s'; d.style.opacity='0'; }, 3000);
+        setTimeout(()=>d.remove(), 3700);
+    },
+    buildPanel() {
+        const list = document.getElementById('ach-list'); if(!list) return;
+        list.innerHTML = '<p style="color:#ccc; text-align:center; margin-bottom:12px;">' + this.count() + ' / ' + ACHIEVEMENTS.length + ' unlocked</p>';
+        ACHIEVEMENTS.forEach(a => {
+            const cur = Stats.data[a.stat] || 0;
+            const pct = Math.min(100, Math.round(cur / a.target * 100));
+            const un = !!this.unlocked[a.id];
+            const card = document.createElement('div');
+            card.className = 'ach-card' + (un ? ' unlocked' : '');
+            card.innerHTML = '<span class="ach-icon" style="font-size:26px;">' + a.icon + '</span>' +
+                '<div style="flex:1; min-width:0;">' +
+                    '<div style="display:flex; justify-content:space-between; gap:8px; align-items:center;">' +
+                        '<span class="ach-name">' + a.name + '</span>' +
+                        '<span style="color:' + (un ? '#ffd700' : '#888') + '; font-size:12px; white-space:nowrap;">' + (un ? '★ ' : '') + cur + '/' + a.target + '</span>' +
+                    '</div>' +
+                    '<div class="ach-desc">' + a.desc + '</div>' +
+                    '<div class="ach-bar"><div class="ach-bar-fill" style="width:' + pct + '%"></div></div>' +
+                '</div>';
+            list.appendChild(card);
+        });
+    }
+};
+
+// --- PROCEDURAL MAP GENERATION / DAILY CHALLENGE ---
+const MapGen = {
+    todaySeedStr() {
+        const d = new Date();
+        return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    },
+    hash(s) {
+        let h = 2166136261;
+        for(let i=0;i<s.length;i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+        return h >>> 0;
+    },
+    rng(seedStr) {
+        let a = this.hash(seedStr);
+        return function() {
+            a |= 0; a = a + 0x6D2B79F5 | 0;
+            let t = Math.imul(a ^ a >>> 15, 1 | a);
+            t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+            return ((t ^ t >>> 14) >>> 0) / 4294967296;
+        };
+    },
+    generate(seedStr, biome) {
+        const bioKey = BIOMES[biome] ? biome : 'grass';
+        const bio = BIOMES[bioKey];
+        const rnd = this.rng(seedStr);
+        const g = new Array(W*H).fill(GRID.GRASS);
+        const isPath = new Array(W*H).fill(false);
+        const mark = (x, y) => { if(x>=0 && x<W && y>=0 && y<H){ g[y*W+x]=GRID.GRASS; isPath[y*W+x]=true; } };
+        const nearPath = (x, y) => {
+            for(let dy=-1; dy<=1; dy++) for(let dx=-1; dx<=1; dx++) {
+                const nx=x+dx, ny=y+dy;
+                if(nx>=0 && nx<W && ny>=0 && ny<H && isPath[ny*W+nx]) return true;
+            }
+            return false;
+        };
+
+        // Serpentine corridor from left edge to Town Center
+        const y0 = 4 + Math.floor(rnd()*(H-10));
+        const ex = W - 6 - Math.floor(rnd()*10);
+        const ey = 4 + Math.floor(rnd()*(H-10));
+        const segs = 3 + Math.floor(rnd()*3);
+        const waypoints = [{x:0, y:y0}];
+        let px = 0, py = y0;
+        for(let i=1; i<segs; i++) {
+            if(i % 2 === 1) {
+                px = Math.max(px+6, Math.min(ex-2, Math.floor(ex*i/segs) + Math.floor(rnd()*7) - 3));
+                px = Math.min(px, W-3);
+                waypoints.push({x:px, y:py});
+            } else {
+                py = 4 + Math.floor(rnd()*(H-8));
+                waypoints.push({x:px, y:py});
+            }
+        }
+        waypoints.push({x:ex, y:ey});
+
+        // Carve 2-wide corridor between consecutive waypoints (guaranteed connected)
+        for(let i=0; i<waypoints.length-1; i++) {
+            const a = waypoints[i], b = waypoints[i+1];
+            const xa = Math.min(a.x,b.x), xb = Math.max(a.x,b.x);
+            const ya = Math.min(a.y,b.y), yb = Math.max(a.y,b.y);
+            for(let x=xa; x<=xb; x++){ mark(x, a.y); mark(x, a.y+1); }
+            for(let y=ya; y<=yb; y++){ mark(b.x, y); mark(b.x+1, y); }
+        }
+        mark(0, y0); mark(0, y0+1); mark(1, y0); // entry column safety
+
+        // Obstacles avoid the corridor
+        const rockClusters = Math.round((16 + Math.floor(rnd()*10)) * (bio.rockMul || 1));
+        for(let c=0; c<rockClusters; c++) {
+            const x = 2 + Math.floor(rnd()*(W-4)), y = 2 + Math.floor(rnd()*(H-4));
+            if(nearPath(x,y)) continue;
+            const size = 2 + Math.floor(rnd()*5);
+            for(let i=0; i<size; i++) {
+                const ox = x + Math.floor(rnd()*5) - 2, oy = y + Math.floor(rnd()*5) - 2;
+                if(ox>=1 && ox<W-1 && oy>=1 && oy<H-1 && !nearPath(ox,oy)) g[oy*W+ox] = GRID.ROCK;
+            }
+        }
+        const lakes = Math.round((3 + Math.floor(rnd()*3)) * (bio.lakeMul || 1));
+        for(let c=0; c<lakes; c++) {
+            const x = 3 + Math.floor(rnd()*(W-6)), y = 3 + Math.floor(rnd()*(H-6));
+            if(nearPath(x,y)) continue;
+            const r = 1 + Math.floor(rnd()*2);
+            for(let dy=-r; dy<=r; dy++) for(let dx=-r; dx<=r; dx++) {
+                if(Math.abs(dx)+Math.abs(dy) > r+1) continue;
+                const ox=x+dx, oy=y+dy;
+                if(ox>=1 && ox<W-1 && oy>=1 && oy<H-1 && !nearPath(ox,oy)) g[oy*W+ox] = GRID.WATER;
+            }
+        }
+
+        // Mines (must be reachable from the Town Center)
+        const mines = [];
+        const mineCount = Math.round((2 + Math.floor(rnd()*3)) * (bio.mineMul || 1));
+        let guard = 0;
+        while(mines.length < mineCount && guard++ < 400) {
+            const x = 2 + Math.floor(rnd()*(W-4)), y = 2 + Math.floor(rnd()*(H-4));
+            if(g[y*W+x] !== GRID.GRASS || isPath[y*W+x] || nearPath(x,y)) continue;
+            if(mines.some(m=>m.x===x && m.y===y)) continue;
+            if(!Pathfinder.findPath(ex, ey, x, y, g)) continue;
+            mines.push({x, y});
+        }
+        if(mines.length === 0) mines.push({x: Math.max(1, ex-3), y: ey});
+
+        return { name: 'Generated', biome: bioKey, grid: g, mines, waypoints, startGold: bio.startGold + Math.floor(rnd()*200) };
+    }
+};
+
+const Editor = {
+    tool: 'wall', lvl: null,
+    setBiome(b) {
+        if(this.lvl) this.lvl.biome = b;
+        document.querySelectorAll('.biome-btn').forEach(x => x.classList.toggle('selected', x.dataset.biome === b));
+    },
+    drawOverlay() {
+        Game.drawMap();
+        ctx.fillStyle=getBiome().mine || COLORS.mine; this.lvl.mines.forEach(m=>ctx.fillRect(m.x*TILE+10,m.y*TILE+10,20,20));
+        ctx.strokeStyle='#fff'; ctx.beginPath();
+        this.lvl.waypoints.forEach((p,i)=>{ const x=p.x*TILE+20, y=p.y*TILE+20; if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y); ctx.strokeText(i,x,y); }); ctx.stroke();
+    },
+    paint(w) {
         if(w.tx<0||w.tx>=W||w.ty<0||w.ty>=H) return;
         const i=w.ty*W+w.tx;
-        if(this.tool==='wall')  this.lvl.grid[i]=GRID.ROCK;
+        if(this.tool==='wall') this.lvl.grid[i]=GRID.ROCK;
         if(this.tool==='water') this.lvl.grid[i]=GRID.WATER;
         if(this.tool==='grass') this.lvl.grid[i]=GRID.GRASS;
-        if(this.tool==='mine')  { const f=this.lvl.mines.findIndex(m=>m.x===w.tx&&m.y===w.ty); if(f<0) this.lvl.mines.push({x:w.tx,y:w.ty}); }
-        if(this.tool==='path')  this.lvl.waypoints.push({x:w.tx,y:w.ty});
-        /* FIX #13: erase tool clears terrain + mine + waypoint at tile */
-        if(this.tool==='erase'){
-            this.lvl.grid[i]=GRID.GRASS;
-            this.lvl.mines     = this.lvl.mines.filter(m=>!(m.x===w.tx&&m.y===w.ty));
-            this.lvl.waypoints = this.lvl.waypoints.filter(p=>!(p.x===w.tx&&p.y===w.ty));
-        }
+        if(this.tool==='mine') { const f=this.lvl.mines.findIndex(m=>m.x===w.tx&&m.y===w.ty); if(f<0)this.lvl.mines.push({x:w.tx,y:w.ty}); }
+        if(this.tool==='path') this.lvl.waypoints.push({x:w.tx,y:w.ty});
     },
-    /* FIX #13: clear all waypoints */
-    clearPath(){ this.lvl.waypoints=[]; },
-    save(){
-        /* FIX #12: validate before saving */
-        if(this.lvl.waypoints.length<2){ alert("Need at least 2 path points.\nFirst point = enemy spawn, last point = your base location."); return; }
-        if(this.lvl.mines.length<1)    { alert("Add at least one Gold Mine (GOLD tool)."); return; }
-        this.lvl.name = document.getElementById('lvl-name').value.trim() || 'Unnamed Map';
-        Storage.save(this.lvl); alert("Saved!");
-    },
-    /* FIX #5: accept btn element, add .selected to the new active tool */
-    setTool(t, btn){
-        this.tool=t;
-        document.querySelectorAll('#editor-ui .btn').forEach(b=>b.classList.remove('selected'));
-        if(btn) btn.classList.add('selected');
-    }
+    save() { this.lvl.name=document.getElementById('lvl-name').value; Storage.save(this.lvl); alert("Saved"); },
+    setTool(t) { this.tool=t; document.querySelectorAll('#editor-ui .btn').forEach(b=>b.classList.remove('selected')); }
 };
 
-// ─── BOOT ────────────────────────────────────────────────────────────────────
+// --- BOOT ---
+Stats.load(); Achievements.load(); Achievements.checkAll();
+AudioEngine.loadMute(); AudioEngine.refreshUI();
+// Task 24 — persisted path visualization toggle (default ON)
+try { State.showPaths = localStorage.getItem('pc_rts_show_paths') !== '0'; } catch(e) { State.showPaths = true; }
+setInterval(()=>Game.updateDailyInfo(), 1000);
 Input.init();
 Game.toMenu();
-requestAnimationFrame(Game.loop);
+Game.loop();
+// PWA: register service worker for offline play (skipped on file:// where SWs are unavailable)
+if('serviceWorker' in navigator && (location.protocol === 'https:' || location.protocol === 'http:')) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => { /* offline unavailable */ });
+    });
+}
 </script>
 </body>
 </html>

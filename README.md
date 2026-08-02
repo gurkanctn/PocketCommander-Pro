@@ -1,17 +1,27 @@
-Pocket Commander is a tiny browser based game, with a mixture of real time strategy and tower defense and includes battle dynamics via soldiers.
+# Pocket Commander Pro
 
-It allows user to create custom levels with the level editor allowing hours of joyful grind.
+A tactical RTS tower-defense game — command your army, build defenses, and
+survive endless waves on a 40×40 grid. Playable on desktop and mobile
+(touch, pinch-zoom, drag-scroll). Offline-capable PWA.
 
-Check it out!
+## Play
 
-Even the single level is endlessly playable, with various tactics to be tried.
+Open the deployed site, or download this folder and open `index.html` in any
+modern browser. No build step, no dependencies.
 
-Upcoming Features:
-1. Download custom levels as file
-2. Save and load game.
-3. Better sounds?
+## Version
 
-<img width="1522" height="916" alt="image" src="https://github.com/user-attachments/assets/1d4477e6-0051-4001-8fdf-31925e3cca8a" />
+0.1.0005
 
-<img width="516" height="917" alt="image" src="https://github.com/user-attachments/assets/96c419c6-16a9-4e62-a217-bb296e28c1a0" />
+## Features
 
+- Single-file app (HTML/CSS/JS in one `index.html`, canvas-rendered)
+- Built-in tile-based level editor
+- Local saves via localStorage
+- 4 biomes (grass, desert, snow, swamp), boss every 10 waves
+- Web Audio synthesized sound effects
+- PWA: installable, offline-capable
+
+---
+*Public release of Pocket Commander Pro. Source of truth is the private
+development workspace; this repository contains release artifacts only.*
