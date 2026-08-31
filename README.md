@@ -11,7 +11,7 @@ modern browser. No build step, no dependencies.
 
 ## Version
 
-0.1.0005
+0.1.0006
 
 ## Features
 

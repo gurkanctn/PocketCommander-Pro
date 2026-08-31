@@ -261,7 +261,9 @@ const State = {
     pathBudget: 0,     // remaining A* pathfinding calls allowed this frame (Group B)
     simDt: 16,         // dt (ms) used by the current sim tick; default = 60fps frame
     // Task 24 — enemy path visualization toggle (default ON, persisted)
-    showPaths: true
+    showPaths: true,
+    // Task 25 — dynamic spawn pattern rolled per wave: 'steady' | 'burst' | 'pack'
+    spawnProfile: 'steady'
 };
 
 // --- AUDIO ---
@@ -698,19 +700,27 @@ const Game = {
         // WAVE LOGIC
         if(State.waveActive) {
             if(Date.now() > State.nextSpawn && State.toSpawn > 0) {
+                // Task 25 — 'pack' waves release 2-3 enemies per spawn event
+                const packSize = State.spawnProfile === 'pack' ? (Math.random() < 0.35 ? 3 : 2) : 1;
                 const s = State.level.waypoints[0];
                 const bio = getBiome();
-                const u = new Unit(s.x, s.y, bio.enemyName, 'enemy', State.wave);
-                if(State.wave % 10 === 0) {
-                    u.maxHp *= 2; u.hp = u.maxHp; u.dmg *= 2; u.radius = 0.4; u.color = bio.boss; u.isBoss = true; u.shape = bio.bossShape || bio.enemyShape;
+                const isBossWave = (State.wave % 10 === 0);
+                for(let pi=0; pi<packSize && State.toSpawn>0; pi++) {
+                    const u = new Unit(s.x, s.y, bio.enemyName, 'enemy', State.wave);
+                    if(isBossWave) {
+                        u.maxHp *= 2; u.hp = u.maxHp; u.dmg *= 2; u.radius = 0.4; u.color = bio.boss; u.isBoss = true; u.shape = bio.bossShape || bio.enemyShape;
+                    }
+                    const scale = 1 + (State.wave * 0.1);
+                    u.maxHp *= scale; u.hp = u.maxHp; u.dmg *= scale;
+                    State.entities.push(u);
+                    State.toSpawn--;
                 }
-                const scale = 1 + (State.wave * 0.1);
-                u.maxHp *= scale; u.hp = u.maxHp; u.dmg *= scale;
-                State.entities.push(u);
-                if(State.wave % 10 === 0) { FX.ring(s.x+0.5, s.y+0.5, bio.boss, 5, 2, 20); FX.sparks(s.x+0.5, s.y+0.5, 8, bio.boss, 2); }
+                if(isBossWave) { FX.ring(s.x+0.5, s.y+0.5, bio.boss, 5, 2, 20); FX.sparks(s.x+0.5, s.y+0.5, 8, bio.boss, 2); }
                 else FX.ring(s.x+0.5, s.y+0.5, bio.enemy, 4, 1.5, 14);
-                State.toSpawn--;
-                State.nextSpawn = Date.now() + Math.max(500, 2000 - State.wave*100);
+                // Task 25 — dynamic spawn timing: pattern base + random jitter,
+                // drifting faster with wave number (was a fixed 2000-100*wave ramp)
+                const base = State.spawnProfile==='burst' ? 320 : State.spawnProfile==='pack' ? 850 : 1300;
+                State.nextSpawn = Date.now() + Math.max(220, base - State.wave*15) * (0.6 + Math.random()*0.8);
             } else if(State.toSpawn <= 0 && !State.entities.some(e=>e.team==='enemy')) {
                 State.waveActive=false; State.wave++; 
                 if(State.wave % 10 === 0) {
@@ -900,10 +910,19 @@ const Game = {
     },
     
     startWave() {
-        State.waveActive=true; State.toSpawn=5+Math.floor(State.wave*1.5); 
+        State.waveActive=true; State.toSpawn=4+Math.floor(State.wave*1.3); 
+        // Task 25 — dynamic spawn pattern per wave: ~20% pack waves (2-3 at
+        // once), ~20% burst waves (rapid fire), rest steady (jittered cadence).
+        // Boss waves stay steady so a boss pack can't stack unfairly.
+        if(State.wave % 10 === 0) State.spawnProfile = 'steady';
+        else {
+            const roll = Math.random();
+            State.spawnProfile = roll < 0.2 ? 'pack' : roll < 0.4 ? 'burst' : 'steady';
+        }
         State.nextSpawn=Date.now()+1000; // 1-second delay before first enemy
         document.getElementById('ui-wave').innerText=State.wave;
-        Game.toast(`Wave ${State.wave} — ${getBiome().enemyName}s incoming!`, 20, 20); AudioEngine.play('alarm');
+        const label = State.spawnProfile==='pack' ? ' — PACK WAVE!' : State.spawnProfile==='burst' ? ' — BURST WAVE!' : '';
+        Game.toast(`Wave ${State.wave} — ${getBiome().enemyName}s incoming!${label}`, 20, 20); AudioEngine.play('alarm');
         Stats.set('waveReached', State.wave);
     },
 
@@ -1092,7 +1111,11 @@ class Unit extends Entity {
         this.maxHp = Math.max(1, Math.ceil(this.maxHp * (bio.hpMul || 1))); this.hp = this.maxHp;
         this.dmg = Math.max(1, Math.round(this.dmg * (bio.dmgMul || 1)));
         if(this.maxHp > 100) this.radius = 0.35; else this.radius = 0.25;
-        this.range = Math.max(2.0, this.level * 0.2); // Dynamic Range
+        // Task 25 — cap enemy engage range at 3.5 tiles (was level*0.2, unbounded:
+        // by wave 30 enemies out-ranged every tower and became invincible).
+        // Player towers (6) and TC (4) keep larger range, so ranged enemies are
+        // dodge-able but never unreachable by any defense.
+        this.range = Math.min(3.5, Math.max(2.0, 1.5 + this.level * 0.1));
     }
     update(dt) {
         // Soldier Regen
@@ -1263,8 +1286,10 @@ class Building extends Entity {
         this.hp = this.progress >= 100 ? this.maxHp : Math.max(1, Math.ceil(this.maxHp * this.progress / 100));
     }
     attackDmg() {
-        // TownCenter & Tower share one damage curve: 20 base + 2 per level
-        return 20 + (this.level * 2);
+        // Task 25 — the Town Center (main base) gains +6 dmg per base upgrade
+        // (Tower keeps +2/lvl) so late-game waves can't out-tank the base.
+        if(this.type === 'TownCenter') return 20 + (this.level * 6);
+        return 20 + (this.level * 2); // Tower
     }
     // Task 21 — dt-scaled construction: 0.5 progress per 16ms tick (~30%/s at
     // any fps); decorative sparkle probabilities stay wall-clock. Construction
