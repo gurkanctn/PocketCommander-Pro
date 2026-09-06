@@ -7,7 +7,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Pocket Commander v27</title>
+    <title>Pocket Commander v29</title>
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" type="image/svg+xml" href="icon.svg">
     <link rel="apple-touch-icon" href="icon-192.png">
@@ -179,7 +179,13 @@
 
 <script>
 /**
- * POCKET COMMANDER RTS - V27
+ * POCKET COMMANDER RTS - V28
+ * - Enemy patterns (Task 25): dynamic spawn timing (jittered, wave-accelerated,
+ *   clamped), pack waves (2-3 enemies per spawn event, ~20% of waves), burst
+ *   waves (rapid fire, ~20%), steady otherwise; boss waves forced steady with
+ *   2x stats. Enemy engage range capped at 3.5 tiles (fixes wave-30+
+ *   invincibility where enemies out-ranged every tower); TC deals +6 dmg per
+ *   base level upgrade (Tower +2/lvl).
  * - Enemy path visualization (Task 24): the enemy walk route through the
  *   level waypoints is drawn as an animated dashed overlay, plus each live
  *   enemy's current A* path (shows wall rerouting). Toggleable via PATH
@@ -211,7 +217,18 @@ const COLORS = {
 };
 
 const COSTS = { Wall: 10, Tower: 80, Barracks: 150 };
-const ATK_COLORS = ['#888', '#8B4513', '#800080', '#ff0000', '#ffa500', '#ffff00', '#00ff00', '#0000ff', '#ffffff'];
+
+// Task 36 — unit crowding. Player units (Soldier/Builder) used to grow their
+// visual radius +3%/level FOREVER: past ~Lv34 the circle diameter exceeded one
+// tile and overlapped neighbor cells, and repeated training stacked unlimited
+// units on a single spawn cell. Fixes: cap the visual radius at MAX_UNIT_R
+// (diameter ≈ 0.68 tile, always inside the unit's own cell), fade alpha as
+// units approach the cap / share a cell (see Unit.draw), and never spawn more
+// than MAX_CELL_UNITS army units into one cell (see findSpawnSpot), fanning
+// extra recruits out to nearby free cells with small slot offsets.
+const MAX_UNIT_R = 0.34;     // visual radius cap in tiles (was unbounded ~+3%/lvl)
+const MAX_CELL_UNITS = 4;    // max player army units that may spawn into one cell
+const SPAWN_SLOTS = [[-0.24, -0.2], [0.24, -0.2], [0, 0.26]]; // offsets for 2nd..4th unit in a cell
 
 // --- BIOMES ---
 // Each biome themes the map (tile colors), the enemies (color / name / shape /
@@ -257,9 +274,7 @@ const State = {
     lastUpkeep: 0,
     // Task 21 — adaptive dt: wall-clock frame timing + sim group budgets
     lastFrame: 0,      // previous frame timestamp (performance.now / rAF base)
-    frameCount: 0,     // frames simulated (diagnostics)
     pathBudget: 0,     // remaining A* pathfinding calls allowed this frame (Group B)
-    simDt: 16,         // dt (ms) used by the current sim tick; default = 60fps frame
     // Task 24 — enemy path visualization toggle (default ON, persisted)
     showPaths: true,
     // Task 25 — dynamic spawn pattern rolled per wave: 'steady' | 'burst' | 'pack'
@@ -660,7 +675,7 @@ const Game = {
         const now = (ts != null) ? ts : (typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now());
         if(State.lastFrame === 0) State.lastFrame = now;
         const dt = Math.min(Math.max(now - State.lastFrame, 0), 60);
-        State.lastFrame = now; State.simDt = dt;
+        State.lastFrame = now;
         ctx.fillStyle = '#050508'; ctx.fillRect(0,0,canvas.width,canvas.height);
         ctx.save(); ctx.translate(State.offset.x, State.offset.y); ctx.scale(State.scale, State.scale);
         Game.drawMap();
@@ -674,7 +689,6 @@ const Game = {
     },
 
     updateEntities(dt) {
-        State.frameCount++;
         // SIM GROUPS (Task 21) — split compute into cadence buckets so a slow
         // device never pays full cost every frame:
         //  A) Gameplay sim (units/buildings) below — always runs, dt-scaled.
@@ -767,7 +781,22 @@ const Game = {
         if(bio.tint) { ctx.fillStyle = bio.tint; ctx.fillRect(0, 0, c*TILE, r*TILE); }
     },
     
-    drawEntities() { State.entities.sort((a,b) => a.y - b.y); State.entities.forEach(e => e.draw(ctx)); },
+    drawEntities() {
+        State.entities.sort((a,b) => a.y - b.y);
+        // Task 36 — per-cell crowd map (player army units only) so Unit.draw
+        // can render stacked squads translucent instead of as one opaque blob.
+        const crowd = new Map();
+        for(let i=0;i<State.entities.length;i++) {
+            const e = State.entities[i];
+            if(e instanceof Unit && e.team === 'player' && !e.dead) {
+                const k = Math.floor(e.x)+','+Math.floor(e.y);
+                crowd.set(k, (crowd.get(k)||0)+1);
+            }
+        }
+        State.crowd = crowd;
+        State.entities.forEach(e => e.draw(ctx));
+        State.crowd = null;
+    },
 
     // Task 24 — enemy path visualization. Draws (a) the base enemy walk route
     // (polyline through the level waypoints, animated marching-ants dash so it
@@ -969,13 +998,13 @@ const Game = {
         }
         if(e.type==='Barracks') {
             const t=document.createElement('div'); t.className='action-btn'; t.innerText=`Train Soldier (50g)`;
-            t.onclick=()=>{ if(State.gold>=50){ State.gold-=50; const u=new Unit(e.x+1, e.y, 'Soldier', 'player', e.level); State.entities.push(u); Stats.add('unitsTrained', 1); Game.ui(); Game.toast("Soldier Ready", e.x, e.y); AudioEngine.play('train'); FX.ring(e.x, e.y, COLORS.player, 3, 1.2, 12); } else AudioEngine.play('err'); }; act.appendChild(t);
+            t.onclick=()=>{ if(State.gold>=50){ State.gold-=50; spawnArmyUnit(e.x, e.y, 'Soldier', e.level); Game.toast("Soldier Ready", e.x, e.y); AudioEngine.play('train'); FX.ring(e.x, e.y, COLORS.player, 3, 1.2, 12); } else AudioEngine.play('err'); }; act.appendChild(t);
             const b=document.createElement('div'); b.className='action-btn alt'; b.innerText=`Upgrade Tech → L${e.level+1} (150g)`;
             b.onclick=()=>{ if(State.gold>=150){ State.gold-=150; e.level++; e.applyLevel(e.level); State.entities.filter(u=>u.type==='Soldier'&&u.team==='player').forEach(u=>u.applyLevel(e.level)); Game.ui(); Game.toast("Tech Upgraded → Lvl "+e.level, e.x, e.y); Game.showCtx(e); AudioEngine.play('upgrade'); FX.sparks(e.x, e.y, 6, '#ffd700', 1.2); } else AudioEngine.play('err'); }; act.appendChild(b);
         }
         if(e.type==='TownCenter') {
             const b=document.createElement('div'); b.className='action-btn'; b.innerText=`Train Builder (50g)`;
-            b.onclick=()=>{ if(State.gold>=50){ State.gold-=50; State.entities.push(new Unit(e.x+1, e.y, 'Builder', 'player', e.level)); Stats.add('unitsTrained', 1); Game.ui(); Game.toast("Builder Ready", e.x, e.y); AudioEngine.play('train'); FX.ring(e.x, e.y, COLORS.builder, 3, 1.2, 12); } else AudioEngine.play('err'); }; act.appendChild(b);
+            b.onclick=()=>{ if(State.gold>=50){ State.gold-=50; spawnArmyUnit(e.x, e.y, 'Builder', e.level); Game.toast("Builder Ready", e.x, e.y); AudioEngine.play('train'); FX.ring(e.x, e.y, COLORS.builder, 3, 1.2, 12); } else AudioEngine.play('err'); }; act.appendChild(b);
             const u=document.createElement('div'); u.className='action-btn alt'; u.innerText=`Upgrade Base → L${e.level+1} (300g)`;
             u.onclick=()=>{ if(State.gold>=300){ State.gold-=300; e.level++; e.applyLevel(e.level); State.entities.filter(u=>u.type==='Builder'&&u.team==='player').forEach(u=>u.applyLevel(e.level)); State.entities.filter(b=>b.type==='Tower'&&b.team==='player').forEach(b=>b.applyLevel(e.level)); Game.ui(); Game.toast("Base Upgraded → Lvl "+e.level, e.x, e.y); Game.showCtx(e); AudioEngine.play('upgrade'); FX.sparks(e.x, e.y, 8, '#ffd700', 1.5); FX.ring(e.x, e.y, '#00ffcc', 5, 1.5, 16); } else AudioEngine.play('err'); }; act.appendChild(u);
         }
@@ -1083,6 +1112,68 @@ const Game = {
 // --- ENTITIES ---
 class Entity { constructor(x, y, type, team) { this.x=x; this.y=y; this.type=type; this.team=team; this.dead=false; this.hp=100; this.maxHp=100; this.level=1; this.id=Math.random(); } }
 
+// Task 36 — army-unit spawning. findSpawnSpot picks the best nearby GRASS cell
+// for a fresh recruit: it fans units out around the training building (nearest
+// empty cells first — lower ring, emptier cell wins), and refuses any cell
+// that already carries MAX_CELL_UNITS army units so no spawn cell ever stacks
+// more than 4 soldiers/builders. Slot offsets keep same-cell squads visually
+// separated. Counts mirror the crowd map in Game.drawEntities (player units,
+// floor coords) so the ≤4 rule is enforced by the same metric that drives the
+// translucency.
+function countArmyOn(gx, gy) {
+    let c = 0;
+    for(let i=0;i<State.entities.length;i++) {
+        const e = State.entities[i];
+        if(e instanceof Unit && e.team === 'player' && !e.dead && Math.floor(e.x)===gx && Math.floor(e.y)===gy) c++;
+    }
+    return c;
+}
+function findSpawnSpot(ex, ey) {
+    const gx0 = Math.floor(ex), gy0 = Math.floor(ey);
+    const scan = (gx, gy) => {
+        if(gx<0 || gx>=W || gy<0 || gy>=H) return null;
+        if(State.grid[gy*W+gx] !== GRID.GRASS) return null;
+        const c = countArmyOn(gx, gy);
+        if(c >= MAX_CELL_UNITS) return null;
+        return { gx, gy, c, score: c*8 + Math.abs(gx-gx0) + Math.abs(gy-gy0) };
+    };
+    // Chebyshev rings around the building: prefer closer / emptier cells
+    for(let r=1; r<=3; r++) {
+        let best = null;
+        for(let dy=-r; dy<=r; dy++) for(let dx=-r; dx<=r; dx++) {
+            if(Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+            const s = scan(gx0+dx, gy0+dy);
+            if(s && (!best || s.score < best.score)) best = s;
+        }
+        if(best) return best;
+    }
+    // Fallback: any free GRASS cell on the whole map (near-first). Only
+    // reachable when the building is boxed in on every side — a corner case
+    // that the old fixed-offset spawn would have failed on entirely.
+    let best = null;
+    for(let gy=0; gy<H; gy++) for(let gx=0; gx<W; gx++) {
+        const s = scan(gx, gy);
+        if(s && (!best || s.score < best.score)) best = s;
+    }
+    return best;
+}
+function spawnArmyUnit(bx, by, type, level) {
+    const spot = findSpawnSpot(bx, by);
+    let ux = bx + 1, uy = by; // legacy fallback position (cell right of building)
+    if(spot) {
+        ux = spot.gx + 0.5; uy = spot.gy + 0.5;
+        if(spot.c > 0) {
+            const o = SPAWN_SLOTS[spot.c-1] || [0,0];
+            ux += o[0]; uy += o[1];
+        }
+    }
+    const u = new Unit(ux, uy, type, 'player', level);
+    State.entities.push(u);
+    Stats.add('unitsTrained', 1);
+    Game.ui();
+    return u;
+}
+
 class Unit extends Entity {
     constructor(x, y, type, team, level=1) {
         super(x, y, type, team);
@@ -1096,7 +1187,11 @@ class Unit extends Entity {
     }
     applyLevel(lvl) {
         this.level = lvl; const m = lvl - 1;
-        this.radius = this.baseStats.radius * (1 + m*0.03);
+        // Task 36 — radius still grows (+3%/lvl, so early level-ups read
+        // visually) but is CAPPED at MAX_UNIT_R: a maxed unit is ~0.68 tiles
+        // wide and never bleeds into neighbor cells. Level is conveyed by the
+        // pips above the unit instead of by unbounded size.
+        this.radius = Math.min(MAX_UNIT_R, this.baseStats.radius * (1 + m*0.03));
         this.maxHp = this.baseStats.hp * (1 + m*0.04); this.hp = this.maxHp;
         this.speed = this.baseStats.speed * (1 + m*0.02);
         this.dmg = this.baseStats.dmg * (1 + m*0.03);
@@ -1265,7 +1360,29 @@ class Unit extends Entity {
     draw(ctx) {
         const cx=this.x*TILE, cy=this.y*TILE;
         if(this.team === 'enemy') this.drawEnemy(ctx, cx, cy);
-        else { ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(cx, cy, this.radius*TILE, 0, Math.PI*2); ctx.fill(); if(this.team === 'player') drawLevelDots(ctx, cx, cy - 15, this.level); }
+        else {
+            const r = this.radius*TILE;
+            // Task 36 — transparency for grown / crowded army units: alpha
+            // eases down as a unit approaches the radius cap, and again for
+            // every extra friendly unit sharing its cell, so one squad never
+            // hides the field (or each other) behind an opaque blob.
+            let alpha = 1;
+            if(this.team === 'player') {
+                const grow = Math.max(0, Math.min(1, (this.radius - this.baseStats.radius) / (MAX_UNIT_R - this.baseStats.radius)));
+                alpha = 1 - grow * 0.3;
+                const k = Math.floor(this.x)+','+Math.floor(this.y);
+                const n = State.crowd ? (State.crowd.get(k) || 1) : 1;
+                if(n > 1) alpha *= Math.max(0.5, 1 - (n-1)*0.15);
+                alpha = Math.max(0.35, alpha);
+            }
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.fillStyle = this.color;
+            ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.fill();
+            ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 1; ctx.stroke();
+            ctx.restore();
+            if(this.team === 'player') drawLevelDots(ctx, cx, cy - 15, this.level);
+        }
         ctx.fillStyle='red'; ctx.fillRect(cx-10,cy-20,20,3); ctx.fillStyle='#0f0'; ctx.fillRect(cx-10,cy-20,20*(this.hp/this.maxHp),3);
         if(State.selection===this) {
             const pulse = 0.5 + 0.5*Math.sin(Date.now()/250);
