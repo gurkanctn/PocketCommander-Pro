@@ -1,6 +1,6 @@
 {
-  "name": "Pocket Commander",
-  "short_name": "PocketRTS",
+  "name": "Pocket Commander Pro",
+  "short_name": "Pocket Cmdr",
   "description": "Tactical RTS tower defense on a 40x40 grid. Command your army, build defenses, survive enemy waves across four biomes — playable offline.",
   "lang": "en",
   "start_url": "./",
@@ -12,8 +12,8 @@
   "categories": ["games", "strategy"],
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }

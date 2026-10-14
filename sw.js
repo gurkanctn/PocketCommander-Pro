@@ -4,14 +4,18 @@
  * Static asset requests: cache-first, then network with runtime caching.
  * Versioned cache name so future updates can evict stale caches on activate.
  */
-const CACHE = 'pc-rts-v2';
+importScripts('./version.js');   // defines APP_VERSION — the single source of truth (PC-C10)
+const CACHE = 'pc-rts-' + APP_VERSION;
 const ASSETS = [
     './',
     './index.html',
+    './version.js',
     './manifest.webmanifest',
     './icon.svg',
     './icon-192.png',
-    './icon-512.png'
+    './icon-512.png',
+    './icon-maskable-192.png',
+    './icon-maskable-512.png'
 ];
 
 self.addEventListener('install', (e) => {
