@@ -56,6 +56,42 @@
         .action-btn.alt { background: #5533aa; border-color: #8866ff; }
         .action-btn.danger { background: #aa3333; border-color: #ff6666; }
 
+        /* MOBILE — keep the bottom bar inside the screen width and the building menu compact */
+        @media (max-width: 700px), (max-height: 500px) {
+            .bot-bar { gap: 4px; padding: 6px calc(4px + var(--sar)) calc(6px + var(--sab)) calc(4px + var(--sal)); min-height: 0; overflow-x: hidden; justify-content: stretch; }
+            .bot-bar .btn { flex: 1 1 0; min-width: 0; height: calc(52px * var(--ui)); padding: 0 1px; font-size: calc(9px * var(--ui)); text-align: center; overflow: hidden; }
+            .bot-bar .cost { font-size: calc(10px * var(--ui)); margin-top: 1px; }
+            #build-sub { bottom: calc(66px * var(--ui) + var(--sab)); }
+            .sub-item { min-width: 0; flex: 1 1 100px; }
+            #context-menu { bottom: calc(66px * var(--ui) + var(--sab)); right: 6px; min-width: 0; width: min(62vw, 260px); max-height: 38vh; overflow-y: auto; padding: 6px 8px; font-size: 11px; }
+            #context-menu #ctx-info { font-size: 10px !important; white-space: pre-line; }
+            #ctx-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+            .action-btn { margin-top: 0; padding: 6px 4px; font-size: 10px; line-height: 1.2; }
+        }
+        @media (max-height: 500px) { #context-menu { max-height: 55vh; width: min(50vw, 300px); } }
+
+        /* QUICK FIX — one-tap base repair / ruin rebuild, no context menu needed */
+        #quick-fix { position: absolute; left: calc(8px + var(--sal)); bottom: calc(112px * var(--ui) + var(--sab)); display: flex; flex-direction: column; gap: 6px; z-index: 36; }
+        .qf-btn { pointer-events: auto; min-width: 92px; padding: 8px 12px; border-radius: 10px; border: 2px solid #4499ff; background: rgba(0,60,120,0.92); color: #fff; font-weight: bold; font-size: calc(13px * var(--ui)); line-height: 1.25; text-align: left; cursor: pointer; box-shadow: 0 3px 12px #000; }
+        .qf-btn small { display: block; color: #ffd700; font-size: 0.85em; font-weight: normal; }
+        .qf-btn.rebuild { border-color: #b08cff; background: rgba(60,30,110,0.92); }
+        .qf-btn.crit { border-color: #ff5555; background: rgba(150,20,20,0.95); animation: critPulse 0.8s infinite; }
+        .qf-btn:active { transform: scale(0.95); }
+        @keyframes critPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,60,60,0); } 50% { box-shadow: 0 0 14px 4px rgba(255,60,60,0.9); } }
+        @media (max-width: 700px), (max-height: 500px) { #quick-fix { bottom: calc(66px * var(--ui) + var(--sab)); } .qf-btn { min-width: 0; padding: 5px 9px; font-size: calc(11px * var(--ui)); } }
+
+        /* VICTORY + WINNER BADGES */
+        #biome-badges { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; width: 100%; margin: 0 0 10px 0; }
+        .bio-chip { flex: 1 1 110px; max-width: 150px; padding: 6px 8px; border-radius: 10px; border: 2px solid #333; background: #11151b; color: #888; font-size: calc(12px * var(--ui)); text-align: center; line-height: 1.3; }
+        .bio-chip b { display: block; color: #bbb; font-size: 1.05em; }
+        .bio-chip.won { border-color: #ffd700; background: linear-gradient(135deg, rgba(255,215,0,0.16), rgba(0,255,204,0.08)); color: #ffd700; box-shadow: 0 0 10px rgba(255,215,0,0.25); }
+        .bio-chip.won b { color: #ffd700; }
+        .win-badge { color: #ffd700; margin-right: 4px; }
+        #victory-screen { background: radial-gradient(ellipse at center, rgba(40,32,0,0.96), rgba(0,0,0,0.97)); }
+        #vic-shot { width: min(86vw, 360px); max-height: 30vh; object-fit: contain; border: 2px solid #ffd700; border-radius: 8px; margin: 6px 0; background: #000; }
+        #vic-ask { text-align: center; color: #ffd700; margin: 4px 0 8px 0; }
+        .ach-wins { text-align: center; color: #ffd700; font-weight: bold; margin: 0 0 6px 0; }
+
         /* TEXT CONTENT */
         .help-text { max-width: 600px; text-align: left; color: #ccc; font-size: 14px; line-height: 1.6; overflow-y: auto; max-height: 70vh; padding: 10px; }
         .help-text h3 { color: var(--accent); border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 20px; }
@@ -82,6 +118,11 @@
         .tech-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; color: #7ffcff; }
         .tech-row { display: flex; gap: 10px; align-items: center; border-top: 1px solid #222; padding: 8px 0; color: #ddd; font-size: calc(14px * var(--ui)); }
         .tech-row .info { flex: 1; }
+        .tech-row[data-cat] { border-left: 4px solid var(--cat); padding-left: 8px; }
+        .tech-row .cat-tag { display: inline-block; margin-right: 6px; padding: 0 6px; border-radius: 8px; background: var(--cat); color: #000; font-size: 0.7em; font-weight: bold; vertical-align: middle; }
+        .tech-legend { display: flex; flex-wrap: wrap; gap: 6px 12px; margin: 2px 0 6px; font-size: calc(12px * var(--ui)); }
+        .tech-legend span::before { content: ''; display: inline-block; width: 10px; height: 10px; margin-right: 4px; border-radius: 2px; background: var(--cat); vertical-align: -1px; }
+        .tech-done i { font-style: normal; color: var(--cat); }
         .tech-row small { display: block; color: #9aa; font-size: 0.85em; margin-top: 2px; }
         .res-bar { height: 6px; background: #223; border-radius: 3px; margin: 6px 0 2px 0; overflow: hidden; }
         .res-fill { height: 100%; width: 0; background: linear-gradient(90deg, #7ffcff, #00ffcc); }
@@ -167,6 +208,7 @@
             <div id="ctx-actions"></div>
         </div>
 
+        <div id="quick-fix" class="hidden"></div>
         <div id="hud-bot" class="bot-bar pointer-auto hidden"></div>
     </div>
 
@@ -179,6 +221,7 @@
                 <button class="card accent" id="btn-daily" onclick="Game.playDaily()">☀ DAILY CHALLENGE<small id="daily-info"></small></button>
                 <button class="card" id="btn-random" onclick="Game.playRandom()">🎲 RANDOM MAP<small id="random-best"></small></button>
             </div>
+            <div id="biome-badges"></div>
             <div id="level-list" style="width: 100%; max-height: 240px; overflow-y: auto;"></div>
             <div class="small-row">
                 <button class="nav-btn" id="btn-ach" onclick="Game.ach()">ACHIEVEMENTS</button>
@@ -218,12 +261,14 @@
                 <li>Research can add two Builder types at the Town Center: the <b>Hauler</b> (carries ~1.75x the gold, builds slowly) and the <b>Engineer</b> (builds twice as fast, sturdy, carries little). All Builders share one population cap.</li>
                 <li>Builders construct every building you place (more Builders build faster, up to 4 per site) and mine gold when nothing is waiting. Tap a site to cancel it for a full refund.</li>
                 <li>Builders automatically heal at base (Costs Gold).</li>
+                <li>The <b>REPAIR</b> button (bottom left) repairs the Town Center first, then other damaged buildings, for gold. The Town Center also heals slowly by itself, and idle Builders repair it for free. Tap a ruin, or <b>REBUILD</b>, to raise it again for half price.</li>
                 <li>Builders run from armed enemies that come close and go back to work once it is safe (Engineers are braver). They keep their load and unfinished sites.</li>
                 <li>Soldiers regenerate health if out of combat.</li>
                 <li>Use Walls to reroute enemies. If you seal every route, enemies stop at the cheapest wall and break through it.</li>
                 <li>The PATH button (bottom bar) shows the enemy walk route and each enemy's live path — great for wall placement planning.</li>
                 <li>Between waves you get a short build break. <b>▶ WAVE</b> calls the next wave early (2g per second skipped); <b>×1/×2/×3</b> changes game speed.</li>
                 <li>Enemies change as waves go on: fast Swarmer packs, slow Brutes, acid Spitters, Armoured plates (shells pierce them), exploding Bombers, Healers (kill them first), Splitters and Flyers that ignore walls. Each biome has its own boss.</li>
+                <li><b>Win</b> by clearing wave 50 (the last wave cannot be skipped with ▶ WAVE). You can save a screenshot of the victory, play on in endless mode, and your wins show as 🏆 badges for each biome and map on the main menu and in Achievements.</li>
                 <li>Every 10 waves, a Boss appears and a new Gold Mine spawns.</li>
                 <li>Select a finished tower to upgrade its fire rate, power or health (5 steps each). Once you have researched a tower type the build bar shows one <b>TOWERS ▾</b> button with a menu of every type; new unlocks pulse with a NEW badge.</li>
                 <li>Build a <b>LAB</b>, select it and open <b>Research…</b> to unlock new towers (gold + time). Unresearched buttons stay hidden; each base upgrade speeds research up by 15%.</li>
@@ -264,6 +309,28 @@
             <div class="stat-row"><span>Best wave (all runs)</span><b id="go-best">1</b></div>
         </div>
         <button class="big-btn" style="border-color:var(--accent); color:var(--accent)" onclick="Game.retry()">RETRY</button>
+        <button class="big-btn" onclick="Game.toMenu()">MENU</button>
+    </div>
+
+    <!-- VICTORY SCREEN (PC-F27) -->
+    <div id="victory-screen" class="menu-screen hidden">
+        <h1 style="font-size: 46px; color: #ffd700; margin: 0;">🏆 VICTORY</h1>
+        <p id="vic-sub" style="color:#ccc; margin: 4px 0;"></p>
+        <img id="vic-shot" alt="Victory screenshot" class="hidden">
+        <div id="vic-ask">
+            <div id="vic-ask-text"></div>
+            <button class="nav-btn" id="vic-save" onclick="Game.saveShot()">📷 SAVE SCREENSHOT</button>
+            <button class="nav-btn" id="vic-skip" onclick="Game.skipShot()">NO THANKS</button>
+        </div>
+        <div style="margin:6px 0 10px 0;">
+            <div class="stat-row"><span>Waves survived</span><b id="vic-wave">50</b></div>
+            <div class="stat-row"><span>Enemies defeated</span><b id="vic-kills">0</b></div>
+            <div class="stat-row"><span>Gold earned</span><b id="vic-gold">0</b></div>
+            <div class="stat-row"><span>Time</span><b id="vic-time">0:00</b></div>
+            <div class="stat-row"><span>Games won (all runs)</span><b id="vic-wins">1</b></div>
+        </div>
+        <button class="big-btn" style="border-color:#ffd700; color:#ffd700" onclick="Game.continueEndless()">CONTINUE (ENDLESS)</button>
+        <button class="big-btn" style="border-color:var(--accent); color:var(--accent)" onclick="Game.retry()">PLAY AGAIN</button>
         <button class="big-btn" onclick="Game.toMenu()">MENU</button>
     </div>
 
@@ -355,7 +422,7 @@ const COLORS = {
 //   structMul       multiplier for area damage against buildings (default 1)
 //   tick, duration  pool only (ms);   color, sfx, muzzle [sparks, colour, speed]  cosmetic
 const DEFS = {
-    misc: { bulldozeCost: 100, refundRate: 0.75, slotsPerBarracks: 6 },
+    misc: { bulldozeCost: 100, refundRate: 0.75, victoryWave: 50, rebuildRate: 0.5, baseRegen: 0.003, baseRegenDelay: 8000, builderRepair: 0.01, slotsPerBarracks: 6 },
     // PC-F03 — soldier orders: `sight` is how far a soldier notices an enemy, `leash` how far from its post (or patrol line) it will chase one
     orders: { sight: 5, leash: 6 },
     // PC-F24 — Builders run from danger: `sight` is how close an armed enemy may come (enemy attack range tops out at 3.5),
@@ -423,20 +490,27 @@ const DEFS = {
 };
 // PC-F20 — research tree. A building / unit definition with a `tech` field stays hidden until that tech is researched.
 DEFS.techs = {
-    bulwark:{ name: 'Fortification',   desc: 'Bulwark towers: huge hp, draw enemy fire, weak pulse.', cost: 105, time: 20, requires: [] },
-    rapid:  { name: 'Rapid Turrets',    desc: 'Fast-firing projectile towers.',                cost: 90, time: 16, requires: [] },
-    cannon: { name: 'Artillery Shells', desc: 'Slow, hard-hitting shell towers.',              cost: 120, time: 24, requires: [] },
-    pulse:  { name: 'Pulse Emitters',   desc: 'Towers that hit everything around them.',       cost: 135, time: 24, requires: [] },
-    mortar: { name: 'Siege Mortars',    desc: 'Long-range zone blasts (has a minimum range).', cost: 190, time: 36, requires: ['cannon'] },
-    drill:  { name: 'Drill Manuals',    desc: 'Barracks recruits roll better stats.',          cost: 115, time: 20, requires: [], effect: 'Recruit rolls +5% (floor and ceiling)', recruit: { lo: 0.05, hi: 0.05 } },
-    elite:  { name: 'Elite Training',   desc: 'Barracks recruits can roll far higher.',        cost: 225, time: 36, requires: ['drill'], effect: 'Recruit ceiling +12%, floor +3%', recruit: { lo: 0.03, hi: 0.12 } },
-    haulers:    { name: 'Cargo Carts',     desc: 'Haulers carry about 1.75x the gold per trip but build slowly.', cost: 90, time: 16, requires: [] },
-    engineers:  { name: 'Field Engineering', desc: 'Engineers build twice as fast and are sturdy, but carry little.', cost: 120, time: 24, requires: [] },
-    riflemen:   { name: 'Rifle Drill',     desc: 'Fast, cheap, fragile Riflemen.',                          cost: 75, time: 16, requires: [] },
-    guardians:  { name: 'Shield Doctrine', desc: 'Tough Guardians that draw enemy fire (2 slots).',         cost: 105, time: 24, requires: [] },
-    grenadiers: { name: 'Demolitions',     desc: 'Grenadiers lob slow zone grenades (2 slots).',            cost: 135, time: 28, requires: ['cannon'] },
-    acid:   { name: 'Acid Chemistry',   desc: 'Lobbed acid pools that burn over time.',        cost: 165, time: 32, requires: ['pulse'] }
+    bulwark:{ cat: 'tower', name: 'Fortification',   desc: 'Bulwark towers: huge hp, draw enemy fire, weak pulse.', cost: 105, time: 20, requires: [] },
+    rapid:  { cat: 'tower', name: 'Rapid Turrets',    desc: 'Fast-firing projectile towers.',                cost: 90, time: 16, requires: [] },
+    cannon: { cat: 'tower', name: 'Artillery Shells', desc: 'Slow, hard-hitting shell towers.',              cost: 120, time: 24, requires: [] },
+    pulse:  { cat: 'tower', name: 'Pulse Emitters',   desc: 'Towers that hit everything around them.',       cost: 135, time: 24, requires: [] },
+    mortar: { cat: 'tower', name: 'Siege Mortars',    desc: 'Long-range zone blasts (has a minimum range).', cost: 190, time: 36, requires: ['cannon'] },
+    drill:  { cat: 'soldier', name: 'Drill Manuals',    desc: 'Barracks recruits roll better stats.',          cost: 115, time: 20, requires: [], effect: 'Recruit rolls +5% (floor and ceiling)', recruit: { lo: 0.05, hi: 0.05 } },
+    elite:  { cat: 'soldier', name: 'Elite Training',   desc: 'Barracks recruits can roll far higher.',        cost: 225, time: 36, requires: ['drill'], effect: 'Recruit ceiling +12%, floor +3%', recruit: { lo: 0.03, hi: 0.12 } },
+    haulers:    { cat: 'builder', name: 'Cargo Carts',     desc: 'Haulers carry about 1.75x the gold per trip but build slowly.', cost: 90, time: 16, requires: [] },
+    engineers:  { cat: 'builder', name: 'Field Engineering', desc: 'Engineers build twice as fast and are sturdy, but carry little.', cost: 120, time: 24, requires: [] },
+    riflemen:   { cat: 'soldier', name: 'Rifle Drill',     desc: 'Fast, cheap, fragile Riflemen.',                          cost: 75, time: 16, requires: [] },
+    guardians:  { cat: 'soldier', name: 'Shield Doctrine', desc: 'Tough Guardians that draw enemy fire (2 slots).',         cost: 105, time: 24, requires: [] },
+    grenadiers: { cat: 'soldier', name: 'Demolitions',     desc: 'Grenadiers lob slow zone grenades (2 slots).',            cost: 135, time: 28, requires: ['cannon'] },
+    acid:   { cat: 'tower', name: 'Acid Chemistry',   desc: 'Lobbed acid pools that burn over time.',        cost: 165, time: 32, requires: ['pulse'] }
 };
+// research categories: colour-code the Lab panel (towers / soldiers / builders)
+DEFS.techCats = {
+    tower:   { label: 'Towers',   color: '#ff9a3c' },
+    soldier: { label: 'Soldiers', color: '#5aa9ff' },
+    builder: { label: 'Builders', color: '#6fdc6f' }
+};
+DEFS.techCatOrder = ['tower', 'soldier', 'builder'];
 // PC-F21 — Barracks recruits. Each trained Soldier rolls four factors (attack power, attack speed, health, move speed) in
 // [lo, hi]; the band rises with the Barracks tech level and with researched recruit techs. Tiers come from the average roll.
 DEFS.recruit = {
@@ -480,6 +554,8 @@ DEFS.bosses = {
 };
 // ?arsenal=1 is a test switch: every tech counts as researched (no lab needed)
 const ARSENAL = /(?:^|[?&])arsenal(?:=|&|$)/.test((typeof location !== 'undefined' && location.search) || '');
+// test switch: ?win=1 makes clearing wave 1 (or wave N for ?win=N) win the run, to try the victory flow without playing 50 waves
+{ const m = /(?:^|[?&])win=(\d+)/.exec((typeof location !== 'undefined' && location.search) || ''); if(m) DEFS.misc.victoryWave = Math.max(1, parseInt(m[1], 10)); }
 const COSTS = {};
 Object.keys(DEFS.buildings).forEach(k => { if(DEFS.buildings[k].cost > 0) COSTS[k] = DEFS.buildings[k].cost; });
 
@@ -502,6 +578,8 @@ const STR = {
     enemy: 'enemy', goldMine: (n) => `Gold mine · ${n} left`,
     upkeepPaid: (n) => `Upkeep: -${n}g`, newMine: 'New Mine Found!', plusGold: (n) => `+${n}g`, bulldozed: 'Bulldozed', need100: 'Need 100g', needGold: 'Need Gold', building: 'Building...',
     waveIncoming: (w, name, label) => `Wave ${w} — ${name}s incoming!${label}`, packWave: ' — PACK WAVE!', burstWave: ' — BURST WAVE!',
+    victorySub: (bio, n) => `${bio} — all ${n} waves survived`, askShot: 'Save a screenshot of this victory?', shotSaved: '✔ Screenshot saved', shotNone: 'Screenshot not available here', finalWave: 'Defeat the final wave first!', wonN: (n) => `Won ×${n}`, biomeBest: (n) => n ? `Best: wave ${n}` : 'Not played', biomeWon: (n) => n ? `🏆 Won ×${n}` : 'No victory yet', gamesWon: (n) => `🏆 Games won: ${n}`,
+    qfRepair: 'REPAIR', qfBase: (p) => `BASE ${p}%`, qfRebuild: (n) => `REBUILD ×${n}`, rebuildBtn: (c) => `Rebuild (${c}g)`, rebuilt: 'Rebuilding...', baseCritical: 'BASE CRITICAL — tap REPAIR!', ruinInfo: 'Destroyed — rebuild for half price',
     repaired: 'Repaired', repairBtn: (c) => `Repair (${c}g)`, destructBtn: 'Destruct (Refund)',
     style_beam: 'beam', style_shot: 'shot', style_shell: 'shell', style_blast: 'zone blast', style_pulse: 'zone pulse', style_pool: 'zone pool',
     trainUnit: (name, c, n, cap, slots) => `Train ${name} (${c}g${slots > 1 ? ' · ' + slots + ' slots' : ''})  ${n}/${cap}`, soldierReady: 'Soldier Ready', underConstruction: 'Still under construction', armyFull: 'Army full — build another Barracks',
@@ -1014,13 +1092,20 @@ const Music = {
 // --- RECORDS (PC-F08) --- best wave per map, daily record and streak
 const Records = {
     KEY: 'pc_rts_records',
-    d: { maps: {}, daily: { last: '', streak: 0, bestStreak: 0 } },
-    load() { try { const o = JSON.parse(localStorage.getItem(this.KEY) || 'null'); if(o && o.maps && o.daily) this.d = o; } catch(e) {} },
+    d: { maps: {}, daily: { last: '', streak: 0, bestStreak: 0 }, biomes: {} },
+    load() { try { const o = JSON.parse(localStorage.getItem(this.KEY) || 'null'); if(o && o.maps && o.daily) { this.d = o; if(!o.biomes) o.biomes = {}; } } catch(e) {} },
     save() { try { localStorage.setItem(this.KEY, JSON.stringify(this.d)); } catch(e) {} },
-    reset() { this.d = { maps: {}, daily: { last: '', streak: 0, bestStreak: 0 } }; try { localStorage.removeItem(this.KEY); } catch(e) {} },
+    reset() { this.d = { maps: {}, daily: { last: '', streak: 0, bestStreak: 0 }, biomes: {} }; try { localStorage.removeItem(this.KEY); } catch(e) {} },
     best(key) { return (key && this.d.maps[key] && this.d.maps[key].best) || 0; },
     runs(key) { return (key && this.d.maps[key] && this.d.maps[key].runs) || 0; },
     entry(key) { return this.d.maps[key] || (this.d.maps[key] = { best: 0, runs: 0 }); },
+    wins(key) { return (key && this.d.maps[key] && this.d.maps[key].wins) || 0; },
+    biome(b) { return this.d.biomes[b] || (this.d.biomes[b] = { best: 0, wins: 0 }); },
+    // PC-F27 — highest wave ever reached / games won per scenario type (biome)
+    updateBiome(b, wave) { if(!b) return; const r = this.biome(b); if(wave > r.best) { r.best = wave; this.save(); } },
+    win(key, b, wave) { if(key) { this.entry(key).wins = this.wins(key) + 1; } const r = this.biome(b); r.wins++; r.best = Math.max(r.best, wave); this.save(); },
+    totalWins() { return Object.keys(this.d.biomes).reduce((n, k) => n + (this.d.biomes[k].wins || 0), 0); },
+    biomesWon() { return Object.keys(this.d.biomes).filter(k => this.d.biomes[k].wins > 0).length; },
     addRun(key) { if(!key) return; this.entry(key).runs++; this.save(); },
     update(key, wave) { if(!key) return false; const r = this.entry(key), nb = wave > r.best; if(nb) { r.best = wave; this.save(); } return nb; },
     rename(from, to) { if(this.d.maps[from]) { this.d.maps[to] = this.d.maps[from]; delete this.d.maps[from]; this.save(); } },
@@ -1118,9 +1203,14 @@ const Research = {
                 const bar = mk('div', 'res-bar'); this.fillEl = mk('div', 'res-fill'); bar.appendChild(this.fillEl); info.appendChild(bar);
                 this.etaEl = mk('small', '', ''); info.appendChild(this.etaEl); row.appendChild(info); root.appendChild(row);
             } else { this.fillEl = null; this.etaEl = null; }
-            av.forEach(id => {
-                const d = DEFS.techs[id], row = mk('div', 'tech-row'), info = mk('div', 'info');
-                info.appendChild(mk('div', '', d.name));
+            const catOf = id => DEFS.techCats[DEFS.techs[id].cat] || { label: '', color: '#888' };
+            const legend = mk('div', 'tech-legend');
+            DEFS.techCatOrder.forEach(c => { const sp = mk('span', '', DEFS.techCats[c].label); sp.style.setProperty('--cat', DEFS.techCats[c].color); legend.appendChild(sp); });
+            root.appendChild(legend);
+            av.slice().sort((x, y) => DEFS.techCatOrder.indexOf(DEFS.techs[x].cat) - DEFS.techCatOrder.indexOf(DEFS.techs[y].cat)).forEach(id => {
+                const d = DEFS.techs[id], row = mk('div', 'tech-row'), info = mk('div', 'info'), cat = catOf(id);
+                row.dataset.cat = d.cat; row.style.setProperty('--cat', cat.color);
+                const nm = mk('div', ''); nm.appendChild(mk('span', 'cat-tag', cat.label)); nm.appendChild(document.createTextNode(d.name)); info.appendChild(nm);
                 const ul = this.unlocksOf(id); info.appendChild(mk('small', '', d.desc + ' · ' + d.time + 's · ' + (ul.length ? t('unlocks') + ': ' + ul.join(', ') : d.effect || '')));
                 const b = mk('button', 'nav-btn', t('researchBtn', d.cost));
                 if(a || State.gold < d.cost || !this.lab()) b.style.opacity = 0.45;
@@ -1129,7 +1219,11 @@ const Research = {
             });
             if(!av.length && !a) root.appendChild(mk('div', 'tech-row', t('noTechs')));
             const done = Object.keys(State.research.done);
-            if(done.length) { const dr = mk('div', 'tech-done'); dr.innerText = t('researched') + ': ' + done.map(id => DEFS.techs[id].name).join(', '); root.appendChild(dr); }
+            if(done.length) {
+                const dr = mk('div', 'tech-done'); dr.appendChild(document.createTextNode(t('researched') + ': '));
+                done.forEach((id, i) => { const it = mk('i', '', DEFS.techs[id].name); it.style.setProperty('--cat', catOf(id).color); if(i) dr.appendChild(document.createTextNode(', ')); dr.appendChild(it); });
+                root.appendChild(dr);
+            }
         }
         if(a && this.fillEl) this.fillEl.style.width = Math.round(this.frac() * 100) + '%';
         if(a && this.etaEl) this.etaEl.innerText = t('researchEta', Math.ceil(DEFS.techs[a.id].time * (1 - this.frac()) / this.speed()));
@@ -1260,7 +1354,7 @@ const Combat = {
     // where will a walking target be when a projectile of `speed` arrives? Walk along its current path (and on to its
     // next waypoint / move order) for the distance it covers during the flight; two passes settle the flight time.
     predict(tgt, sx, sy, speed) {
-        if(!(tgt instanceof Unit) || !tgt.speed) return {x: tgt.x, y: tgt.y};
+        if(!(tgt instanceof Unit) || !tgt.speed || State.clock - (tgt.standAt == null ? -1e9 : tgt.standAt) < 250) return {x: tgt.x, y: tgt.y};   // a unit that has stopped (shooting a target, building) is aimed at where it stands
         const pts = [];
         if(tgt.path) for(let i = 0; i < Math.min(tgt.path.length, 40); i++) pts.push({x: tgt.path[i].x + 0.5, y: tgt.path[i].y + 0.5});
         if(tgt.team === 'enemy') { const wp = State.level && State.level.waypoints && State.level.waypoints[tgt.wpIdx || 0]; if(wp) pts.push({x: wp.x + 0.5, y: wp.y + 0.5}); }
@@ -1556,6 +1650,7 @@ const Game = {
             if(State.placing) Game.drawPlacing();
         } else if (State.mode === 'EDITOR') { Editor.drawOverlay(); }
         ctx.restore();
+        if(State.shotPending) { State.shotPending = false; Game.captureShot(); }   // PC-F27 — only now is the frame complete (map + units + effects)
     },
 
     updateEntities(dt) {
@@ -1604,7 +1699,9 @@ const Game = {
                 const base = State.spawnProfile==='burst' ? 320 : State.spawnProfile==='pack' ? 850 : 1300;
                 State.nextSpawn = State.clock + Math.max(220, base - State.wave*15) * (0.6 + rw.next()*0.8);
             } else if(State.toSpawn <= 0 && !State.entities.some(e=>e.team==='enemy' && !e.dead)) {
-                State.waveActive=false; State.wave++; 
+                State.waveActive=false;
+                if(State.wave >= DEFS.misc.victoryWave && !State.won) { Game.victory(); return; }   // PC-F27
+                State.wave++; 
                 if(State.wave % 10 === 0) {
                     let tries=0;
                     while(tries++ < 50) {
@@ -1717,6 +1814,7 @@ const Game = {
             State.waveDelay = 0; Game.earn(bonus); Game.toast(t('earlyCall', bonus), tx, ty, '#ffd700');
             Game.startWave();
         } else if(State.waveActive && State.toSpawn <= 0) {
+            if(State.wave >= DEFS.misc.victoryWave && !State.won) { Game.toast(t('finalWave'), tx, ty); AudioEngine.play('err'); return; }   // the last wave must be cleared, not skipped
             const bonus = 8 + State.wave;
             State.wave++; Game.earn(bonus); Game.toast(t('earlyCall', bonus), tx, ty, '#ffd700');
             Game.startWave();
@@ -1752,7 +1850,8 @@ const Game = {
         const ra = State.research && State.research.active;
         $('ui-research').innerText = ra ? t('researchHud', DEFS.techs[ra.id].name, Math.floor(Research.frac() * 100)) + (Research.lab() ? '' : ' ⏸') : '';
         Research.renderPanel(false);
-        const canCall = !State.gameOver && ((!State.waveActive && State.waveDelay > 0) || (State.waveActive && State.toSpawn <= 0));
+        Game.refreshQuickFix(false);
+        const canCall = !State.gameOver && ((!State.waveActive && State.waveDelay > 0) || (State.waveActive && State.toSpawn <= 0 && (State.won || State.wave < DEFS.misc.victoryWave)));
         $('btn-wave').style.opacity = canCall ? 1 : 0.45;
     },
 
@@ -2049,7 +2148,7 @@ const Game = {
         // BUG-14 — pick by exact click position; tapping the same spot again cycles through stacked friendlies
         const cpx = w.x / TILE, cpy = w.y / TILE;
         const cands = State.entities
-            .filter(e => e.team === 'player' && !e.isRuin && !e.dead && Math.hypot(e.x - cpx, e.y - cpy) < (e instanceof Unit ? 0.75 : 0.8))
+            .filter(e => e.team === 'player' && (!e.isRuin || e instanceof Building) && !e.dead && Math.hypot(e.x - cpx, e.y - cpy) < (e instanceof Unit ? 0.75 : 0.8))
             .sort((a, b) => Math.hypot(a.x - cpx, a.y - cpy) - Math.hypot(b.x - cpx, b.y - cpy));
         let hit = cands[0];
         if(cands.length > 1) { const ci = cands.indexOf(State.selection); if(ci !== -1) hit = cands[(ci + 1) % cands.length]; }
@@ -2096,7 +2195,7 @@ const Game = {
         Game.toast(t('waveIncoming', State.wave, getBiome().enemyName, label), 20, 20); AudioEngine.play('alarm');
         if(State.wave % 10 === 0) Game.toast(t('bossIncoming', Game.bossDef().name), 20, 22, '#ff6666');
         Stats.set('waveReached', State.wave);
-        Records.update(State.recordKey, State.wave);
+        Records.update(State.recordKey, State.wave); Records.updateBiome(State.level && State.level.biome, State.wave);
         Tutorial.event('wave'); Game.buzz(40);
         RunSave.write();
     },
@@ -2132,6 +2231,13 @@ const Game = {
         else if(e instanceof Unit) info += '  ' + Game.describeAttack(e.atk(), e.dmg) + (e.recruit ? '\n' + Recruits.card(e.recruit) : '') + (e.def.builder ? '\n' + t('builderCard', e.buildSpeed().toFixed(1), e.carry()).trim() : '') + (e.def.army && e.team === 'player' ? '\n' + t('orderInfo', e.order || 'guard') : '');
         document.getElementById('ctx-info').innerText = info;
         const act=document.getElementById('ctx-actions'); act.innerHTML='';
+        if(e instanceof Building && e.isRuin) {   // destroyed: the only action is a half-price rebuild
+            document.getElementById('ctx-name').innerText = e.def.label + ' ✖';
+            document.getElementById('ctx-info').innerText = t('ruinInfo');
+            const rb = document.createElement('div'); rb.className = 'action-btn alt'; rb.innerText = t('rebuildBtn', Game.rebuildCost(e));
+            rb.onclick = () => { if(Game.rebuild(e)) Game.hideCtx(); }; act.appendChild(rb);
+            return;
+        }
         
         if(e instanceof Building && e.def.tower && e.progress >= 100 && !e.isRuin) {   // PC-F02 upgrade tracks
             [['speed', 'upgSpeed'], ['power', 'upgPower'], ['hp', 'upgHp']].forEach(([track, key]) => {
@@ -2222,6 +2328,7 @@ const Game = {
     showHud(on) {
         document.getElementById('hud-top').classList.toggle('hidden', !on);
         document.getElementById('hud-bot').classList.toggle('hidden', !on);
+        document.getElementById('quick-fix').classList.toggle('hidden', !on);
     },
 
     // build bar entries come from DEFS; the PC-F13 preview towers only show with ?arsenal=1
@@ -2278,6 +2385,74 @@ const Game = {
         if(State.gold < cost) { AudioEngine.play('err'); return false; }
         State.gold -= cost; b.hp = b.maxHp; Game.ui(); Game.toast(t('repaired'), b.x, b.y); Game.showCtx(b); AudioEngine.play('build'); FX.sparks(b.x, b.y, 5, '#0f0', 1);
         return true;
+    },
+    // --- quick fix: repair the base first, then the rest by how hurt it is; ruins can be rebuilt at half price ---
+    hurtBase() { const tc = State.entities.find(e => e.type === 'TownCenter' && e.team === 'player' && !e.dead && !e.isRuin); return tc && tc.hp < tc.maxHp - 0.5 ? tc : null; },
+    myBuildings() { return State.entities.filter(e => e instanceof Building && e.team === 'player' && !e.dead && e.type !== 'Mine' && e.progress >= 100); },
+    repairables() {
+        return Game.myBuildings().filter(e => !e.isRuin && e.hp < e.maxHp - 0.5)
+            .sort((a, b) => (b.type === 'TownCenter') - (a.type === 'TownCenter') || a.hp / a.maxHp - b.hp / b.maxHp);
+    },
+    ruins() {
+        const tc = State.entities.find(e => e.type === 'TownCenter' && e.team === 'player');
+        return State.entities.filter(e => e instanceof Building && e.team === 'player' && !e.dead && e.isRuin && e.type !== 'TownCenter')
+            .sort((a, b) => (!!b.def.tower - !!a.def.tower) || (tc ? Math.hypot(a.x - tc.x, a.y - tc.y) - Math.hypot(b.x - tc.x, b.y - tc.y) : 0));
+    },
+    rebuildCost(b) { return Math.ceil((COSTS[b.type] || 20) * DEFS.misc.rebuildRate); },
+    // one tap: spend gold on repairs in priority order; the last building gets a partial repair when gold runs out
+    repairAll() {
+        const list = Game.repairables(); let spent = 0;
+        for(const b of list) {
+            const cost = Game.repairCost(b), have = Math.floor(State.gold);
+            if(cost <= 0) { b.hp = b.maxHp; continue; }
+            if(have >= cost) { State.gold -= cost; spent += cost; b.hp = b.maxHp; FX.sparks(b.x, b.y, 4, '#0f0', 1); }
+            else { if(have < 1) break; b.hp = Math.min(b.maxHp, b.hp + (b.maxHp - b.hp) * have / cost); spent += have; State.gold -= have; FX.sparks(b.x, b.y, 3, '#0f0', 1); break; }
+        }
+        if(!spent) { Game.toast(list.length ? t('needGold') : t('repaired')); AudioEngine.play('err'); return false; }
+        const tc = State.entities.find(e => e.type === 'TownCenter' && e.team === 'player');
+        Game.ui(); Game.toast(t('repaired') + ' -' + spent + 'g', tc ? tc.x : undefined, tc ? tc.y : undefined); AudioEngine.play('build');
+        if(State.selection instanceof Building) Game.showCtx(State.selection);
+        Game.refreshQuickFix(true);
+        return true;
+    },
+    // a ruin becomes a fresh construction site (Builders re-raise it) for half of the build cost
+    rebuild(b) {
+        const cost = Game.rebuildCost(b);
+        if(!b.isRuin || b.dead) return false;
+        if(State.gold < cost) { Game.toast(t('needGold'), b.x, b.y); AudioEngine.play('err'); return false; }
+        State.gold -= cost;
+        b.isRuin = false; b.progress = 1; b.work = 0;
+        let lvl = b.level || 1; if(b.def.tower) { const tc = State.entities.find(e => e.type === 'TownCenter' && e.team === 'player'); if(tc) lvl = tc.level; }
+        b.applyLevel(lvl);
+        Game.ui(); Game.toast(t('rebuilt'), b.x, b.y); AudioEngine.play('build'); FX.ring(b.x, b.y, '#b08cff', 3, 1.2, 12);
+        return true;
+    },
+    rebuildAll() {
+        let n = 0;
+        for(const b of Game.ruins()) { if(State.gold < Game.rebuildCost(b)) break; if(Game.rebuild(b)) n++; }
+        if(!n) { Game.toast(t('needGold')); AudioEngine.play('err'); }
+        Game.refreshQuickFix(true);
+        return n > 0;
+    },
+    // floating one-tap buttons above the bottom bar; refreshed with the HUD (4x per second)
+    refreshQuickFix(force) {
+        const el = document.getElementById('quick-fix'); if(!el || State.mode !== 'PLAY') return;
+        const rep = Game.repairables(), ru = Game.ruins();
+        const tc = State.entities.find(e => e.type === 'TownCenter' && e.team === 'player' && !e.dead);
+        const tcPct = tc ? Math.round(100 * tc.hp / tc.maxHp) : 100;
+        let repCost = 0; rep.forEach(b => { repCost += Game.repairCost(b); });
+        const ruCost = ru.reduce((a, b) => a + Game.rebuildCost(b), 0);
+        const crit = tc && tcPct < 40;
+        if(tc) {   // one alarm per drop below 35 %; re-armed once the base is back above 60 %
+            if(tcPct < 35 && !State.baseAlarm) { State.baseAlarm = true; Game.toast(t('baseCritical'), tc.x, tc.y - 1); AudioEngine.play('err'); Game.buzz(60); }
+            else if(tcPct > 60) State.baseAlarm = false;
+        }
+        const sig = [rep.length ? 1 : 0, rep.length && tc && tc.hp < tc.maxHp - 0.5 ? tcPct : -1, repCost, !!crit, ru.length, ruCost].join('|');
+        if(!force && sig === Game.qfSig) return;
+        Game.qfSig = sig; el.innerHTML = '';
+        const mk = (cls, title, sub, fn) => { const b = document.createElement('button'); b.className = 'qf-btn ' + cls; b.innerHTML = title + '<small>' + sub + '</small>'; b.onclick = (ev) => { ev.stopPropagation(); fn(); }; el.appendChild(b); };
+        if(rep.length) mk(crit ? 'crit' : '', '🔧 ' + t('qfRepair'), (tc && tc.hp < tc.maxHp - 0.5 ? t('qfBase', tcPct) + ' · ' : '') + repCost + 'g', () => Game.repairAll());
+        if(ru.length) mk('rebuild', '🧱 ' + t('qfRebuild', ru.length), ruCost + 'g', () => Game.rebuildAll());
     },
     trainArmy(b, type) {
         const ud = DEFS.units[type];
@@ -2366,7 +2541,7 @@ const Game = {
         State.lastLvl = lvl;
         State.runSeed = seed || ('s' + Math.floor(Math.random() * 1e9));
         State.rngWave = new Rng(State.runSeed + ':waves'); State.rngMine = new Rng(State.runSeed + ':mines'); State.rngRecruit = new Rng(State.runSeed + ':recruits');
-        State.mode='PLAY'; State.gameOver=false; State.paused=false; State.clock=0; State.lastUpkeep=0;
+        State.mode='PLAY'; State.gameOver=false; State.won=false; State.shot=null; State.paused=false; State.clock=0; State.lastUpkeep=0;
         State.waveActive=false; State.waveDelay=0; State.toSpawn=0; State.bossesLeft=0;
         State.selection=null; State.placing=null; State.group=null; State.rallyFor=null; State.orderFor=null;
         State.speed=1; State.shake=0; State.incomeLog=[]; State.recordKey = key || null; State.seenEnemies = {}; State.fresh = {}; Game.closeSub();
@@ -2387,7 +2562,7 @@ const Game = {
             State.entities.push(new Unit(b.x+1.5, b.y+0.5, 'Builder', 'player', 1));
             State.entities.push(new Unit(b.x+0.5, b.y+1.5, 'Builder', 'player', 1));   // two Builders: one can build while the other mines
         }
-        Game.buildHud();
+        Game.buildHud(); State.baseAlarm = false; Game.refreshQuickFix(true);
         Game.ui(); Game.fitCamera();
         Music.start(State.level.biome);
         if(Tutorial.shouldRun()) {   // PC-P01 — first run: a long build break and guided hints before wave 1
@@ -2415,6 +2590,59 @@ const Game = {
     abandon() {
         if(!confirm(t('confirmAbandon'))) return;
         RunSave.clear(); Game.toMenu();
+    },
+    // PC-F27 — surviving DEFS.misc.victoryWave waves wins the run: record it, offer a screenshot, optionally play on
+    victory() {
+        State.gameOver = true; State.paused = false; State.selection = null; State.placing = null;
+        AudioEngine.play('achievement'); RunSave.clear(); Music.stop(); Research.closePanel(); Game.closeSub();
+        const bio = getBiome(), n = DEFS.misc.victoryWave;
+        Records.win(State.recordKey, State.level.biome, State.wave);
+        Stats.add('gamesWon', 1); Stats.set('biomesWon', Records.biomesWon());
+        State.shot = null; State.shotPending = true; document.getElementById('vic-shot').classList.add('hidden');   // captured at the end of the next drawn frame
+        const $ = (id) => document.getElementById(id), secs = Math.floor(State.clock / 1000);
+        $('vic-sub').innerText = t('victorySub', bio.icon + ' ' + bio.name, n);
+        $('vic-wave').innerText = State.wave; $('vic-kills').innerText = State.run.kills; $('vic-gold').innerText = Math.floor(State.run.gold);
+        $('vic-time').innerText = Math.floor(secs / 60) + ':' + String(secs % 60).padStart(2, '0'); $('vic-wins').innerText = Records.totalWins();
+        $('vic-ask-text').innerText = t('askShot'); $('vic-save').classList.remove('hidden'); $('vic-skip').classList.remove('hidden'); $('vic-ask').classList.add('hidden');   // shown once the screenshot exists
+        FX.shake(6); Game.buzz([80, 60, 80, 60, 200]);
+        Game.hideCtx(); Game.showHud(false);
+        $('pause-screen').classList.add('hidden');
+        $('victory-screen').classList.remove('hidden');
+    },
+    // the last battlefield frame plus a caption bar, kept in memory until the player decides to save it
+    captureShot() {
+        State.shot = null; const bio = getBiome(), img = document.getElementById('vic-shot'); img.classList.add('hidden');
+        try {
+            const c = document.createElement('canvas'), w = canvas.width, h = canvas.height, bar = Math.max(28, Math.round(h * 0.08));
+            c.width = w; c.height = h + bar; const g = c.getContext('2d');
+            g.drawImage(canvas, 0, 0);
+            g.fillStyle = '#0b0b0f'; g.fillRect(0, h, w, bar); g.fillStyle = '#ffd700'; g.textBaseline = 'middle'; g.font = 'bold ' + Math.round(bar * 0.45) + 'px sans-serif';
+            g.fillText('🏆 POCKET COMMANDER — VICTORY · ' + bio.name + ' · ' + DEFS.misc.victoryWave + ' waves · ' + State.run.kills + ' kills · ' + Records.fmt(new Date()), 12, h + bar / 2);
+            if(typeof c.toDataURL === 'function') { img.src = c.toDataURL('image/jpeg', 0.85); img.classList.remove('hidden'); State.shot = c; document.getElementById('vic-ask').classList.remove('hidden'); }
+        } catch(e) { State.shot = null; }
+    },
+    saveShot() {
+        const c = State.shot, ask = document.getElementById('vic-ask-text');
+        if(!c || typeof c.toBlob !== 'function') { ask.innerText = t('shotNone'); return; }
+        c.toBlob(async (blob) => {
+            if(!blob) { ask.innerText = t('shotNone'); return; }
+            const name = 'pocketcommander-' + ((State.level && State.level.biome) || 'map') + '-victory-' + Records.fmt(new Date()) + '.png';
+            try {   // phones: the share sheet offers "Save to Photos"
+                const f = new File([blob], name, { type: 'image/png' });
+                if(navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], title: 'Pocket Commander victory' }); Game.shotDone(); return; }
+            } catch(e) { if(e && e.name === 'AbortError') return; }
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(() => URL.revokeObjectURL(a.href), 4000); Game.shotDone();
+        }, 'image/png');
+    },
+    shotDone() { document.getElementById('vic-ask-text').innerText = t('shotSaved'); document.getElementById('vic-save').classList.add('hidden'); document.getElementById('vic-skip').classList.add('hidden'); },
+    skipShot() { State.shot = null; document.getElementById('vic-ask').classList.add('hidden'); },
+    // keep playing past the victory wave: the run stays on the same map, records keep counting
+    continueEndless() {
+        State.won = true; State.gameOver = false; State.wave++; State.waveDelay = State.breakTotal = BREAK_MS;
+        document.getElementById('ui-wave').innerText = State.wave;
+        document.getElementById('victory-screen').classList.add('hidden');
+        Game.showHud(true); Game.buildHud(); Game.ui(); Music.start(State.level.biome); RunSave.write();
     },
     defeat() {
         State.gameOver = true; State.paused = false; State.selection = null; State.placing = null;
@@ -2484,7 +2712,7 @@ const Game = {
         el.innerText = t('dailyInfo', Records.best('daily:' + today), Records.activeStreak(today),
             String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0'));
         const rb = document.getElementById('random-best');
-        if(rb) { const b = Records.best('random'); rb.innerText = b ? t('bestWave', b) : t('noRecord'); }
+        if(rb) { const b = Records.best('random'), w = Records.wins('random'); rb.innerText = b ? t('bestWave', b) + (w ? ' · 🏆×' + w : '') : t('noRecord'); }
     },
     ach() {
         document.getElementById('main-menu').classList.add('hidden');
@@ -2666,6 +2894,7 @@ class Unit extends Entity {
         if(this.def.builder && this.team === 'player' && this.fleeStep(dt, foe, atk)) return;   // PC-F24
 
         if(foe) {
+            this.standAt = State.clock;   // holds position while it has a foe in range; Combat.predict aims at it, not along its path
             if(State.clock > this.lastAtk + atk.interval) {
                 // Wall Logic
                 if(this.team === 'enemy' && foe.type === 'Wall') {
@@ -2712,9 +2941,12 @@ class Unit extends Entity {
                 if(site) {   // PC-F14 — construction sites come before mining
                     if(Math.hypot(site.x - this.x, site.y - this.y) < 1.3) {
                         site.work = (site.work || 0) + this.buildSpeed() * dt / 1000; site.workedAt = State.clock;
-                        return;   // standing and building
+                        this.standAt = State.clock; return;   // standing and building
                     }
                     dest = {x: site.x, y: site.y};
+                } else if(Game.hurtBase()) {   // a hurt Town Center comes before mining: Builders patch it up for free
+                    if(this.repairBase(dt)) return;   // standing at the base and repairing
+                    dest = Game.hurtBase();
                 } else {
                     const m=this.pickMine();
                     if(m) { dest={x:m.x,y:m.y}; if(Math.hypot(dest.x-this.x,dest.y-this.y)<1.5) { this.holdGold=true; if(m.capacity>0) { m.capacity -= capacity; if(m.capacity<=0) m.takeDamage(9999); } } }
@@ -2840,6 +3072,15 @@ class Unit extends Entity {
     carry() { const d = this.def; return (d.carry || 10) + (d.carryPerLevel || 2) * this.level; }   // gold per mining trip
     buildSpeed() { return (this.def.buildSpeed || 1) * (1 + 0.05 * (this.level - 1)); }
     // PC-F14 — nearest unfinished building that still has room for another worker (keeps its choice until it is done)
+    // Builders speed up the base's healing: when the Town Center is hurt (and no site needs them) they walk to it and
+    // repair it, `builderRepair` of its max HP per second per build-speed point. Returns true while it stands at the base repairing.
+    repairBase(dt) {
+        const tc = Game.hurtBase();
+        if(!tc || Math.hypot(tc.x - this.x, tc.y - this.y) >= 1.6) return false;
+        tc.hp = Math.min(tc.maxHp, tc.hp + tc.maxHp * DEFS.misc.builderRepair * this.buildSpeed() * dt / 1000);
+        if(Math.random() < 0.05) FX.sparks(tc.x + (Math.random() - 0.5), tc.y + (Math.random() - 0.5), 1, '#0f0', 0.6);
+        this.standAt = State.clock; return true;
+    }
     pickSite() {
         if(this.siteId) {
             const cur = State.idMap ? State.idMap.get(this.siteId) : State.entities.find(e => e.id === this.siteId);
@@ -3045,6 +3286,9 @@ class Building extends Entity {
     update(dt) {
         if(this.isRuin) return;
         const k = (dt || 16) / 16;
+        if(this.type === 'TownCenter' && this.hp < this.maxHp && State.clock - (this.hitAt == null ? -1e9 : this.hitAt) > DEFS.misc.baseRegenDelay) {   // the base slowly heals itself once it has been left alone
+            this.hp = Math.min(this.maxHp, this.hp + this.maxHp * DEFS.misc.baseRegen * (dt || 16) / 1000);
+        }
         if(this.progress < 100 && (this.type === 'Mine' || this.type === 'TownCenter')) { this.progress = 100; this.hp = this.maxHp; }   // older saves
         if(this.progress < 100) {
             // PC-F14 — a site only advances while Builders work on it (they add to `work`, in builder-seconds)
@@ -3075,7 +3319,7 @@ class Building extends Entity {
         }
     }
     takeDamage(n) { 
-        if(this.isRuin || State.gameOver) return; this.hp-=n; AudioEngine.play('hit');
+        if(this.isRuin || State.gameOver) return; this.hp-=n; this.hitAt = State.clock; AudioEngine.play('hit');
         FX.sparks(this.x, this.y, 2, '#f88', 1.2);
         FX.text(this.x, this.y, '-' + Math.round(n), '#ff9999');
         if(this.type === 'TownCenter') {
@@ -3191,13 +3435,13 @@ const Storage = {
     },
     load() {
         const d = this.read();
-        const l = document.getElementById('level-list'); l.innerHTML='';
+        const l = document.getElementById('level-list'); l.innerHTML=''; this.badges();
         d.forEach((v, i) => {
             const row = document.createElement('div'); row.className = 'level-row';
             const b=document.createElement('button'); b.className='map-card';
             const bio = BIOMES[v.biome] || BIOMES.grass, key = 'map:' + v.name, best = Records.best(key);
-            const nm = document.createElement('span'); nm.innerText = bio.icon + ' ' + v.name;
-            const sub = document.createElement('small'); sub.innerText = bio.name + (best ? ' · ' + t('bestWave', best) : '');
+            const wins = Records.wins(key), nm = document.createElement('span'); nm.innerText = (wins ? '🏆 ' : '') + bio.icon + ' ' + v.name;
+            const sub = document.createElement('small'); sub.innerText = bio.name + (best ? ' · ' + t('bestWave', best) : '') + (wins ? ' · ' + t('wonN', wins) : '');
             b.appendChild(nm); b.appendChild(sub);
             b.onclick=()=>Game.play(v, null, key);
             // PC-C05 — rename / delete saved maps
@@ -3212,6 +3456,16 @@ const Storage = {
                 Records.remove('map:' + v.name); d.splice(i, 1); this.write(d); this.load();
             };
             row.appendChild(b); row.appendChild(ren); row.appendChild(del); l.appendChild(row);
+        });
+    },
+    // PC-F27 — one chip per scenario type: gold when it has been won at least once, plus the best wave reached there
+    badges() {
+        const el = document.getElementById('biome-badges'); if(!el) return; el.innerHTML = '';
+        BIOME_KEYS.forEach(k => {
+            const bio = BIOMES[k], r = Records.d.biomes[k] || { best: 0, wins: 0 }, c = document.createElement('div');
+            c.className = 'bio-chip' + (r.wins ? ' won' : '');
+            c.innerHTML = '<b>' + bio.icon + ' ' + bio.name + '</b>' + t('biomeWon', r.wins) + '<br>' + t('biomeBest', r.best);
+            el.appendChild(c);
         });
     },
     // PC-C05 — RESET DATA now asks first
@@ -3256,7 +3510,7 @@ const RunSave = {
                 v: this.VER, app: (typeof APP_VERSION !== 'undefined' ? APP_VERSION : ''), saved: Date.now(),
                 seed: State.runSeed, lastLvl: State.lastLvl, level: State.level, grid: State.grid,
                 gold: State.gold, wave: State.wave, waveActive: State.waveActive, toSpawn: State.toSpawn, nextSpawn: State.nextSpawn,
-                waveDelay: State.waveDelay, spawnProfile: State.spawnProfile, bossesLeft: State.bossesLeft,
+                waveDelay: State.waveDelay, won: !!State.won, spawnProfile: State.spawnProfile, bossesLeft: State.bossesLeft,
                 clock: State.clock, lastUpkeep: State.lastUpkeep, run: State.run, recordKey: State.recordKey, waveTotal: State.waveTotal, projectiles: State.projectiles, research: State.research, seen: State.seenEnemies, fresh: State.fresh,
                 rngWave: State.rngWave.a, rngMine: State.rngMine.a, rngRecruit: Recruits.rng().a, offset: State.offset, scale: State.scale,
                 entities: State.entities.filter(e => !e.dead).map(e => ({ k: e instanceof Unit ? 'U' : 'B', d: e }))
@@ -3274,7 +3528,7 @@ const RunSave = {
     peek() { const d = this.read(); return d ? { wave: d.wave, name: d.level.name || '' } : null; },
     clear() { try { localStorage.removeItem(this.KEY); } catch(e) {} },
     restore(d) {
-        State.mode = 'PLAY'; State.gameOver = false; State.selection = null; State.placing = null; State.mouseWorld = null; State.particles = [];
+        State.mode = 'PLAY'; State.gameOver = false; State.won = !!d.won; State.selection = null; State.placing = null; State.mouseWorld = null; State.particles = [];
         State.lastLvl = d.lastLvl || d.level; State.runSeed = d.seed; State.level = d.level; State.grid = d.grid;
         State.entities = d.entities.map(x => Object.assign(Object.create((x.k === 'U' ? Unit : Building).prototype), x.d));
         State.rngWave = new Rng(0); State.rngWave.a = d.rngWave; State.rngMine = new Rng(0); State.rngMine.a = d.rngMine;
@@ -3294,7 +3548,7 @@ const RunSave = {
 const Stats = {
     KEY: 'pc_rts_stats',
     data: {},
-    defaults() { return { enemiesKilled:0, bossesKilled:0, waveReached:0, goldEarned:0, buildingsBuilt:0, unitsTrained:0, gamesPlayed:0 }; },
+    defaults() { return { enemiesKilled:0, bossesKilled:0, waveReached:0, goldEarned:0, buildingsBuilt:0, unitsTrained:0, gamesPlayed:0, gamesWon:0, biomesWon:0 }; },
     load() { try { this.data = Object.assign(this.defaults(), JSON.parse(localStorage.getItem(this.KEY) || '{}')); } catch(e) { this.data = this.defaults(); } },
     save() { try { localStorage.setItem(this.KEY, JSON.stringify(this.data)); } catch(e) {} },
     add(stat, n) { if(!(stat in this.data)) this.data[stat] = 0; this.data[stat] += n; this.save(); Achievements.check(stat); },
@@ -3315,6 +3569,9 @@ const ACHIEVEMENTS = [
     { id:'boss_1', name:'Boss Slayer', desc:'Defeat a boss', icon:'☠️', stat:'bossesKilled', target:1 },
     { id:'boss_5', name:'Boss Hunter', desc:'Defeat 5 bosses', icon:'⚡', stat:'bossesKilled', target:5 },
     { id:'recruiter', name:'Recruiter', desc:'Train 20 units', icon:'🎖️', stat:'unitsTrained', target:20 },
+    { id:'victor', name:'Victor', desc:'Win a game (survive wave 50)', icon:'🥇', stat:'gamesWon', target:1 },
+    { id:'champion', name:'Champion', desc:'Win 5 games', icon:'🏅', stat:'gamesWon', target:5 },
+    { id:'conqueror', name:'World Conqueror', desc:'Win on all four biomes', icon:'🌍', stat:'biomesWon', target:4 },
     { id:'veteran', name:'Veteran', desc:'Play 10 games', icon:'🏆', stat:'gamesPlayed', target:10 }
 ];
 
@@ -3359,7 +3616,7 @@ const Achievements = {
     },
     buildPanel() {
         const list = document.getElementById('ach-list'); if(!list) return;
-        list.innerHTML = '<p style="color:#ccc; text-align:center; margin-bottom:12px;">' + this.count() + ' / ' + ACHIEVEMENTS.length + ' unlocked</p>';
+        list.innerHTML = '<p class="ach-wins">' + t('gamesWon', Records.totalWins()) + '</p><p style="color:#ccc; text-align:center; margin-bottom:12px;">' + this.count() + ' / ' + ACHIEVEMENTS.length + ' unlocked</p>';
         ACHIEVEMENTS.forEach(a => {
             const cur = Stats.data[a.stat] || 0;
             const pct = Math.min(100, Math.round(cur / a.target * 100));
